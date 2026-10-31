@@ -78,7 +78,7 @@ async function runApiTests() {
   const sampleMem = memories[0];
   const memId = sampleMem ? sampleMem.id : "mem_01";
 
-  const owners = getAllOwners();
+  const owners = await getAllOwners();
   const ownerId = owners[0]?.id || "owner_demo";
 
   const baseUrl = "http://localhost:3000";
@@ -208,4 +208,3 @@ runApiTests().catch((err) => {
   console.error("FATAL ERROR RUNNING API TEST SUITE:", err);
   process.exit(1);
 });
-

@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Delegate authentication to backend service
-    const authResult = authenticatePropertyOwner(
+    const authResult = await authenticatePropertyOwner(
       validation.cleanedData.email,
       validation.cleanedData.password
     );

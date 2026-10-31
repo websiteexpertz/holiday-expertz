@@ -7,7 +7,7 @@ import {
   deleteOwner,
   findOwnerByEmail,
   findOwnerByMobile,
-  saveOwners,
+  createOwner,
   sanitizeOwner,
 } from "../../../../lib/storage/propertyOwnerStore";
 import { hashPassword } from "../../../../lib/security/passwordHasher";
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    const owners = getAllOwners();
+    const owners = await getAllOwners();
     const enriched = owners.map((owner) => {
       const properties = getPropertiesByOwnerId(owner.id);
       return {
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: "Invalid email address format" }, { status: 400 });
     }
 
-    if (findOwnerByEmail(normalizedEmail)) {
+    if (await findOwnerByEmail(normalizedEmail)) {
       return NextResponse.json(
         { success: false, message: "An owner with this email address already exists" },
         { status: 409 }
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (findOwnerByMobile(normalizedMobile)) {
+    if (await findOwnerByMobile(normalizedMobile)) {
       return NextResponse.json(
         { success: false, message: "An owner with this mobile number already exists" },
         { status: 409 }
@@ -112,9 +112,7 @@ export async function POST(req: Request) {
       updatedAt: now,
     };
 
-    const owners = getAllOwners();
-    owners.unshift(newOwner);
-    saveOwners(owners);
+    await createOwner(newOwner);
 
     recordAuditLog({
       adminId: admin.id,
@@ -154,7 +152,7 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: false, message: "Owner id and status required" }, { status: 400 });
     }
 
-    const updated = updateOwnerStatus(id, status);
+    const updated = await updateOwnerStatus(id, status);
     if (!updated) {
       return NextResponse.json({ success: false, message: "Owner not found" }, { status: 404 });
     }
@@ -191,7 +189,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ success: false, message: "Owner id required" }, { status: 400 });
     }
 
-    const success = deleteOwner(id);
+    const success = await deleteOwner(id);
     if (!success) {
       return NextResponse.json({ success: false, message: "Owner not found" }, { status: 404 });
     }

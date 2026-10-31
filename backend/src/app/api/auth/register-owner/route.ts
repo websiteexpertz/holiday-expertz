@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Delegate registration logic to backend service
-    const result = registerPropertyOwner(validation.cleanedData);
+    const result = await registerPropertyOwner(validation.cleanedData);
 
     if (!result.success) {
       return NextResponse.json(

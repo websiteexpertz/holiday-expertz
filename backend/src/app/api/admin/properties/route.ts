@@ -34,7 +34,7 @@ export async function GET(req: Request) {
     const ownerId = searchParams.get("ownerId");
 
     let properties = getAllProperties();
-    const owners = getAllOwners();
+    const owners = await getAllOwners();
     const ownerMap = new Map(owners.map((o) => [o.id, o.fullName]));
 
     if (status && status !== "all") {

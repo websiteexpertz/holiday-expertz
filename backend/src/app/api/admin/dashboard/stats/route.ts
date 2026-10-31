@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     }
 
     const customers = getAllCustomers();
-    const owners = getAllOwners();
+    const owners = await getAllOwners();
     const properties = getAllProperties();
     const bookings = getAllBookings();
     const payments = getAllPayments();

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const record = findOwnerById(ownerId);
+    const record = await findOwnerById(ownerId);
     if (!record) {
       return NextResponse.json(
         { success: false, message: "Owner profile not found." },
@@ -63,7 +63,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const updated = updateOwnerProfile(ownerId, {
+    const updated = await updateOwnerProfile(ownerId, {
       fullName: fullName?.trim(),
       mobileNumber: mobileNumber?.trim(),
       avatar: avatar?.trim(),

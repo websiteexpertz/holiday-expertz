@@ -2,10 +2,9 @@ import crypto from "crypto";
 import { PropertyOwner, PropertyOwnerRecord, PropertyOwnerRegistrationInput } from "../../types/auth";
 import { hashPassword, verifyPassword } from "../security/passwordHasher";
 import {
+  createOwner,
   findOwnerByEmail,
   findOwnerByMobile,
-  getAllOwners,
-  saveOwners,
   sanitizeOwner,
 } from "../storage/propertyOwnerStore";
 
@@ -20,9 +19,9 @@ export type AuthenticationResult =
 /**
  * Service to register a new property owner with conflict checks and secure hashing
  */
-export function registerPropertyOwner(input: PropertyOwnerRegistrationInput): RegistrationResult {
+export async function registerPropertyOwner(input: PropertyOwnerRegistrationInput): Promise<RegistrationResult> {
   // Check for duplicate email
-  if (findOwnerByEmail(input.email)) {
+  if (await findOwnerByEmail(input.email)) {
     return {
       success: false,
       field: "email",
@@ -31,7 +30,7 @@ export function registerPropertyOwner(input: PropertyOwnerRegistrationInput): Re
   }
 
   // Check for duplicate mobile number
-  if (findOwnerByMobile(input.mobileNumber)) {
+  if (await findOwnerByMobile(input.mobileNumber)) {
     return {
       success: false,
       field: "mobileNumber",
@@ -56,9 +55,22 @@ export function registerPropertyOwner(input: PropertyOwnerRegistrationInput): Re
     updatedAt: now,
   };
 
-  const owners = getAllOwners();
-  owners.push(newRecord);
-  saveOwners(owners);
+  try {
+    await createOwner(newRecord);
+  } catch (error) {
+    const mongoError = error as { code?: number; keyPattern?: Record<string, unknown> };
+    if (mongoError.code === 11000) {
+      const field = mongoError.keyPattern?.emailNormalized ? "email" : "mobileNumber";
+      return {
+        success: false,
+        field,
+        message: field === "email"
+          ? "An account with this email address already exists. Please sign in instead."
+          : "An account with this mobile number is already registered.",
+      };
+    }
+    throw error;
+  }
 
   return {
     success: true,
@@ -70,8 +82,8 @@ export function registerPropertyOwner(input: PropertyOwnerRegistrationInput): Re
 /**
  * Service to authenticate an owner via email and password
  */
-export function authenticatePropertyOwner(email: string, password: string): AuthenticationResult {
-  const record = findOwnerByEmail(email);
+export async function authenticatePropertyOwner(email: string, password: string): Promise<AuthenticationResult> {
+  const record = await findOwnerByEmail(email);
   if (!record) {
     return {
       success: false,
