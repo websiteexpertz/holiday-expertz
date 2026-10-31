@@ -12,7 +12,6 @@ import {
 } from "../lib/storage/propertyStore";
 import {
   createMemory,
-  getPublicApprovedMemories,
   getAllMemories,
   updateMemory,
   deleteMemory,
@@ -113,7 +112,7 @@ export async function runIntegrationTests(): Promise<boolean> {
   console.log("\n--- Group 3: Property Lifecycle & Map Search ---");
 
   const testPropertyId = `prop_integration_${Date.now()}`;
-  const testProperty: Property = {
+  const testProperty: any = {
     id: testPropertyId,
     name: "Coastal Sunset Villa (Test)",
     propertyType: "villa",
