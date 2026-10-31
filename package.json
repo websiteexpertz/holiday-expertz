@@ -13,7 +13,10 @@
     "lint": "npm run lint --prefix frontend",
     "seed:db": "npx tsx backend/src/scripts/seedLocalMongo.ts",
     "test:db": "npx tsx backend/src/scripts/testConnection.ts",
-    "test:api": "npx tsx backend/src/scripts/testAllApiEndpoints.ts"
+    "test:api": "npx tsx backend/src/scripts/testAllApiEndpoints.ts",
+    "test:unit": "npx tsx backend/src/tests/unit.test.ts",
+    "test:integration": "npx tsx backend/src/tests/integration.test.ts",
+    "test": "npx tsx backend/src/tests/runAllTests.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
