@@ -4,8 +4,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { getMemoryById } from "@backend/lib/storage/memoryStore";
+import { getMemoryById, getAllMemories } from "@backend/lib/storage/memoryStore";
 import { MapPin, Calendar, User, ArrowLeft, Sparkles, Building2, Share2 } from "lucide-react";
+
+export function generateStaticParams() {
+  const memories = getAllMemories();
+  return memories.map((m) => ({ id: m.id }));
+}
 
 interface MemoryDetailPageProps {
   params: Promise<{ id: string }>;

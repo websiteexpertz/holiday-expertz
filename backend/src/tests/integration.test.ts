@@ -3,11 +3,9 @@ import { NextRequest } from "next/server";
 import { connectToDatabase } from "../lib/db/mongodb";
 import { loginAdmin, createAdminSessionToken } from "../lib/security/adminAuthService";
 import { getAllAdmins } from "../lib/storage/adminStore";
-import { getRecentAuditLogs } from "../lib/storage/auditLogStore";
 import {
   saveProperties,
   getAllProperties,
-  getPublicApprovedProperties,
   clearPropertiesCache,
 } from "../lib/storage/propertyStore";
 import {
@@ -16,7 +14,6 @@ import {
   updateMemory,
   deleteMemory,
 } from "../lib/storage/memoryStore";
-import { Property } from "../types/property";
 
 // API Handlers
 import { GET as getAdminStats } from "../app/api/admin/dashboard/stats/route";
@@ -81,7 +78,6 @@ export async function runIntegrationTests(): Promise<boolean> {
 
   await itest(3, "AdminAuth", "Super Admin signs in and generates signed session token", async () => {
     assert.ok(superAdmin, "Super admin must be configured in storage");
-    // Generate valid session token
     adminToken = createAdminSessionToken(superAdmin);
     assert.ok(adminToken && adminToken.includes("."), "Session token must be non-empty and signed");
   });
@@ -115,7 +111,7 @@ export async function runIntegrationTests(): Promise<boolean> {
   const testProperty: any = {
     id: testPropertyId,
     name: "Coastal Sunset Villa (Test)",
-    propertyType: "villa",
+    propertyType: "Villas",
     shortDescription: "Exclusive test villa with cliffside sea views",
     detailedDescription: "Full integration test property description with all amenities and coordinates.",
     location: {
@@ -124,7 +120,7 @@ export async function runIntegrationTests(): Promise<boolean> {
       state: "Goa",
       country: "India",
       locality: "Vagator",
-      pincode: "403509",
+      postalCode: "403509",
       coordinates: {
         latitude: 15.6012,
         longitude: 73.7388,
@@ -133,7 +129,6 @@ export async function runIntegrationTests(): Promise<boolean> {
     pricing: {
       pricePerNight: 28000,
       currency: "INR",
-      cleaningFee: 2000,
     },
     specifications: {
       bedrooms: 4,
@@ -144,7 +139,7 @@ export async function runIntegrationTests(): Promise<boolean> {
       {
         id: "img_test_1",
         url: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
-        isPrimary: true,
+        isCover: true,
       },
     ],
     amenities: ["Private Pool", "High-speed Wi-Fi", "Sea View"],
@@ -222,8 +217,7 @@ export async function runIntegrationTests(): Promise<boolean> {
     assert.ok(testMemId, "Memory should be created with an ID");
 
     // Public homepage check
-    const req = new NextRequest("http://localhost:3000/api/public/memories");
-    const res = await getPublicMemories(req as any);
+    const res = await getPublicMemories();
     assert.strictEqual(res.status, 200);
     const data = await res.json();
     const existsInPublic = data.memories.some((m: any) => m.id === testMemId);
@@ -238,8 +232,7 @@ export async function runIntegrationTests(): Promise<boolean> {
     assert.ok(updated, "Memory should be updated");
     assert.strictEqual(updated?.status, "approved");
 
-    const req = new NextRequest("http://localhost:3000/api/public/memories");
-    const res = await getPublicMemories(req as any);
+    const res = await getPublicMemories();
     assert.strictEqual(res.status, 200);
     const data = await res.json();
     const foundMemory = data.memories.find((m: any) => m.id === testMemId);
