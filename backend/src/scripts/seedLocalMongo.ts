@@ -1,14 +1,37 @@
+import fs from "fs";
+import path from "path";
+
+// Load .env.local if not already in process.env
+const envPath = path.resolve(process.cwd(), ".env.local");
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, "utf-8");
+  for (const line of envContent.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith("#") && trimmed.includes("=")) {
+      const [key, ...vals] = trimmed.split("=");
+      const val = vals.join("=").trim().replace(/^["']|["']$/g, "");
+      if (!process.env[key.trim()]) {
+        process.env[key.trim()] = val;
+      }
+    }
+  }
+}
+
 import mongoose from "mongoose";
 import { connectToDatabase } from "../lib/db/mongodb";
 import { CountryModel, StateModel, CityModel, AreaModel } from "../lib/models/Destination";
 import { PropertyModel } from "../lib/models/Property";
 import { AdminModel } from "../lib/models/Admin";
+import { DestinationHeroImageModel } from "../lib/models/DestinationHeroImage";
+import { MemoryModel } from "../lib/models/Memory";
 import { getAllDestinations } from "../lib/storage/destinationStore";
 import { getAllProperties } from "../lib/storage/propertyStore";
 import { getAllAdmins } from "../lib/storage/adminStore";
+import { getAllDestinationHeroImages } from "../lib/storage/destinationHeroImageStore";
+import { getAllMemories } from "../lib/storage/memoryStore";
 
 async function seed() {
-  console.log("🚀 Connecting to MongoDB...");
+  console.log("🚀 Connecting to MongoDB Atlas...");
   await connectToDatabase();
   console.log(" Connected to MongoDB successfully at:", mongoose.connection.host, mongoose.connection.name);
 
@@ -44,7 +67,23 @@ async function seed() {
   }
   console.log(`  Properties seeded: ${properties.length}`);
 
-  // 3. Seed Admins
+  // 3. Seed Hero Images
+  console.log("\n🖼️ Seeding Destination Hero Images...");
+  const heroImages = getAllDestinationHeroImages();
+  for (const img of heroImages) {
+    await DestinationHeroImageModel.findOneAndUpdate({ id: img.id }, img, { upsert: true, returnDocument: 'after' });
+  }
+  console.log(`  Hero Images seeded: ${heroImages.length}`);
+
+  // 4. Seed Memories
+  console.log("\n📖 Seeding Travel Memories...");
+  const memories = getAllMemories();
+  for (const mem of memories) {
+    await MemoryModel.findOneAndUpdate({ id: mem.id }, mem, { upsert: true, returnDocument: 'after' });
+  }
+  console.log(`  Memories seeded: ${memories.length}`);
+
+  // 5. Seed Admins
   console.log("\n👑 Seeding Super Admin Account...");
   const admins = getAllAdmins();
   for (const admin of admins) {
@@ -52,7 +91,7 @@ async function seed() {
   }
   console.log(`  Admins seeded: ${admins.length}`);
 
-  console.log("\n🎉 Database seeding completed successfully!");
+  console.log("\n🎉 MongoDB Atlas seeding completed successfully!");
   await mongoose.disconnect();
   process.exit(0);
 }

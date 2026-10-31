@@ -1,6 +1,31 @@
+import fs from "fs";
+import path from "path";
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/holidayexpertz";
+function getMongoUri(): string {
+  if (process.env.MONGODB_URI) {
+    return process.env.MONGODB_URI;
+  }
+
+  // Attempt to load from .env.local if not loaded by Next.js yet
+  const rootDir = process.cwd().endsWith("frontend") ? path.resolve(process.cwd(), "..") : process.cwd();
+  const envPath = path.join(rootDir, ".env.local");
+  if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, "utf-8").split("\n");
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith("MONGODB_URI=")) {
+        const val = trimmed.substring("MONGODB_URI=".length).trim().replace(/^["']|["']$/g, "");
+        if (val) {
+          process.env.MONGODB_URI = val;
+          return val;
+        }
+      }
+    }
+  }
+
+  return "mongodb://localhost:27017/holidayexpertz";
+}
 
 interface MongooseCache {
   conn: typeof mongoose | null;
@@ -23,14 +48,16 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
     return cached.conn;
   }
 
+  const uri = getMongoUri();
+
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 8000,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
+    cached.promise = mongoose.connect(uri, opts).then((mongooseInstance) => {
       return mongooseInstance;
     });
   }
