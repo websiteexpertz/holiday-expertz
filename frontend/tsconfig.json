@@ -35,7 +35,7 @@
   ],
   "exclude": [
     "node_modules",
-    "../backend/src/tests/**/*",
-    "../backend/src/scripts/**/*"
+    "../backend/src/tests",
+    "../backend/src/scripts"
   ]
 }

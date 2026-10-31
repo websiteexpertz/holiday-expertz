@@ -3,7 +3,7 @@ import { getPublicMemories } from "../../../../lib/storage/memoryStore";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const memories = getPublicMemories();
     return NextResponse.json({

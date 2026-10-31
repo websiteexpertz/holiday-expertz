@@ -223,7 +223,7 @@ export async function runIntegrationTests(): Promise<boolean> {
 
     // Public homepage check
     const req = new NextRequest("http://localhost:3000/api/public/memories");
-    const res = await getPublicMemories(req);
+    const res = await getPublicMemories(req as any);
     assert.strictEqual(res.status, 200);
     const data = await res.json();
     const existsInPublic = data.memories.some((m: any) => m.id === testMemId);
@@ -239,7 +239,7 @@ export async function runIntegrationTests(): Promise<boolean> {
     assert.strictEqual(updated?.status, "approved");
 
     const req = new NextRequest("http://localhost:3000/api/public/memories");
-    const res = await getPublicMemories(req);
+    const res = await getPublicMemories(req as any);
     assert.strictEqual(res.status, 200);
     const data = await res.json();
     const foundMemory = data.memories.find((m: any) => m.id === testMemId);
