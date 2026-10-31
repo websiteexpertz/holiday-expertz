@@ -1,0 +1,22 @@
+[
+  {
+    "id": "hp-2",
+    "propertyId": "h-1",
+    "badge": "Iconic Lake Palace",
+    "priorityOrder": 2,
+    "featuredQuote": "Spread over 50 acres on the banks of Lake Pichola with tranquil reflection pools.",
+    "isActive": true,
+    "createdAt": "2026-10-01T00:00:00.000Z",
+    "updatedAt": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "id": "hp-3",
+    "propertyId": "h-2",
+    "badge": "Beach Sanctuary",
+    "priorityOrder": 3,
+    "featuredQuote": "Sun-drenched Mediterranean sanctuary with private pool villas and white sands.",
+    "isActive": true,
+    "createdAt": "2026-10-01T00:00:00.000Z",
+    "updatedAt": "2026-10-01T00:00:00.000Z"
+  }
+]

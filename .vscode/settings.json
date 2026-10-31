@@ -1,0 +1,7 @@
+{
+  "css.lint.unknownAtRules": "ignore",
+  "files.watcherExclude": {
+    "**/holiday-expertz/**": true,
+    "**/.next/**": true
+  }
+}
