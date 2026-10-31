@@ -1,0 +1,93 @@
+[
+  {
+    "id": "blog-1",
+    "slug": "best-weekend-getaways-india",
+    "title": "10 Best Weekend Getaways in India for Quick Rejuvenation",
+    "excerpt": "From mist-cloaked tea estates in Coorg to royal haveli evenings in Jaipur, explore top handpicked destinations within a short drive or direct flight.",
+    "content": "India offers an unmatched spectrum of weekend respites. Whether craving the crisp pine breezes of Himachal or the heritage charm of Rajasthani courtyards, planning a two-night rejuvenation requires choosing verified boutique stays with prompt hospitality and farm-fresh regional dining.",
+    "featuredImage": "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=1200&q=80",
+    "category": "Weekend Escapes",
+    "author": "Aarav Sharma",
+    "authorAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+    "readTime": "5 min read",
+    "status": "published",
+    "featured": true,
+    "tags": [
+      "Weekend",
+      "India",
+      "Resorts",
+      "Nature"
+    ],
+    "publishedAt": "2026-10-14T10:00:00.000Z",
+    "createdAt": "2026-10-31T17:22:42.530Z",
+    "updatedAt": "2026-10-31T17:22:42.530Z"
+  },
+  {
+    "id": "blog-2",
+    "slug": "how-to-choose-the-perfect-hotel",
+    "title": "How to Choose the Perfect Hotel: An Insider's Booking Guide",
+    "excerpt": "Learn how to decipher guest reviews, evaluate location advantages, spot hidden amenities, and unlock authentic luxury without overspending.",
+    "content": "Navigating online booking can be daunting with filtered photos and promotional descriptions. Prioritize verified host properties where direct contact and transparent room specifications are guaranteed. Check recent guest reviews regarding bedding comfort, bathroom hygiene, and acoustic privacy.",
+    "featuredImage": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
+    "category": "Travel Tips",
+    "author": "Pooja Malhotra",
+    "authorAvatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80",
+    "readTime": "7 min read",
+    "status": "published",
+    "featured": true,
+    "tags": [
+      "Hotels",
+      "Booking Tips",
+      "Luxury"
+    ],
+    "publishedAt": "2026-10-08T10:00:00.000Z",
+    "createdAt": "2026-10-31T17:22:42.530Z",
+    "updatedAt": "2026-10-31T17:22:42.530Z"
+  },
+  {
+    "id": "blog-3",
+    "slug": "planning-mountain-holiday-himalayas",
+    "title": "Planning a Memorable Mountain Holiday in the Indian Himalayas",
+    "excerpt": "Essential tips on packing for high altitudes, discovering quiet offbeat valleys in Himachal and Uttarakhand, and booking scenic ridge-view cottages.",
+    "content": "The Himalayas in North India beckon travelers with quiet pine forests, snow-clad mountain passes, and cozy cedarwood cottages. For an authentic stay, reserve verified mountain villas with fireplaces and heated rooms, and arrange local transfers well before dusk.",
+    "featuredImage": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
+    "category": "Destination Guide",
+    "author": "Rohan Varma",
+    "authorAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+    "readTime": "6 min read",
+    "status": "published",
+    "featured": false,
+    "tags": [
+      "Mountains",
+      "Himalayas",
+      "Uttarakhand",
+      "Himachal"
+    ],
+    "publishedAt": "2026-09-29T10:00:00.000Z",
+    "createdAt": "2026-10-31T17:22:42.530Z",
+    "updatedAt": "2026-10-31T17:22:42.530Z"
+  },
+  {
+    "id": "blog-4",
+    "slug": "heritage-palaces-forts-rajasthan",
+    "title": "Heritage Trail: The Living Palaces and Forts of Rajasthan",
+    "excerpt": "Wander through ornate jharokhas, courtyards of Udaipur and Jaipur, and discover palace properties where royal hospitality is preserved today.",
+    "content": "Rajasthan's regal legacy is best experienced within living palaces and boutique havelis. Savor authentic Mewari dishes prepared by royal chefs, stroll through mirrored courtyards, and discover the history behind hand-painted frescoes.",
+    "featuredImage": "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
+    "category": "Heritage",
+    "author": "Ananya Roy",
+    "authorAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
+    "readTime": "8 min read",
+    "status": "published",
+    "featured": true,
+    "tags": [
+      "Rajasthan",
+      "Udaipur",
+      "Palaces",
+      "Heritage"
+    ],
+    "publishedAt": "2026-09-21T10:00:00.000Z",
+    "createdAt": "2026-10-31T17:22:42.530Z",
+    "updatedAt": "2026-10-31T17:22:42.530Z"
+  }
+]
