@@ -11,7 +11,8 @@
     "build": "npm run build --prefix frontend",
     "start": "npm run start --prefix frontend",
     "lint": "npm run lint --prefix frontend",
-    "seed:db": "npx tsx backend/src/scripts/seedLocalMongo.ts"
+    "seed:db": "npx tsx backend/src/scripts/seedLocalMongo.ts",
+    "test:db": "npx tsx backend/src/scripts/testConnection.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
