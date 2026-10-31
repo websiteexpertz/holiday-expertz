@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
@@ -135,7 +136,7 @@ export default function FeaturedDestinationManager({
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const res = await fetch(apiUrl("/api/upload"), { method: "POST", body: fd });
       const data = await res.json();
       if (data.success && data.url) {
         setFImageUrl(data.url);

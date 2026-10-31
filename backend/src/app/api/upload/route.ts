@@ -40,7 +40,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const uploadsDir = path.resolve(process.cwd(), "public", "uploads");
+    // Determine target upload directory (frontend/public/uploads)
+    const rootDir = process.cwd().endsWith("frontend")
+      ? path.resolve(process.cwd(), "..")
+      : process.cwd();
+    const uploadsDir = path.join(rootDir, "frontend", "public", "uploads");
 
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });

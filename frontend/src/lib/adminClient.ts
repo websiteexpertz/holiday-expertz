@@ -1,3 +1,4 @@
+import { apiUrl } from "@/lib/apiUrl";
 import {
   AdminPermission,
   AdminUser,
@@ -27,7 +28,7 @@ import { MemoryRecord, MemoryInput } from "@backend/types/memory";
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<{ success: boolean; data?: T; message?: string }> {
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
-    const res = await fetch(endpoint, {
+    const res = await fetch(apiUrl(endpoint), {
       ...options,
       credentials: "include",
       headers: {
@@ -540,7 +541,7 @@ export const adminClient = {
     upload: async (file: File) => {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/admin/media", {
+      const res = await fetch(apiUrl("/api/admin/media"), {
         method: "POST",
         body: fd,
         credentials: "same-origin",

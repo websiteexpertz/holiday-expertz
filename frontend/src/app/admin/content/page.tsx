@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -48,7 +49,7 @@ export default function AdminContentPage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("/api/upload", {
+      const res = await fetch(apiUrl("/api/upload"), {
         method: "POST",
         body: formData,
       });

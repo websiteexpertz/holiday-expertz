@@ -29,16 +29,11 @@
     ]
   },
   "include": [
-    "src/app/**/*.ts",
-    "src/app/**/*.tsx",
-    "src/lib/**/*.ts",
-    "src/types/**/*.ts",
+    "src/**/*.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "src/tests",
-    "src/scripts"
+    "node_modules"
   ]
 }

@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
@@ -125,7 +126,7 @@ export default function PopularDestinations() {
     async function loadPopular() {
       try {
         setIsLoading(true);
-        const res = await fetch("/api/public/locations/autocomplete?level=city&limit=12");
+        const res = await fetch(apiUrl("/api/public/locations/autocomplete?level=city&limit=12"));
         if (!res.ok) throw new Error("Failed to load");
         const data = await res.json();
 

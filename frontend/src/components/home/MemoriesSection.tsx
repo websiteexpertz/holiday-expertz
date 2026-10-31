@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
@@ -29,7 +30,7 @@ export default function MemoriesSection() {
     async function loadPublicMemories() {
       try {
         setIsLoading(true);
-        const res = await fetch("/api/public/memories");
+        const res = await fetch(apiUrl("/api/public/memories"));
         if (!res.ok) throw new Error("Failed to load");
         const data = await res.json();
         if (mounted && data.success && Array.isArray(data.memories)) {

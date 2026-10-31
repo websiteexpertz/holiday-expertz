@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useRef } from "react";
 import Link from "next/link";
@@ -51,7 +52,7 @@ export default function GuestMemorySubmitPage() {
         const data = new FormData();
         data.append("file", file);
 
-        const res = await fetch("/api/upload", {
+        const res = await fetch(apiUrl("/api/upload"), {
           method: "POST",
           body: data,
         });
@@ -132,7 +133,7 @@ export default function GuestMemorySubmitPage() {
     try {
       const cover = formData.images.find((img) => img.isCover)?.url || formData.images[0]?.url;
 
-      const res = await fetch("/api/public/memories/submit", {
+      const res = await fetch(apiUrl("/api/public/memories/submit"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

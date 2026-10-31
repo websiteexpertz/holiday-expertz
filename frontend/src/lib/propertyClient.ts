@@ -1,3 +1,4 @@
+import { apiUrl } from "@/lib/apiUrl";
 import { Property, PropertyInput, PropertyDashboardStats } from "@backend/types/property";
 import { PropertyOwner } from "@backend/types/auth";
 
@@ -44,7 +45,7 @@ export async function fetchOwnerPropertiesApi(options: {
   if (options.propertyType) params.set("propertyType", options.propertyType);
   if (options.search) params.set("search", options.search);
 
-  const res = await fetch(`/api/properties?${params.toString()}`, {
+  const res = await fetch(apiUrl(`/api/properties?${params.toString()}`), {
     headers: { ...authHeaders() },
   });
 
@@ -56,7 +57,7 @@ export async function fetchOwnerPropertiesApi(options: {
  * Fetch a single property by ID
  */
 export async function fetchPropertyByIdApi(id: string): Promise<SinglePropertyResponse> {
-  const res = await fetch(`/api/properties/${id}`, {
+  const res = await fetch(apiUrl(`/api/properties/${id}`), {
     headers: { ...authHeaders() },
   });
   return res.json();
@@ -69,7 +70,7 @@ export async function createPropertyApi(
   input: PropertyInput,
   submitImmediately: boolean = false
 ): Promise<SinglePropertyResponse> {
-  const res = await fetch("/api/properties", {
+  const res = await fetch(apiUrl("/api/properties"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -88,7 +89,7 @@ export async function updatePropertyApi(
   input: Partial<PropertyInput>,
   resubmit: boolean = false
 ): Promise<SinglePropertyResponse> {
-  const res = await fetch(`/api/properties/${id}`, {
+  const res = await fetch(apiUrl(`/api/properties/${id}`), {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -103,7 +104,7 @@ export async function updatePropertyApi(
  * Delete a property listing
  */
 export async function deletePropertyApi(id: string): Promise<{ success: boolean; message: string }> {
-  const res = await fetch(`/api/properties/${id}`, {
+  const res = await fetch(apiUrl(`/api/properties/${id}`), {
     method: "DELETE",
     headers: { ...authHeaders() },
   });
@@ -118,7 +119,7 @@ export async function moderatePropertyApi(
   status: "approved" | "rejected",
   rejectionReason?: string
 ): Promise<SinglePropertyResponse> {
-  const res = await fetch(`/api/properties/${id}/status`, {
+  const res = await fetch(apiUrl(`/api/properties/${id}/status`), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -136,7 +137,7 @@ export async function uploadImageApi(file: File): Promise<UploadResponse> {
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch("/api/upload", {
+  const res = await fetch(apiUrl("/api/upload"), {
     method: "POST",
     headers: { ...authHeaders() },
     body: formData,
@@ -148,7 +149,7 @@ export async function uploadImageApi(file: File): Promise<UploadResponse> {
  * Get current authenticated owner profile
  */
 export async function getOwnerSessionApi(): Promise<{ success: boolean; owner?: PropertyOwner }> {
-  const res = await fetch("/api/auth/me", {
+  const res = await fetch(apiUrl("/api/auth/me"), {
     headers: { ...authHeaders() },
   });
   return res.json();
@@ -160,7 +161,7 @@ export async function getOwnerSessionApi(): Promise<{ success: boolean; owner?: 
 export async function updateOwnerProfileApi(
   updates: Partial<PropertyOwner>
 ): Promise<{ success: boolean; owner?: PropertyOwner; message: string }> {
-  const res = await fetch("/api/auth/me", {
+  const res = await fetch(apiUrl("/api/auth/me"), {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

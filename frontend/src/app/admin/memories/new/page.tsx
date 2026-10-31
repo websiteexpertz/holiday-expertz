@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -56,7 +57,7 @@ export default function AdminNewMemoryPage() {
         const data = new FormData();
         data.append("file", file);
 
-        const res = await fetch("/api/upload", {
+        const res = await fetch(apiUrl("/api/upload"), {
           method: "POST",
           body: data,
         });

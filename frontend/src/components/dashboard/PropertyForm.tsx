@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -128,7 +129,7 @@ export default function PropertyForm({ propertyId }: PropertyFormProps) {
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const res = await fetch("/api/public/locations/autocomplete?level=country");
+        const res = await fetch(apiUrl("/api/public/locations/autocomplete?level=country"));
         const json = await res.json();
         if (json.success && Array.isArray(json.suggestions)) {
           const names = json.suggestions.map((s: any) => s.name).filter(Boolean);

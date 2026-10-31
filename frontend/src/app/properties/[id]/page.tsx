@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo, Suspense } from "react";
 import Link from "next/link";
@@ -152,7 +153,7 @@ function PropertyDetailContent() {
     async function loadProperty() {
       try {
         setLoading(true);
-        const res = await fetch(`/api/public/properties/${propertyId}`);
+        const res = await fetch(apiUrl(`/api/public/properties/${propertyId}`));
         const data = await res.json();
         if (data.success && data.property) {
           setProperty(data.property);
@@ -176,7 +177,7 @@ function PropertyDetailContent() {
   const loadAvailability = useCallback(async () => {
     if (!propertyId) return;
     try {
-      const res = await fetch(`/api/public/properties/${propertyId}/availability`);
+      const res = await fetch(apiUrl(`/api/public/properties/${propertyId}/availability`));
       const data = await res.json();
       if (data.success && Array.isArray(data.bookedRanges)) {
         setBookedRanges(data.bookedRanges);
@@ -195,7 +196,7 @@ function PropertyDetailContent() {
     if (!propertyId) return;
     try {
       setIsLoadingReviews(true);
-      const res = await fetch(`/api/public/reviews?propertyId=${propertyId}`);
+      const res = await fetch(apiUrl(`/api/public/reviews?propertyId=${propertyId}`));
       const data = await res.json();
       if (data.success && Array.isArray(data.reviews)) {
         setReviews(data.reviews);
@@ -413,7 +414,7 @@ function PropertyDetailContent() {
 
     try {
       setIsSubmittingBooking(true);
-      const res = await fetch(`/api/public/properties/${propertyId}/book`, {
+      const res = await fetch(apiUrl(`/api/public/properties/${propertyId}/book`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -450,7 +451,7 @@ function PropertyDetailContent() {
 
     try {
       setIsSubmittingInquiry(true);
-      const res = await fetch("/api/public/inquiries", {
+      const res = await fetch(apiUrl("/api/public/inquiries"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -487,7 +488,7 @@ function PropertyDetailContent() {
 
     try {
       setIsSubmittingReview(true);
-      const res = await fetch("/api/public/reviews", {
+      const res = await fetch(apiUrl("/api/public/reviews"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

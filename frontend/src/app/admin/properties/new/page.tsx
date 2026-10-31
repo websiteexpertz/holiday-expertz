@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -238,7 +239,7 @@ export default function AdminNewPropertyPage() {
         const formDataUpload = new FormData();
         formDataUpload.append("file", file);
 
-        const res = await fetch("/api/upload", {
+        const res = await fetch(apiUrl("/api/upload"), {
           method: "POST",
           body: formDataUpload,
         });

@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -64,7 +65,7 @@ export default function Home() {
   useEffect(() => {
     async function loadLiveProperties() {
       try {
-        const res = await fetch("/api/public/properties");
+        const res = await fetch(apiUrl("/api/public/properties"));
         const data = await res.json();
         if (data.success && Array.isArray(data.properties) && data.properties.length > 0) {
           const liveHotels = data.properties.map(convertPropertyToHotel);

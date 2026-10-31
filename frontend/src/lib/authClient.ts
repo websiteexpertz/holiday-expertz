@@ -1,3 +1,4 @@
+import { apiUrl } from "@/lib/apiUrl";
 import { PropertyOwner, ApiResponse } from "@backend/types/auth";
 
 export interface RegisterOwnerInput {
@@ -19,7 +20,7 @@ export interface LoginInput {
 export async function registerOwnerApi(
   input: RegisterOwnerInput
 ): Promise<ApiResponse<PropertyOwner>> {
-  const response = await fetch("/api/auth/register-owner", {
+  const response = await fetch(apiUrl("/api/auth/register-owner"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -40,7 +41,7 @@ export async function registerOwnerApi(
 export async function loginOwnerApi(
   input: LoginInput
 ): Promise<ApiResponse<PropertyOwner>> {
-  const response = await fetch("/api/auth/login", {
+  const response = await fetch(apiUrl("/api/auth/login"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

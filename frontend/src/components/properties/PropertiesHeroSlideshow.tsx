@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
@@ -58,7 +59,7 @@ export default function PropertiesHeroSlideshow({
         if (locationId) qParams.set("locationId", locationId);
         if (destinationQuery) qParams.set("destination", destinationQuery);
 
-        const res = await fetch(`/api/public/destination-slides?${qParams.toString()}`, {
+        const res = await fetch(apiUrl(`/api/public/destination-slides?${qParams.toString()}`), {
           signal: controller.signal,
         });
 

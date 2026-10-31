@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
@@ -150,7 +151,7 @@ export default function HotelSearch({
       qParams.set("q", searchInput.trim());
       qParams.set("limit", "15");
 
-      const res = await fetch(`/api/public/locations/autocomplete?${qParams.toString()}`, {
+      const res = await fetch(apiUrl(`/api/public/locations/autocomplete?${qParams.toString()}`), {
         signal: controller.signal,
       });
       if (!res.ok) throw new Error("Autocomplete request failed");

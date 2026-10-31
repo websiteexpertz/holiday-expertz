@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
@@ -220,7 +221,7 @@ function PropertiesContent() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch("/api/public/properties");
+        const res = await fetch(apiUrl("/api/public/properties"));
         const data = await res.json();
 
         if (data.success && Array.isArray(data.properties)) {

@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/apiUrl";
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
@@ -68,7 +69,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
     let isMounted = true;
     async function fetchHeroContent() {
       try {
-        const res = await fetch("/api/public/content");
+        const res = await fetch(apiUrl("/api/public/content"));
         if (!res.ok) return;
         const data = await res.json();
         if (!isMounted) return;
