@@ -1,1 +1,0 @@
-export { GET, POST, PATCH, DELETE } from "@backend/app/api/admin/handpicked/route";
