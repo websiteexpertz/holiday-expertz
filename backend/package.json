@@ -1,0 +1,17 @@
+{
+  "name": "holiday-expertz-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HolidayExpertz backend logic, route handlers, persistence, and auth services",
+  "main": "src/lib/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "16.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
+}

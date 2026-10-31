@@ -1,0 +1,335 @@
+{
+  "countries": [
+    {
+      "id": "cnt_in",
+      "name": "India",
+      "code": "IN",
+      "image": "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1200&q=80",
+      "description": "Subcontinent of royal palaces, tropical beaches, Himalayan peaks, and timeless heritage.",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "cnt_ae",
+      "name": "United Arab Emirates",
+      "code": "AE",
+      "image": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=80",
+      "description": "Iconic luxury skyline, desert safaris, and Arabian hospitality.",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "cnt_mv",
+      "name": "Maldives",
+      "code": "MV",
+      "image": "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=1200&q=80",
+      "description": "Turquoise coral lagoons and signature overwater luxury villas.",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "cnt_us_5136",
+      "name": "usa",
+      "code": "US",
+      "image": "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=800&q=80",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:42:55.136Z",
+      "updatedAt": "2026-10-22T14:42:55.136Z"
+    },
+    {
+      "id": "cnt_bh_2940",
+      "name": "Bahamas",
+      "code": "BH",
+      "image": "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=800&q=80",
+      "isActive": true,
+      "createdAt": "2026-10-22T17:20:42.940Z",
+      "updatedAt": "2026-10-22T17:20:42.940Z"
+    }
+  ],
+  "states": [
+    {
+      "id": "st_raj",
+      "name": "Rajasthan",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "st_goa",
+      "name": "Goa",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=800&q=80",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "st_uk",
+      "name": "Uttarakhand",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "st_hp",
+      "name": "Himachal Pradesh",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "st_ker",
+      "name": "Kerala",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "st_dxb",
+      "name": "Dubai",
+      "countryId": "cnt_ae",
+      "image": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "st_falorida_1174",
+      "name": "falorida",
+      "countryId": "cnt_us_5136",
+      "image": "",
+      "isActive": true,
+      "createdAt": "2026-10-22T18:11:21.174Z",
+      "updatedAt": "2026-10-22T18:11:21.174Z"
+    },
+    {
+      "id": "st_uttarprade_1551",
+      "name": "uttarpradesh",
+      "countryId": "cnt_in",
+      "isActive": true,
+      "createdAt": "2026-10-23T14:59:51.551Z",
+      "updatedAt": "2026-10-23T14:59:51.551Z"
+    }
+  ],
+  "cities": [
+    {
+      "id": "ct_udaipur",
+      "name": "Udaipur",
+      "stateId": "st_raj",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ct_jaipur",
+      "name": "Jaipur",
+      "stateId": "st_raj",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1603258849062-171881515eb6?auto=format&fit=crop&w=800&q=80",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ct_panaji",
+      "name": "Panaji",
+      "stateId": "st_goa",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=800&q=80",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ct_anjuna",
+      "name": "Anjuna",
+      "stateId": "st_goa",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ct_dehradun",
+      "name": "Dehradun",
+      "stateId": "st_uk",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1595846519845-68e298c2edd8?auto=format&fit=crop&w=800&q=80",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ct_mussoorie",
+      "name": "Mussoorie",
+      "stateId": "st_uk",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ct_manali",
+      "name": "Manali",
+      "stateId": "st_hp",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ct_munnar",
+      "name": "Munnar",
+      "stateId": "st_ker",
+      "countryId": "cnt_in",
+      "image": "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ct_marina",
+      "name": "Downtown Dubai",
+      "stateId": "st_dxb",
+      "countryId": "cnt_ae",
+      "image": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ct_jacksonvil_8355",
+      "name": "Jacksonville",
+      "stateId": "st_falorida_1174",
+      "countryId": "cnt_us_5136",
+      "image": "",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-22T18:11:48.355Z",
+      "updatedAt": "2026-10-22T18:11:48.355Z"
+    },
+    {
+      "id": "ct_ghaziabad_5574",
+      "name": "Ghaziabad",
+      "stateId": "st_uttarprade_1551",
+      "countryId": "cnt_in",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-23T15:03:55.574Z",
+      "updatedAt": "2026-10-23T15:03:55.574Z"
+    },
+    {
+      "id": "ct_meerut_4774",
+      "name": "Meerut",
+      "stateId": "st_uttarprade_1551",
+      "countryId": "cnt_in",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-23T15:04:54.774Z",
+      "updatedAt": "2026-10-23T15:04:54.774Z"
+    },
+    {
+      "id": "ct_noida_0384",
+      "name": "noida",
+      "stateId": "st_uttarprade_1551",
+      "countryId": "cnt_in",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-10-23T18:10:20.384Z",
+      "updatedAt": "2026-10-23T18:10:20.384Z"
+    }
+  ],
+  "areas": [
+    {
+      "id": "ar_pichola",
+      "name": "Lake Pichola Outer Area",
+      "cityId": "ct_udaipur",
+      "stateId": "st_raj",
+      "countryId": "cnt_in",
+      "postalCode": "313001",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ar_fatehsagar",
+      "name": "Fateh Sagar Promenade",
+      "cityId": "ct_udaipur",
+      "stateId": "st_raj",
+      "countryId": "cnt_in",
+      "postalCode": "313004",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ar_anjunabeach",
+      "name": "Anjuna Beach Road",
+      "cityId": "ct_anjuna",
+      "stateId": "st_goa",
+      "countryId": "cnt_in",
+      "postalCode": "403509",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ar_rajpur",
+      "name": "Rajpur Road",
+      "cityId": "ct_dehradun",
+      "stateId": "st_uk",
+      "countryId": "cnt_in",
+      "postalCode": "248001",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ar_mallroad",
+      "name": "The Mall Road",
+      "cityId": "ct_mussoorie",
+      "stateId": "st_uk",
+      "countryId": "cnt_in",
+      "postalCode": "248179",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    },
+    {
+      "id": "ar_oldmanali",
+      "name": "Old Manali Village",
+      "cityId": "ct_manali",
+      "stateId": "st_hp",
+      "countryId": "cnt_in",
+      "postalCode": "175131",
+      "isActive": true,
+      "createdAt": "2026-10-22T14:37:38.202Z",
+      "updatedAt": "2026-10-22T14:37:38.202Z"
+    }
+  ]
+}

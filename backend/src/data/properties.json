@@ -1,0 +1,508 @@
+[
+  {
+    "id": "prop_1792773963532_7f5b2f07",
+    "ownerId": "owner_1792596393545_b0121b16",
+    "name": "heritage",
+    "propertyType": "Boutique Stays",
+    "shortDescription": "18th-century",
+    "detailedDescription": "villa",
+    "location": {
+      "country": "germany",
+      "state": "Berlin",
+      "city": "Brandenburg",
+      "locality": "",
+      "address": "12.place",
+      "postalCode": "316783",
+      "coordinates": {
+        "latitude": 52.4125,
+        "longitude": 12.5316
+      }
+    },
+    "images": [
+      {
+        "id": "img_1792771543709_q76ud",
+        "url": "/uploads/prop_1792771543705_c5d7b485756a.png",
+        "isCover": true,
+        "caption": "Frame 57"
+      }
+    ],
+    "pricing": {
+      "pricePerNight": 28559,
+      "currency": "INR",
+      "originalPrice": 12000
+    },
+    "capacity": {
+      "maxGuests": 4,
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "checkInTime": "14:00",
+      "checkOutTime": "11:00"
+    },
+    "amenities": [
+      "High-Speed Wi-Fi",
+      "Air Conditioning",
+      "Swimming Pool",
+      "Free Valet Parking",
+      "Hot Water",
+      "Kitchen & Dining",
+      "Butler Service",
+      "First Aid Kit",
+      "private helipad"
+    ],
+    "contactDetails": {
+      "contactPerson": "Deepansh Tyagi",
+      "mobileNumber": "+917728076303",
+      "email": "tyagideepansh26@gmail.com",
+      "altPhone": ""
+    },
+    "status": "approved",
+    "submittedAt": "2026-10-23T16:46:03.532Z",
+    "createdAt": "2026-10-23T16:46:03.532Z",
+    "updatedAt": "2026-10-31T07:43:39.987Z",
+    "approvedAt": "2026-10-31T07:43:39.987Z"
+  },
+  {
+    "id": "prop_1792771373897_60f3e3db",
+    "ownerId": "owner_test_1",
+    "name": "Alpine Luxury Chalet",
+    "propertyType": "Villas",
+    "shortDescription": "Panoramic chalet overlooking snow-capped peaks",
+    "detailedDescription": "High-end Swiss mountain getaway with indoor heated pool and private ski-in access.",
+    "location": {
+      "country": "Switzerland",
+      "state": "Valais",
+      "city": "Zermatt",
+      "locality": "Matterhorn View",
+      "address": "Bahnhofstrasse 10",
+      "postalCode": "3920"
+    },
+    "images": [
+      {
+        "id": "img1",
+        "url": "https://images.unsplash.com/photo-1502784444187-359ac186c5bb",
+        "isCover": true,
+        "caption": "Matterhorn"
+      }
+    ],
+    "pricing": {
+      "pricePerNight": 28000,
+      "currency": "CHF"
+    },
+    "capacity": {
+      "maxGuests": 6,
+      "bedrooms": 3,
+      "bathrooms": 3,
+      "checkInTime": "15:00",
+      "checkOutTime": "10:00"
+    },
+    "amenities": [
+      "High-Speed Wi-Fi",
+      "Swimming Pool",
+      "Mountain View"
+    ],
+    "contactDetails": {
+      "contactPerson": "",
+      "mobileNumber": "",
+      "email": "",
+      "altPhone": ""
+    },
+    "status": "approved",
+    "createdAt": "2026-10-23T16:02:53.897Z",
+    "updatedAt": "2026-10-28T13:55:48.872Z",
+    "approvedAt": "2026-10-28T13:55:48.872Z"
+  },
+  {
+    "id": "prop_1792769635503_3ea9ca59",
+    "ownerId": "admin_super_01",
+    "name": "mountains",
+    "propertyType": "Villas",
+    "shortDescription": "Curated premium accommodation in Ghaziabad, uttarpradesh.",
+    "detailedDescription": "Experience exceptional luxury, modern comforts, and world-class hospitality in the heart of Ghaziabad, uttarpradesh. Surrounded by picturesque scenery and iconic local heritage.",
+    "countryId": "cnt_in",
+    "stateId": "st_uttarprade_1551",
+    "cityId": "ct_ghaziabad_5574",
+    "location": {
+      "country": "India",
+      "state": "uttarpradesh",
+      "city": "Ghaziabad",
+      "locality": "Ghaziabad",
+      "address": "Ghaziabad 201102",
+      "postalCode": "248001",
+      "countryId": "cnt_in",
+      "stateId": "st_uttarprade_1551",
+      "cityId": "ct_ghaziabad_5574"
+    },
+    "images": [
+      {
+        "id": "img_1792769445685_0",
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
+        "isCover": true,
+        "caption": "Luxury Courtyard & Pool"
+      },
+      {
+        "id": "img_1792769447518_1",
+        "url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
+        "isCover": false,
+        "caption": "Heritage Master Bedroom"
+      },
+      {
+        "id": "img_1792769449151_2",
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+        "isCover": false,
+        "caption": "Mountain Dining Pavilion"
+      }
+    ],
+    "pricing": {
+      "pricePerNight": 8500,
+      "currency": "INR",
+      "originalPrice": 10500
+    },
+    "capacity": {
+      "maxGuests": 4,
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "checkInTime": "14:00",
+      "checkOutTime": "11:00"
+    },
+    "amenities": [
+      "Swimming Pool",
+      "High-Speed Wi-Fi",
+      "Air Conditioning",
+      "Free Valet Parking",
+      "Daily Housekeeping"
+    ],
+    "contactDetails": {
+      "contactPerson": "HolidayExpertz Concierge Desk",
+      "mobileNumber": "+91 98765 43210",
+      "email": "concierge@holidayexpertz.com"
+    },
+    "status": "approved",
+    "featured": false,
+    "handpicked": false,
+    "rating": 4.8,
+    "reviewCount": 0,
+    "approvedAt": "2026-10-23T15:33:55.503Z",
+    "createdAt": "2026-10-23T15:33:55.503Z",
+    "updatedAt": "2026-10-23T15:33:55.503Z"
+  },
+  {
+    "id": "prop_1792693252112_94f24206",
+    "ownerId": "owner_1792596393545_b0121b16",
+    "name": "heritage",
+    "propertyType": "Guesthouses",
+    "shortDescription": "aravali hills",
+    "detailedDescription": "atmosphere",
+    "location": {
+      "country": "India",
+      "state": "Rajasthan",
+      "city": "jaipur",
+      "locality": "lake ",
+      "address": "12 , raj place ",
+      "postalCode": "313001"
+    },
+    "images": [
+      {
+        "id": "img_1792693225938_b7ggm",
+        "url": "/uploads/prop_1792693225936_39765b4cf358.png",
+        "isCover": true,
+        "caption": "bandwidth"
+      }
+    ],
+    "pricing": {
+      "pricePerNight": 8500,
+      "currency": "INR",
+      "originalPrice": 10500
+    },
+    "capacity": {
+      "maxGuests": 4,
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "checkInTime": "14:00",
+      "checkOutTime": "11:00"
+    },
+    "amenities": [
+      "High-Speed Wi-Fi",
+      "Air Conditioning",
+      "Swimming Pool",
+      "Free Valet Parking",
+      "Hot Water",
+      "Kitchen & Dining",
+      "Ayurvedic Spa"
+    ],
+    "contactDetails": {
+      "contactPerson": "Deepansh Tyagi",
+      "mobileNumber": "+917728076303",
+      "email": "tyagideepansh26@gmail.com",
+      "altPhone": ""
+    },
+    "status": "approved",
+    "submittedAt": "2026-10-22T18:20:52.111Z",
+    "createdAt": "2026-10-22T18:20:52.111Z",
+    "updatedAt": "2026-10-22T18:25:45.946Z",
+    "approvedAt": "2026-10-22T18:25:45.946Z"
+  },
+  {
+    "id": "prop_1792595900000_a1b2c3d4",
+    "ownerId": "owner_1792593465325_2dc1c289",
+    "name": "Singhania Heritage Palace & Spa",
+    "propertyType": "Palace Stays",
+    "shortDescription": "Regal 18th-century Rajput palace overlooking private lotus lakes and Aravali hills.",
+    "detailedDescription": "Experience royal heritage with ornate courtyards, marble corridors, hand-carved jharokhas, and authentic Ayurvedic wellness therapies. Every suite features handcrafted antique furnishings and modern luxury amenities.",
+    "location": {
+      "country": "India",
+      "state": "Rajasthan",
+      "city": "Udaipur",
+      "locality": "Lake Pichola Outer Area",
+      "address": "12 Palace Road, Near Royal Ghats",
+      "postalCode": "313001",
+      "countryId": "cnt_in",
+      "stateId": "st_raj",
+      "cityId": "ct_udaipur",
+      "areaId": "ar_pichola"
+    },
+    "images": [
+      {
+        "id": "img-1",
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
+        "isCover": true,
+        "caption": "Grand Courtyard & Pool"
+      },
+      {
+        "id": "img-2",
+        "url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80",
+        "isCover": false,
+        "caption": "Royal Suite Bedroom"
+      },
+      {
+        "id": "img-3",
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80",
+        "isCover": false,
+        "caption": "Dining Pavilion"
+      }
+    ],
+    "pricing": {
+      "pricePerNight": 28500,
+      "currency": "INR",
+      "originalPrice": 35000
+    },
+    "capacity": {
+      "maxGuests": 6,
+      "bedrooms": 3,
+      "bathrooms": 3,
+      "checkInTime": "14:00",
+      "checkOutTime": "11:00"
+    },
+    "amenities": [
+      "Swimming Pool",
+      "High-Speed Wi-Fi",
+      "Ayurvedic Spa",
+      "Free Valet Parking",
+      "Fine Dining Restaurant",
+      "Air Conditioning",
+      "24/7 Room Service",
+      "Butler Service"
+    ],
+    "contactDetails": {
+      "contactPerson": "Vikram Singhania",
+      "mobileNumber": "9876543210",
+      "email": "vikram.estates@holidayexpertz.sample"
+    },
+    "status": "approved",
+    "rating": 4.9,
+    "reviewCount": 84,
+    "featured": true,
+    "submittedAt": "2026-10-21T10:00:00.000Z",
+    "approvedAt": "2026-10-22T15:41:03.717Z",
+    "createdAt": "2026-10-21T09:45:00.000Z",
+    "updatedAt": "2026-10-22T15:42:08.317Z",
+    "handpicked": false
+  },
+  {
+    "id": "prop_dehradun_rajpur_01",
+    "ownerId": "owner_1792593465325_2dc1c289",
+    "name": "The Pine Heritage Villa & Spa",
+    "propertyType": "Villas",
+    "shortDescription": "Luxury colonial-style mountain villa nestled amidst pine and deodar groves on Rajpur Road.",
+    "detailedDescription": "Surrounded by tranquil Himalayan foothills on iconic Rajpur Road, offering panoramic Doon valley views, warm fireplace suites, private heated plunge pool, and gourmet Himalayan dining.",
+    "location": {
+      "country": "India",
+      "state": "Uttarakhand",
+      "city": "Dehradun",
+      "locality": "Rajpur Road",
+      "address": "84 Old Rajpur Road, Foothills Sanctuary",
+      "postalCode": "248001",
+      "countryId": "cnt_in",
+      "stateId": "st_uk",
+      "cityId": "ct_dehradun",
+      "areaId": "ar_rajpur"
+    },
+    "images": [
+      {
+        "id": "img-d1",
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+        "isCover": true,
+        "caption": "Pine Forest Villa Exterior"
+      },
+      {
+        "id": "img-d2",
+        "url": "https://images.unsplash.com/photo-1595846519845-68e298c2edd8?auto=format&fit=crop&w=800&q=80",
+        "isCover": false,
+        "caption": "Fireplace Mountain Lounge"
+      }
+    ],
+    "pricing": {
+      "pricePerNight": 18500,
+      "currency": "INR",
+      "originalPrice": 22000
+    },
+    "capacity": {
+      "maxGuests": 8,
+      "bedrooms": 4,
+      "bathrooms": 4,
+      "checkInTime": "14:00",
+      "checkOutTime": "11:00"
+    },
+    "amenities": [
+      "Mountain View Balconies",
+      "Private Heated Pool",
+      "Fireplace Suite",
+      "Forest Nature Trail",
+      "High-Speed Wi-Fi",
+      "Free Parking"
+    ],
+    "contactDetails": {
+      "contactPerson": "Col. Ranjit Verma",
+      "mobileNumber": "9812345678",
+      "email": "ranjit.verma@holidayexpertz.sample"
+    },
+    "status": "approved",
+    "rating": 4.9,
+    "reviewCount": 68,
+    "featured": true,
+    "submittedAt": "2026-10-21T10:00:00.000Z",
+    "approvedAt": "2026-10-21T11:30:00.000Z",
+    "createdAt": "2026-10-21T09:45:00.000Z",
+    "updatedAt": "2026-10-21T11:30:00.000Z"
+  },
+  {
+    "id": "prop_mussoorie_mallroad_01",
+    "ownerId": "owner_1792593465325_2dc1c289",
+    "name": "Grand Mussoorie Hilltop Estate",
+    "propertyType": "Boutique Stays",
+    "shortDescription": "Panoramic Himalayan hilltop estate walking distance from The Mall Road promenade.",
+    "detailedDescription": "Commanding breathtaking views of the Shivalik range and Doon Valley lights, this boutique stay features Victorian glasshouses, heated cedar floors, and handcrafted colonial breakfasts.",
+    "location": {
+      "country": "India",
+      "state": "Uttarakhand",
+      "city": "Mussoorie",
+      "locality": "The Mall Road",
+      "address": "14 Upper Mall Road, Mussoorie",
+      "postalCode": "248179",
+      "countryId": "cnt_in",
+      "stateId": "st_uk",
+      "cityId": "ct_mussoorie",
+      "areaId": "ar_mallroad"
+    },
+    "images": [
+      {
+        "id": "img-m1",
+        "url": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
+        "isCover": true,
+        "caption": "Hilltop Vista & Sun Deck"
+      }
+    ],
+    "pricing": {
+      "pricePerNight": 21000,
+      "currency": "INR",
+      "originalPrice": 26000
+    },
+    "capacity": {
+      "maxGuests": 6,
+      "bedrooms": 3,
+      "bathrooms": 3,
+      "checkInTime": "14:00",
+      "checkOutTime": "11:00"
+    },
+    "amenities": [
+      "Himalayan Panorama Deck",
+      "Victorian Glasshouse Dining",
+      "Fireplace",
+      "Free High-Speed Wi-Fi",
+      "Valet Parking"
+    ],
+    "contactDetails": {
+      "contactPerson": "Ayesha Kapoor",
+      "mobileNumber": "9823456789",
+      "email": "ayesha.kapoor@holidayexpertz.sample"
+    },
+    "status": "approved",
+    "rating": 4.8,
+    "reviewCount": 42,
+    "featured": true,
+    "submittedAt": "2026-10-21T10:00:00.000Z",
+    "approvedAt": "2026-10-21T11:30:00.000Z",
+    "createdAt": "2026-10-21T09:45:00.000Z",
+    "updatedAt": "2026-10-21T11:30:00.000Z"
+  },
+  {
+    "id": "prop_goa_anjuna_01",
+    "ownerId": "owner_1792593465325_2dc1c289",
+    "name": "Anjuna Sunset Palms Luxury Villa",
+    "propertyType": "Villas",
+    "shortDescription": "Private tropical pool villa steps away from the iconic Anjuna Beach sunsets.",
+    "detailedDescription": "Surrounded by swaying coconut palms and Goan-Portuguese architecture, featuring private courtyard plunge pool, bespoke seafood chef services, and serene outdoor cabanas.",
+    "location": {
+      "country": "India",
+      "state": "Goa",
+      "city": "Anjuna",
+      "locality": "Anjuna Beach Road",
+      "address": "22 Anjuna Beach Road, North Goa",
+      "postalCode": "403509",
+      "countryId": "cnt_in",
+      "stateId": "st_goa",
+      "cityId": "ct_anjuna",
+      "areaId": "ar_anjunabeach"
+    },
+    "images": [
+      {
+        "id": "img-g1",
+        "url": "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80",
+        "isCover": true,
+        "caption": "Private Pool & Cabana"
+      }
+    ],
+    "pricing": {
+      "pricePerNight": 24000,
+      "currency": "INR",
+      "originalPrice": 29000
+    },
+    "capacity": {
+      "maxGuests": 6,
+      "bedrooms": 3,
+      "bathrooms": 3,
+      "checkInTime": "14:00",
+      "checkOutTime": "11:00"
+    },
+    "amenities": [
+      "Private Swimming Pool",
+      "Beach Walking Access",
+      "Tropical Garden",
+      "Chef on Demand",
+      "Wi-Fi",
+      "Air Conditioning"
+    ],
+    "contactDetails": {
+      "contactPerson": "Damian D'Souza",
+      "mobileNumber": "9834567890",
+      "email": "damian.goa@holidayexpertz.sample"
+    },
+    "status": "approved",
+    "rating": 4.9,
+    "reviewCount": 94,
+    "featured": true,
+    "submittedAt": "2026-10-21T10:00:00.000Z",
+    "approvedAt": "2026-10-21T11:30:00.000Z",
+    "createdAt": "2026-10-21T09:45:00.000Z",
+    "updatedAt": "2026-10-21T11:30:00.000Z"
+  }
+]

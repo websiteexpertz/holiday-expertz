@@ -1,0 +1,53 @@
+[
+  {
+    "name": "Elena Rostova",
+    "email": "elena@example.com",
+    "phone": "+1 (555) 987-6543",
+    "subject": "Booking Inquiry for heritage",
+    "message": "Is late check-out possible on Sundays? | Dates: 2026-12-01 to 2026-12-05 | Guests: 2",
+    "relatedPropertyId": "prop_1792773963532_7f5b2f07",
+    "relatedPropertyName": "heritage",
+    "id": "inq_1793202410113_likog",
+    "status": "new",
+    "createdAt": "2026-10-28T15:46:50.113Z",
+    "updatedAt": "2026-10-28T15:46:50.113Z"
+  },
+  {
+    "id": "inq-401",
+    "name": "Dr. Alok Verma",
+    "email": "alok.verma@delhihospital.org",
+    "phone": "+91 98101 23456",
+    "subject": "Corporate Retreat Booking for 35 Guests",
+    "message": "We are planning a 4-day annual leadership offsite in November 2026. Looking for luxury heritage palace with conference facilities and airport transfers.",
+    "relatedPropertyId": "prop_1792595900000_a1b2c3d4",
+    "relatedPropertyName": "Singhania Heritage Palace & Spa",
+    "status": "new",
+    "createdAt": "2026-10-21T11:20:00.000Z",
+    "updatedAt": "2026-10-21T11:20:00.000Z"
+  },
+  {
+    "id": "inq-402",
+    "name": "Sunil Narang",
+    "email": "sunil.narang@gmail.com",
+    "phone": "+91 99001 98765",
+    "subject": "Listing 2 Boutique Villas in North Goa",
+    "message": "I am a property owner with two luxury 4-BHK private pool villas in Assagao. Would love to know the verification and onboarding timeline.",
+    "status": "in_progress",
+    "adminNotes": "Contacted on WhatsApp. Scheduled onboarding call for Friday 3 PM.",
+    "assignedToAdminId": "admin-super-01",
+    "createdAt": "2026-10-20T16:45:00.000Z",
+    "updatedAt": "2026-10-21T10:00:00.000Z"
+  },
+  {
+    "id": "inq-403",
+    "name": "Radhika Sen",
+    "email": "radhika.sen@yahoo.com",
+    "subject": "Cancellation Policy Clarification",
+    "message": "If we cancel our winter booking 14 days before check-in, do we get a full refund or hotel credit?",
+    "status": "resolved",
+    "adminNotes": "Replied via email explaining flexible 7-day free cancellation clause.",
+    "assignedToAdminId": "admin-super-01",
+    "createdAt": "2026-10-18T14:10:00.000Z",
+    "updatedAt": "2026-10-19T09:30:00.000Z"
+  }
+]
