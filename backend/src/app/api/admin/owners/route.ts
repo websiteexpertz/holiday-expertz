@@ -112,7 +112,31 @@ export async function POST(req: Request) {
       updatedAt: now,
     };
 
-    await createOwner(newOwner);
+    try {
+      await createOwner(newOwner);
+    } catch (error) {
+      const mongoError = error as {
+        code?: number;
+        keyPattern?: Record<string, unknown>;
+        keyValue?: Record<string, unknown>;
+      };
+      if (mongoError.code === 11000) {
+        const duplicateEmail = mongoError.keyPattern?.emailNormalized || mongoError.keyValue?.emailNormalized;
+        const duplicateMobile = mongoError.keyPattern?.mobileNormalized || mongoError.keyValue?.mobileNormalized;
+        return NextResponse.json(
+          {
+            success: false,
+            message: duplicateEmail
+              ? "An owner with this email address already exists"
+              : duplicateMobile
+                ? "An owner with this mobile number already exists"
+                : "An owner with these details already exists",
+          },
+          { status: 409 }
+        );
+      }
+      throw error;
+    }
 
     recordAuditLog({
       adminId: admin.id,

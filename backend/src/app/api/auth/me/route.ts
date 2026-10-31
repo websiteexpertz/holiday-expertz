@@ -63,15 +63,30 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const updated = await updateOwnerProfile(ownerId, {
-      fullName: fullName?.trim(),
-      mobileNumber: mobileNumber?.trim(),
-      avatar: avatar?.trim(),
-      businessName: businessName?.trim(),
-      address: address?.trim(),
-      bio: bio?.trim(),
-      altPhone: altPhone?.trim(),
-    });
+    let updated;
+    try {
+      updated = await updateOwnerProfile(ownerId, {
+        fullName: fullName?.trim(),
+        mobileNumber: mobileNumber?.trim(),
+        avatar: avatar?.trim(),
+        businessName: businessName?.trim(),
+        address: address?.trim(),
+        bio: bio?.trim(),
+        altPhone: altPhone?.trim(),
+      });
+    } catch (error) {
+      const mongoError = error as { code?: number; keyPattern?: Record<string, unknown>; keyValue?: Record<string, unknown> };
+      if (
+        mongoError.code === 11000 &&
+        (mongoError.keyPattern?.mobileNormalized || mongoError.keyValue?.mobileNormalized)
+      ) {
+        return NextResponse.json(
+          { success: false, message: "Another owner already uses this mobile number." },
+          { status: 409 }
+        );
+      }
+      throw error;
+    }
 
     if (!updated) {
       return NextResponse.json(

@@ -56,27 +56,34 @@ export async function registerPropertyOwner(input: PropertyOwnerRegistrationInpu
   };
 
   try {
-    await createOwner(newRecord);
+    const createdOwner = await createOwner(newRecord);
+    return {
+      success: true,
+      owner: sanitizeOwner(createdOwner),
+      message: "Property owner account successfully created! Welcome to HolidayExpertz Partner Network.",
+    };
   } catch (error) {
-    const mongoError = error as { code?: number; keyPattern?: Record<string, unknown> };
+    const mongoError = error as {
+      code?: number;
+      keyPattern?: Record<string, unknown>;
+      keyValue?: Record<string, unknown>;
+    };
     if (mongoError.code === 11000) {
-      const field = mongoError.keyPattern?.emailNormalized ? "email" : "mobileNumber";
+      const duplicateEmail = mongoError.keyPattern?.emailNormalized || mongoError.keyValue?.emailNormalized;
+      const duplicateMobile = mongoError.keyPattern?.mobileNormalized || mongoError.keyValue?.mobileNormalized;
+      const duplicateField = duplicateEmail ? "email" : duplicateMobile ? "mobileNumber" : "general";
       return {
         success: false,
-        field,
-        message: field === "email"
+        field: duplicateField,
+        message: duplicateField === "email"
           ? "An account with this email address already exists. Please sign in instead."
-          : "An account with this mobile number is already registered.",
+          : duplicateField === "mobileNumber"
+            ? "An account with this mobile number is already registered."
+            : "An account with these details already exists.",
       };
     }
     throw error;
   }
-
-  return {
-    success: true,
-    owner: sanitizeOwner(newRecord),
-    message: "Property owner account successfully created! Welcome to HolidayExpertz Partner Network.",
-  };
 }
 
 /**
