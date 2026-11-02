@@ -59,27 +59,42 @@ function toOwnerRecord(owner: object): PropertyOwnerRecord {
  * Finds an owner record by email (case-insensitive)
  */
 export async function findOwnerByEmail(email: string): Promise<PropertyOwnerRecord | undefined> {
-  await connectToDatabase();
-  const owner = await PropertyOwnerModel.findOne({ emailNormalized: normalizeEmail(email) }).lean();
-  return owner ? toOwnerRecord(owner) : undefined;
+  try {
+    await connectToDatabase();
+    const owner = await PropertyOwnerModel.findOne({ emailNormalized: normalizeEmail(email) }).lean();
+    return owner ? toOwnerRecord(owner) : undefined;
+  } catch (err) {
+    console.warn("MongoDB findOwnerByEmail warning:", (err as Error)?.message);
+    return undefined;
+  }
 }
 
 /**
  * Finds an owner record by mobile number (digits only normalized)
  */
 export async function findOwnerByMobile(mobileNumber: string): Promise<PropertyOwnerRecord | undefined> {
-  await connectToDatabase();
-  const owner = await PropertyOwnerModel.findOne({ mobileNormalized: normalizeMobile(mobileNumber) }).lean();
-  return owner ? toOwnerRecord(owner) : undefined;
+  try {
+    await connectToDatabase();
+    const owner = await PropertyOwnerModel.findOne({ mobileNormalized: normalizeMobile(mobileNumber) }).lean();
+    return owner ? toOwnerRecord(owner) : undefined;
+  } catch (err) {
+    console.warn("MongoDB findOwnerByMobile warning:", (err as Error)?.message);
+    return undefined;
+  }
 }
 
 /**
  * Finds an owner record by ID
  */
 export async function findOwnerById(id: string): Promise<PropertyOwnerRecord | undefined> {
-  await connectToDatabase();
-  const owner = await PropertyOwnerModel.findOne({ id }).lean();
-  return owner ? toOwnerRecord(owner) : undefined;
+  try {
+    await connectToDatabase();
+    const owner = await PropertyOwnerModel.findOne({ id }).lean();
+    return owner ? toOwnerRecord(owner) : undefined;
+  } catch (err) {
+    console.warn("MongoDB findOwnerById warning:", (err as Error)?.message);
+    return undefined;
+  }
 }
 
 /**
