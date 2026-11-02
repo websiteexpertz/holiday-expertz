@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { AuditLogRecord } from "../../types/admin";
+import defaultAuditLogs from "../../data/auditLogs.json";
 
 const rootDir = process.cwd().endsWith("frontend")
   ? path.resolve(process.cwd(), "..")
@@ -10,24 +11,17 @@ const DATA_FILE = path.join(rootDir, "backend", "src", "data", "auditLogs.json")
 let auditCache: AuditLogRecord[] | null = null;
 
 function ensureStorageExists(): void {
-  const dir = path.dirname(DATA_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+  try {
+    const dir = path.dirname(DATA_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
 
-  if (!fs.existsSync(DATA_FILE)) {
-    const initialLog: AuditLogRecord = {
-      id: "log_init_001",
-      adminId: "admin_super_01",
-      adminName: "Chief Administrator",
-      adminEmail: "superadmin@holidayexpertz.com",
-      module: "system",
-      action: "system.initialize",
-      details: "HolidayExpertz Super Admin Security Suite and Audit Registry initialized.",
-      status: "success",
-      createdAt: new Date().toISOString(),
-    };
-    fs.writeFileSync(DATA_FILE, JSON.stringify([initialLog], null, 2), "utf-8");
+    if (!fs.existsSync(DATA_FILE)) {
+      fs.writeFileSync(DATA_FILE, JSON.stringify(defaultAuditLogs, null, 2), "utf-8");
+    }
+  } catch {
+    // Read-only filesystem on serverless (e.g. Vercel)
   }
 }
 
@@ -38,17 +32,19 @@ export function getAllAuditLogs(): AuditLogRecord[] {
 
   try {
     ensureStorageExists();
-    const raw = fs.readFileSync(DATA_FILE, "utf-8");
-    const parsed = JSON.parse(raw);
-    auditCache = Array.isArray(parsed) ? parsed : [];
-    // Sort descending by timestamp
-    auditCache.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return auditCache;
+    if (fs.existsSync(DATA_FILE)) {
+      const raw = fs.readFileSync(DATA_FILE, "utf-8");
+      const parsed = JSON.parse(raw);
+      auditCache = Array.isArray(parsed) ? parsed : [];
+      auditCache.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return auditCache;
+    }
   } catch (error) {
-    console.error("Backend Audit Storage Error: Failed to read audit logs:", error);
-    auditCache = [];
-    return auditCache;
+    // Fall back to bundled data
   }
+
+  auditCache = Array.isArray(defaultAuditLogs) ? (defaultAuditLogs as AuditLogRecord[]) : [];
+  return auditCache;
 }
 
 export function createAuditLog(entry: Omit<AuditLogRecord, "id" | "createdAt">): AuditLogRecord {

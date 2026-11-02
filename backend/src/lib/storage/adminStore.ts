@@ -9,6 +9,7 @@ import {
 import { hashPassword, verifyPasswordAsync } from "../security/passwordHasher";
 import { connectToDatabase } from "../db/mongodb";
 import { AdminModel } from "../models/Admin";
+import defaultAdminsData from "../../data/admins.json";
 
 const rootDir = process.cwd().endsWith("frontend")
   ? path.resolve(process.cwd(), "..")
@@ -206,73 +207,64 @@ export const PERMISSION_MODULE_GROUPS: PermissionModuleGroup[] = [
 ];
 
 function ensureStorageExists(): void {
-  const dir = path.dirname(DATA_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+  try {
+    const dir = path.dirname(DATA_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
 
-  if (!fs.existsSync(DATA_FILE)) {
-    // Generate default Super Admin
-    const { hash, salt } = hashPassword("Admin@HolidayExpertz2026!");
-    const initialSuperAdmin: AdminRecord = {
-      id: "admin_super_01",
-      fullName: "Chief Administrator",
-      email: "superadmin@holidayexpertz.com",
-      role: "super_admin",
-      permissions: [...ALL_PERMISSIONS],
-      status: "active",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
-      department: "Executive Operations",
-      passwordHash: hash,
-      passwordSalt: salt,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    fs.writeFileSync(DATA_FILE, JSON.stringify([initialSuperAdmin], null, 2), "utf-8");
+    if (!fs.existsSync(DATA_FILE)) {
+      fs.writeFileSync(DATA_FILE, JSON.stringify(defaultAdminsData, null, 2), "utf-8");
+    }
+  } catch {
+    // Read-only filesystem in serverless environments (e.g. Vercel)
   }
 }
 
 export function getAllAdmins(): AdminRecord[] {
-  if (adminsCache !== null) {
+  if (adminsCache !== null && adminsCache.length > 0) {
     return adminsCache;
   }
 
   try {
     ensureStorageExists();
-    const raw = fs.readFileSync(DATA_FILE, "utf-8");
-    const parsed = JSON.parse(raw);
-    adminsCache = Array.isArray(parsed) ? parsed : [];
-    return adminsCache;
-  } catch (error) {
-    console.error("Backend Admin Storage Error: Failed to read admins store:", error);
-    adminsCache = [];
-    return adminsCache;
+    if (fs.existsSync(DATA_FILE)) {
+      const raw = fs.readFileSync(DATA_FILE, "utf-8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        adminsCache = parsed;
+        return adminsCache;
+      }
+    }
+  } catch {
+    // Filesystem read failed on serverless
   }
+
+  adminsCache = Array.isArray(defaultAdminsData) ? (defaultAdminsData as AdminRecord[]) : [];
+  return adminsCache;
 }
 
 export function saveAdmins(admins: AdminRecord[]): void {
+  adminsCache = admins;
   try {
     ensureStorageExists();
     const tempFile = `${DATA_FILE}.tmp.${Date.now()}`;
     fs.writeFileSync(tempFile, JSON.stringify(admins, null, 2), "utf-8");
     fs.renameSync(tempFile, DATA_FILE);
-    adminsCache = admins;
-
-    // Asynchronously synchronize with MongoDB
-    connectToDatabase()
-      .then(async () => {
-        for (const a of admins) {
-          await AdminModel.findOneAndUpdate({ id: a.id }, a, { upsert: true });
-        }
-      })
-      .catch((err) => {
-        console.error("MongoDB background admin sync error:", err);
-      });
-  } catch (error) {
-    console.error("Backend Admin Storage Error: Failed to persist admins:", error);
-    throw new Error("Failed to persist admin records.");
+  } catch {
+    // Read-only filesystem on Vercel; in-memory cache is updated
   }
+
+  // Asynchronously synchronize with MongoDB
+  connectToDatabase()
+    .then(async () => {
+      for (const a of admins) {
+        await AdminModel.findOneAndUpdate({ id: a.id }, a, { upsert: true });
+      }
+    })
+    .catch((err) => {
+      console.warn("MongoDB background admin sync error:", err?.message);
+    });
 }
 
 export function sanitizeAdminUser(admin: AdminRecord): AdminUser {
@@ -286,9 +278,36 @@ export function findAdminByEmail(email: string): AdminRecord | null {
   return admins.find((a) => a.email.toLowerCase() === email.trim().toLowerCase()) || null;
 }
 
+export async function findAdminByEmailAsync(email: string): Promise<AdminRecord | null> {
+  const normalized = email.trim().toLowerCase();
+  try {
+    await connectToDatabase();
+    const doc = await AdminModel.findOne({ email: normalized }).lean();
+    if (doc) {
+      return doc as unknown as AdminRecord;
+    }
+  } catch {
+    // Fall back to memory/bundled JSON
+  }
+  return findAdminByEmail(normalized);
+}
+
 export function findAdminById(id: string): AdminRecord | null {
   const admins = getAllAdmins();
   return admins.find((a) => a.id === id) || null;
+}
+
+export async function findAdminByIdAsync(id: string): Promise<AdminRecord | null> {
+  try {
+    await connectToDatabase();
+    const doc = await AdminModel.findOne({ id }).lean();
+    if (doc) {
+      return doc as unknown as AdminRecord;
+    }
+  } catch {
+    // Fall back to memory/bundled JSON
+  }
+  return findAdminById(id);
 }
 
 export async function authenticateAdmin(

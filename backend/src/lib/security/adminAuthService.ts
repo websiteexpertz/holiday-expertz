@@ -1,16 +1,28 @@
 import crypto from "crypto";
 import { AdminPermission, AdminUser } from "../../types/admin";
-import { findAdminByEmail, findAdminById, hasPermission, getAllAdmins, saveAdmins } from "../storage/adminStore";
+import {
+  findAdminByEmail,
+  findAdminByEmailAsync,
+  findAdminById,
+  findAdminByIdAsync,
+  hasPermission,
+  getAllAdmins,
+  saveAdmins,
+} from "../storage/adminStore";
 import { verifyPasswordAsync } from "./passwordHasher";
 import { createAuditLog as recordAuditLog } from "../storage/auditLogStore";
 
 /** Inline helper — updates a single field-set on an admin record */
 function updateAdminRecord(id: string, patch: Record<string, unknown>): void {
-  const all = getAllAdmins();
-  const idx = all.findIndex((a) => a.id === id);
-  if (idx !== -1) {
-    all[idx] = { ...all[idx], ...patch, updatedAt: new Date().toISOString() };
-    saveAdmins(all);
+  try {
+    const all = getAllAdmins();
+    const idx = all.findIndex((a) => a.id === id);
+    if (idx !== -1) {
+      all[idx] = { ...all[idx], ...patch, updatedAt: new Date().toISOString() };
+      saveAdmins(all);
+    }
+  } catch {
+    // Non-fatal if filesystem is read-only
   }
 }
 
@@ -95,7 +107,7 @@ export async function loginAdmin(
   ipAddress?: string
 ): Promise<{ success: boolean; token?: string; admin?: AdminUser; error?: string }> {
   const normalizedEmail = email.trim().toLowerCase();
-  const adminRec = findAdminByEmail(normalizedEmail);
+  const adminRec = (await findAdminByEmailAsync(normalizedEmail)) || findAdminByEmail(normalizedEmail);
 
   if (!adminRec) {
     return { success: false, error: "Invalid email or password" };
