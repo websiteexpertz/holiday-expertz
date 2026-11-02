@@ -158,7 +158,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
   return (
     <section
       aria-label="Hero Luxury Hospitality Slideshow"
-      className="relative min-h-[580px] lg:min-h-[660px] flex flex-col justify-between pt-12 pb-10 px-4 sm:px-6 lg:px-8 overflow-visible"
+      className="relative min-h-[520px] lg:min-h-[580px] flex flex-col justify-center pt-8 sm:pt-12 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 overflow-visible"
     >
       {/* 
         FOUR-IMAGE AUTOMATIC HERO SLIDESHOW
@@ -198,34 +198,34 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
       {/* 
         HERO FIXED CONTENT (LEFT-ALIGNED MATCHING REFERENCE SCREENSHOT)
         - Eyebrow, headline, and description positioned on the left.
-        - Booking search bar centered along the bottom.
+        - Booking search bar directly underneath with reduced, balanced spacing.
         - Text and search bar card share the exact same 1180px maximum width container for 100% vertical left-alignment.
       */}
-      <div className="relative z-30 max-w-[1180px] mx-auto w-full pt-6 sm:pt-10">
+      <div className="relative z-30 max-w-[1180px] mx-auto w-full flex flex-col">
         <div className="max-w-xl text-left">
           {/* Eyebrow Tag matching exact reference */}
-          <span className="text-xs sm:text-[12px] font-bold uppercase tracking-[0.22em] text-[#172B2A] mb-3 block font-editorial-sans">
+          <span className="text-xs sm:text-[12px] font-bold uppercase tracking-[0.22em] text-[#172B2A] mb-2 sm:mb-2.5 block font-editorial-sans">
             {badgeText || "HOLIDAY EXPERTZ • LUXURY STAYS"}
           </span>
 
           {/* Exact Headline from reference image */}
-          <h1 className="font-editorial-serif text-5xl sm:text-6xl lg:text-[66px] font-semibold text-[#172B2A] tracking-tight leading-[1.08] mb-4">
+          <h1 className="font-editorial-serif text-5xl sm:text-6xl lg:text-[66px] font-semibold text-[#172B2A] tracking-tight leading-[1.08] mb-3 sm:mb-4">
             Escape the ordinary.
             <br />
             <span className="italic font-semibold text-[#009F8D]">Stay extraordinary.</span>
           </h1>
 
-          {/* Supporting paragraph from reference image */}
-          <p className="font-editorial-sans text-sm sm:text-base text-slate-800 font-medium leading-relaxed max-w-md mb-8">
+          {/* Supporting paragraph from reference image with reduced bottom margin */}
+          <p className="font-editorial-sans text-sm sm:text-base text-slate-800 font-medium leading-relaxed max-w-md mb-4 sm:mb-5">
             {subheadline ||
               "Discover exceptional stays, from secluded mountain retreats to private luxury villas."}
           </p>
         </div>
-      </div>
 
-      {/* Booking Search Bar positioned horizontally along the bottom, locked to the exact same left alignment */}
-      <div className="relative z-40 max-w-[1180px] mx-auto w-full pt-6 pb-2">
-        <HotelSearch onSearch={onSearch} />
+        {/* Booking Search Bar positioned directly under the text with reduced spacing */}
+        <div className="w-full pt-1 sm:pt-2 pb-1">
+          <HotelSearch onSearch={onSearch} />
+        </div>
       </div>
     </section>
   );

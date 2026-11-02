@@ -124,6 +124,7 @@ export default function Header({
     { label: "About Us", href: "/#about" },
     { label: "Property Type", href: "/#property-types" },
     { label: "Deals", href: "/#deals", badge: "Special" },
+    { label: "Upcoming Events", href: "/#events" },
     { label: "Blog", href: "/#blog" },
   ];
 
@@ -160,13 +161,13 @@ export default function Header({
             {/* Desktop Navigation matching exact reference */}
             <nav
               aria-label="Main Navigation"
-              className="hidden md:flex items-center gap-7 lg:gap-8"
+              className="hidden md:flex items-center gap-5 lg:gap-7"
             >
               {navLinks.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
-                  className={`relative text-[13.5px] transition-colors duration-200 py-1 ${
+                  className={`relative text-[13.5px] whitespace-nowrap transition-colors duration-200 py-1 ${
                     link.active
                       ? "text-[#009F8D] font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-[#009F8D] after:rounded-full"
                       : "text-slate-600 hover:text-[#009F8D] font-medium"

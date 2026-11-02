@@ -170,7 +170,9 @@ export default function Home() {
         </div>
 
         {/* Section 6: Upcoming Events */}
-        <UpcomingEvents />
+        <div id="upcoming-events" className="scroll-mt-20">
+          <UpcomingEvents />
+        </div>
 
         {/* Section 7: Stories, Tips & Dispatches */}
         <div id="blog" className="scroll-mt-20">
