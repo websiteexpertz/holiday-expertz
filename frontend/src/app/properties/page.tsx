@@ -222,6 +222,17 @@ function PropertiesContent() {
         setError(null);
 
         const res = await fetch(apiUrl("/api/public/properties"));
+        if (!res.ok) {
+          setError("Properties directory is temporarily unavailable. Please try again shortly.");
+          return;
+        }
+
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          setError("Unable to process properties response. Please try again.");
+          return;
+        }
+
         const data = await res.json();
 
         if (data.success && Array.isArray(data.properties)) {

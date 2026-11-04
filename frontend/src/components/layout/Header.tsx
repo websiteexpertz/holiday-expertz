@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
   Compass,
@@ -13,15 +13,67 @@ import {
   LayoutDashboard,
   Search,
   ChevronDown,
+  ChevronRight,
   LogOut,
   ShieldCheck,
+  Palmtree,
+  Home,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
+
+interface PropertyTypeNavItem {
+  name: string;
+  tagline: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const PROPERTY_TYPE_ITEMS: PropertyTypeNavItem[] = [
+  {
+    name: "Luxury Hotels",
+    tagline: "5-star sanctuaries & premier hospitality",
+    href: "/properties?type=Luxury+Hotels",
+    icon: Building2,
+  },
+  {
+    name: "Resorts",
+    tagline: "Mountain, wellness & lakeside retreats",
+    href: "/properties?type=Resorts",
+    icon: Palmtree,
+  },
+  {
+    name: "Villas",
+    tagline: "Private secluded estates with plunge pools",
+    href: "/properties?type=Villas",
+    icon: Sparkles,
+  },
+  {
+    name: "Heritage & Palace Stays",
+    tagline: "Royal courtyards & historic palaces",
+    href: "/properties?type=Palace+Stays",
+    icon: ShieldCheck,
+  },
+  {
+    name: "Homestays",
+    tagline: "Warm, authentic local hospitality",
+    href: "/properties?type=Homestays",
+    icon: Home,
+  },
+  {
+    name: "Boutique Stays",
+    tagline: "Design-forward intimate getaways",
+    href: "/properties?type=Boutique+Stays",
+    icon: Compass,
+  },
+];
 
 interface HeaderProps {
   onOpenAuthModal?: () => void;
   showSearchButton?: boolean;
   isSearchOpen?: boolean;
   onToggleSearch?: () => void;
+  transparent?: boolean;
 }
 
 export default function Header({
@@ -29,14 +81,21 @@ export default function Header({
   showSearchButton = false,
   isSearchOpen = false,
   onToggleSearch,
+  transparent,
 }: HeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
+  const isTransparent = transparent ?? isHomePage;
   const { owner, isAuthenticated, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [propertyDropdownOpen, setPropertyDropdownOpen] = useState(false);
+  const [mobilePropertyExpanded, setMobilePropertyExpanded] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const propertyDropdownRef = useRef<HTMLDivElement>(null);
 
   const mounted = React.useSyncExternalStore(
     () => () => {},
@@ -81,11 +140,18 @@ export default function Header({
       ) {
         setProfileDropdownOpen(false);
       }
+      if (
+        propertyDropdownRef.current &&
+        !propertyDropdownRef.current.contains(event.target as Node)
+      ) {
+        setPropertyDropdownOpen(false);
+      }
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setProfileDropdownOpen(false);
+        setPropertyDropdownOpen(false);
       }
     };
 
@@ -120,10 +186,10 @@ export default function Header({
   }, [mobileMenuOpen]);
 
   const navLinks = [
-    { label: "Home", href: "/#home", active: true },
-    { label: "About Us", href: "/#about" },
-    { label: "Property Type", href: "/#property-types" },
-    { label: "Deals", href: "/#deals", badge: "Special" },
+    { label: "Home", href: "/#home", active: pathname === "/" },
+    { label: "About Us", href: "/about", active: pathname === "/about" },
+    { label: "Property Type", href: "/properties", active: pathname.startsWith("/properties") },
+    { label: "Deals", href: "/deals", badge: "Special", active: pathname === "/deals" },
     { label: "Upcoming Events", href: "/#events" },
     { label: "Blog", href: "/#blog" },
   ];
@@ -132,7 +198,11 @@ export default function Header({
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled
+          isTransparent
+            ? isScrolled
+              ? "bg-white/85 backdrop-blur-md shadow-xs border-b border-slate-200/50 py-3"
+              : "bg-transparent border-b border-transparent shadow-none py-3.5 sm:py-4"
+            : isScrolled
             ? "bg-white/98 backdrop-blur-md shadow-sm border-b border-slate-200/80 py-3"
             : "bg-white/95 backdrop-blur-sm border-b border-slate-100 py-3.5"
         }`}
@@ -158,31 +228,118 @@ export default function Header({
               </div>
             </Link>
 
-            {/* Desktop Navigation matching exact reference */}
+            {/* Desktop Navigation matching exact reference with Property Type Dropdown */}
             <nav
               aria-label="Main Navigation"
               className="hidden md:flex items-center gap-5 lg:gap-7"
             >
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className={`relative text-[13.5px] whitespace-nowrap transition-colors duration-200 py-1 ${
-                    link.active
-                      ? "text-[#009F8D] font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-[#009F8D] after:rounded-full"
-                      : "text-slate-600 hover:text-[#009F8D] font-medium"
-                  }`}
-                >
-                  <span className="flex items-center gap-1.5">
-                    {link.label}
-                    {link.badge && (
-                      <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-[#E7F6F3] text-[#006F66] border border-[#009F8D]/30 tracking-tight">
-                        {link.badge}
-                      </span>
-                    )}
-                  </span>
-                </a>
-              ))}
+              {navLinks.map((link) => {
+                if (link.label === "Property Type") {
+                  return (
+                    <div
+                      key={link.label}
+                      ref={propertyDropdownRef}
+                      className="relative"
+                      onMouseEnter={() => setPropertyDropdownOpen(true)}
+                      onMouseLeave={() => setPropertyDropdownOpen(false)}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setPropertyDropdownOpen((prev) => !prev)}
+                        className={`relative text-[13.5px] whitespace-nowrap transition-colors duration-200 py-1 inline-flex items-center gap-1 cursor-pointer focus:outline-none ${
+                          link.active || propertyDropdownOpen
+                            ? "text-[#009F8D] font-semibold"
+                            : "text-slate-800 hover:text-[#009F8D] font-semibold"
+                        }`}
+                        aria-expanded={propertyDropdownOpen}
+                        aria-haspopup="menu"
+                      >
+                        <span>Property Type</span>
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                            propertyDropdownOpen ? "rotate-180 text-[#009F8D]" : "text-slate-600"
+                          }`}
+                        />
+                      </button>
+
+                      {/* Dropdown Card */}
+                      {propertyDropdownOpen && (
+                        <div
+                          role="menu"
+                          className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50"
+                        >
+                          <div className="w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2.5 animate-in fade-in zoom-in-95 duration-150">
+                            <div className="px-3 pt-2 pb-1.5 border-b border-slate-100 mb-1">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                Browse Stays by Category
+                              </span>
+                            </div>
+                            <div className="space-y-0.5">
+                              {PROPERTY_TYPE_ITEMS.map((item) => {
+                                const Icon = item.icon;
+                                return (
+                                  <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    role="menuitem"
+                                    onClick={() => setPropertyDropdownOpen(false)}
+                                    className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-[#F2FAF7] transition-colors group/item"
+                                  >
+                                    <div className="w-8 h-8 rounded-lg bg-slate-50 group-hover/item:bg-[#E7F6F3] border border-slate-200/60 group-hover/item:border-[#009F8D]/40 flex items-center justify-center text-slate-500 group-hover/item:text-[#009F8D] flex-shrink-0 transition-colors">
+                                      <Icon className="w-4 h-4" />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="text-xs font-bold text-[#0b192c] group-hover/item:text-[#009F8D] transition-colors">
+                                        {item.name}
+                                      </div>
+                                      <div className="text-[11px] text-slate-500 truncate">
+                                        {item.tagline}
+                                      </div>
+                                    </div>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+
+                            <div className="pt-2 mt-1 border-t border-slate-100">
+                              <Link
+                                href="/properties"
+                                role="menuitem"
+                                onClick={() => setPropertyDropdownOpen(false)}
+                                className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 hover:bg-[#E7F6F3] text-xs font-semibold text-[#006F66] transition-colors"
+                              >
+                                <span>Explore All Property Types</span>
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    className={`relative text-[13.5px] whitespace-nowrap transition-colors duration-200 py-1 ${
+                      link.active
+                        ? "text-[#009F8D] font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-[#009F8D] after:rounded-full"
+                        : "text-slate-800 hover:text-[#009F8D] font-semibold"
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      {link.label}
+                      {link.badge && (
+                        <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-[#E7F6F3] text-[#006F66] border border-[#009F8D]/30 tracking-tight">
+                          {link.badge}
+                        </span>
+                      )}
+                    </span>
+                  </a>
+                );
+              })}
             </nav>
 
             {/* Right Action Buttons matching exact reference */}
@@ -388,7 +545,7 @@ export default function Header({
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-xl text-slate-700 hover:text-[#009F8D] hover:bg-slate-50 transition-colors"
+                className="p-2 rounded-xl text-slate-800 hover:text-[#009F8D] hover:bg-white/40 transition-colors"
                 aria-label="Toggle navigation menu"
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -422,25 +579,80 @@ export default function Header({
               </p>
             </div>
             <nav className="flex flex-col space-y-1.5">
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-colors ${
-                    link.active
-                      ? "text-[#009F8D] bg-[#E7F6F3]"
-                      : "text-slate-800 hover:bg-slate-50 hover:text-[#009F8D]"
-                  }`}
-                >
-                  <span>{link.label}</span>
-                  {link.badge && (
-                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#E7F6F3] text-[#006F66] border border-[#009F8D]/30">
-                      {link.badge}
-                    </span>
-                  )}
-                </a>
-              ))}
+              {navLinks.map((link) => {
+                if (link.label === "Property Type") {
+                  return (
+                    <div key={link.label} className="flex flex-col">
+                      <button
+                        type="button"
+                        onClick={() => setMobilePropertyExpanded((prev) => !prev)}
+                        className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${
+                          link.active
+                            ? "text-[#009F8D] bg-[#E7F6F3]"
+                            : "text-slate-800 hover:bg-slate-50 hover:text-[#009F8D]"
+                        }`}
+                      >
+                        <span>Property Type</span>
+                        <ChevronDown
+                          className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                            mobilePropertyExpanded ? "rotate-180 text-[#009F8D]" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {mobilePropertyExpanded && (
+                        <div className="pl-3 pr-2 py-1 space-y-1 bg-slate-50/80 rounded-xl my-1 border border-slate-100">
+                          {PROPERTY_TYPE_ITEMS.map((item) => (
+                            <Link
+                              key={item.name}
+                              href={item.href}
+                              onClick={() => {
+                                setMobileMenuOpen(false);
+                                setMobilePropertyExpanded(false);
+                              }}
+                              className="flex items-center justify-between px-2.5 py-2 text-xs font-medium text-slate-700 hover:text-[#009F8D] transition-colors rounded-lg hover:bg-white"
+                            >
+                              <span>{item.name}</span>
+                              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                            </Link>
+                          ))}
+                          <Link
+                            href="/properties"
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              setMobilePropertyExpanded(false);
+                            }}
+                            className="flex items-center justify-between px-2.5 py-2 text-xs font-bold text-[#006F66] hover:underline pt-1.5 border-t border-slate-200/60"
+                          >
+                            <span>Explore All Property Types</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-colors ${
+                      link.active
+                        ? "text-[#009F8D] bg-[#E7F6F3]"
+                        : "text-slate-800 hover:bg-slate-50 hover:text-[#009F8D]"
+                    }`}
+                  >
+                    <span>{link.label}</span>
+                    {link.badge && (
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#E7F6F3] text-[#006F66] border border-[#009F8D]/30">
+                        {link.badge}
+                      </span>
+                    )}
+                  </a>
+                );
+              })}
             </nav>
 
             <section

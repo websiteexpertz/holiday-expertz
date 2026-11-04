@@ -1,17 +1,17 @@
 "use client";
 import { apiUrl } from "@/lib/apiUrl";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@frontend/components/layout/Header";
 import Footer from "@frontend/components/layout/Footer";
 import AuthModal from "@frontend/components/layout/AuthModal";
 import HeroSection from "@frontend/components/home/HeroSection";
-import WhyChooseUs from "@frontend/components/home/WhyChooseUs";
+import WhatMakesUsExtraordinary from "@frontend/components/home/WhatMakesUsExtraordinary";
+import WhatsHappeningSection from "@frontend/components/home/WhatsHappeningSection";
 import HandpickedProperties from "@frontend/components/home/HandpickedProperties";
 import PopularDestinations from "@frontend/components/home/PopularDestinations";
 import MemoriesSection from "@frontend/components/home/MemoriesSection";
-import UpcomingEvents from "@frontend/components/home/UpcomingEvents";
 import BlogSection from "@frontend/components/home/BlogSection";
 import { mockHotels } from "@/data/hotels";
 import { Hotel, PropertyType, SearchState } from "@/types/hotel";
@@ -63,11 +63,19 @@ export default function Home() {
     useState<PropertyType | "All">("All");
 
   useEffect(() => {
+    let isMounted = true;
     async function loadLiveProperties() {
       try {
         const res = await fetch(apiUrl("/api/public/properties"));
+        if (!res.ok) return;
+
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) return;
+
         const data = await res.json();
-        if (data.success && Array.isArray(data.properties) && data.properties.length > 0) {
+        if (!isMounted) return;
+
+        if (data && data.success && Array.isArray(data.properties) && data.properties.length > 0) {
           const liveHotels = data.properties.map(convertPropertyToHotel);
           // Combine live approved properties first, followed by mock data (avoiding ID collisions)
           const liveIds = new Set(liveHotels.map((h: Hotel) => h.id));
@@ -76,10 +84,13 @@ export default function Home() {
           setFilteredHotels(combined);
         }
       } catch (err) {
-        console.error("Failed to fetch live properties for homepage:", err);
+        console.warn("Using fallback curated properties for homepage:", err);
       }
     }
     loadLiveProperties();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleSearch = (params: SearchState) => {
@@ -141,16 +152,23 @@ export default function Home() {
       <Header onOpenAuthModal={() => setAuthModalOpen(true)} />
 
       {/* Main Content Area */}
-      <main id="home" className="flex-1 pt-[72px]">
+      <main id="home" className="flex-1">
         {/* Section 1: Hero Section & Search Bar */}
         <HeroSection onSearch={handleSearch} />
 
-        {/* Section 2: Why HolidayExpertz */}
+        {/* Section: What Makes Us Extraordinary */}
         <div id="about" className="scroll-mt-20">
-          <WhyChooseUs />
+          <WhatMakesUsExtraordinary />
         </div>
 
-        {/* Section 3: Handpicked Properties */}
+        {/* Section: What's Happening Around the World */}
+        <div id="events" className="scroll-mt-20">
+          <Suspense fallback={null}>
+            <WhatsHappeningSection />
+          </Suspense>
+        </div>
+
+        {/* Section 2: Handpicked Properties */}
         <div id="handpicked" className="scroll-mt-20">
           <HandpickedProperties
             hotels={filteredHotels}
@@ -167,11 +185,6 @@ export default function Home() {
         {/* Section 5: Memories */}
         <div id="memories" className="scroll-mt-20">
           <MemoriesSection />
-        </div>
-
-        {/* Section 6: Upcoming Events */}
-        <div id="upcoming-events" className="scroll-mt-20">
-          <UpcomingEvents />
         </div>
 
         {/* Section 7: Stories, Tips & Dispatches */}

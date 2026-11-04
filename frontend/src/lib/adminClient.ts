@@ -419,8 +419,13 @@ export const adminClient = {
   },
 
   events: {
-    getAll: async () => {
-      return request<{ events: EventRecord[] }>("/api/admin/events", { method: "GET" });
+    getAll: async (params?: { status?: string; category?: string; year?: string | number }) => {
+      const search = new URLSearchParams();
+      if (params?.status) search.set("status", params.status);
+      if (params?.category) search.set("category", params.category);
+      if (params?.year) search.set("year", String(params.year));
+      const qs = search.toString() ? `?${search.toString()}` : "";
+      return request<{ events: EventRecord[] }>(`/api/admin/events${qs}`, { method: "GET" });
     },
     create: async (payload: Partial<EventRecord>) => {
       return request<{ event: EventRecord }>("/api/admin/events", { method: "POST", body: JSON.stringify(payload) });
@@ -430,6 +435,21 @@ export const adminClient = {
     },
     delete: async (id: string) => {
       return request<{ message: string }>(`/api/admin/events?id=${id}`, { method: "DELETE" });
+    },
+    duplicateYear: async (
+      sourceId: string,
+      targetYear: number,
+      newDates?: { startDate?: string; endDate?: string }
+    ) => {
+      return request<{ event: EventRecord }>("/api/admin/events", {
+        method: "POST",
+        body: JSON.stringify({
+          action: "duplicate_year",
+          sourceId,
+          targetYear,
+          newDates,
+        }),
+      });
     },
   },
 

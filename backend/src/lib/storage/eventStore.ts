@@ -119,11 +119,14 @@ export function findEventById(id: string): EventRecord | null {
 
 export function createEvent(data: Omit<EventRecord, "id" | "createdAt" | "updatedAt">): EventRecord {
   const events = getAllEvents();
-  const slug = data.slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const rawSlug = data.slug || data.title;
+  let slug = rawSlug.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  if (!slug) slug = `event-${Date.now()}`;
 
   const existing = events.find((e) => e.slug === slug);
   if (existing) {
-    throw new Error(`An event with slug "${slug}" already exists.`);
+    // Append unique suffix if collision occurs
+    slug = `${slug}-${Math.random().toString(36).substring(2, 6)}`;
   }
 
   const now = new Date().toISOString();
@@ -131,6 +134,12 @@ export function createEvent(data: Omit<EventRecord, "id" | "createdAt" | "update
     id: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
     ...data,
     slug,
+    timezone: data.timezone || "Asia/Kolkata",
+    country: data.country || "India",
+    highlights: Array.isArray(data.highlights) ? data.highlights : [],
+    status: data.status || "published",
+    featured: Boolean(data.featured),
+    source: data.source || "manual",
     createdAt: now,
     updatedAt: now,
   };
@@ -174,10 +183,122 @@ export function deleteEvent(id: string): void {
   saveEvents(filtered);
 }
 
+/**
+ * Checks whether an event is currently live and eligible for public display.
+ * - status MUST be "published" (drafts, archived are excluded).
+ * - If publishAt is set: current time >= publishAt.
+ * - If unpublishAt is set: current time < unpublishAt.
+ */
+export function isEventLive(event: EventRecord, now = new Date()): boolean {
+  if (event.status !== "published") return false;
+
+  if (event.publishAt) {
+    const pubDate = new Date(event.publishAt);
+    if (!isNaN(pubDate.getTime()) && now < pubDate) {
+      return false; // Scheduled publication date has not arrived yet
+    }
+  }
+
+  if (event.unpublishAt) {
+    const unpubDate = new Date(event.unpublishAt);
+    if (!isNaN(unpubDate.getTime()) && now >= unpubDate) {
+      return false; // Scheduled unpublication date has passed
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Checks whether an event has not expired yet based on its end date.
+ * Returns true if event end date is today or in the future.
+ */
+export function isEventUpcoming(event: EventRecord, now = new Date()): boolean {
+  if (!event.endDate && !event.startDate) return false;
+  const targetDateStr = event.endDate || event.startDate;
+  const eventEnd = new Date(targetDateStr + "T23:59:59");
+  return eventEnd.getTime() >= now.getTime();
+}
+
+/**
+ * Clones an existing annual/recurring event for a new calendar year occurrence as a draft.
+ * Retains main branding, description, highlights, location and assets.
+ */
+export function duplicateEventForYear(
+  sourceId: string,
+  targetYear: number,
+  newDates?: { startDate?: string; endDate?: string }
+): EventRecord {
+  const source = findEventById(sourceId);
+  if (!source) {
+    throw new Error("Source event not found.");
+  }
+
+  const seriesId = source.seriesId || source.id;
+
+  // Calculate default dates for the new year if not provided
+  let newStart = newDates?.startDate;
+  let newEnd = newDates?.endDate;
+
+  if (!newStart && source.startDate) {
+    const oldStart = new Date(source.startDate + "T00:00:00");
+    const m = String(oldStart.getMonth() + 1).padStart(2, "0");
+    const d = String(oldStart.getDate()).padStart(2, "0");
+    newStart = `${targetYear}-${m}-${d}`;
+  }
+
+  if (!newEnd && (source.endDate || source.startDate)) {
+    const oldEnd = new Date((source.endDate || source.startDate) + "T00:00:00");
+    const m = String(oldEnd.getMonth() + 1).padStart(2, "0");
+    const d = String(oldEnd.getDate()).padStart(2, "0");
+    newEnd = `${targetYear}-${m}-${d}`;
+  }
+
+  // Generate unique slug with target year
+  const baseSlug = source.slug.replace(/-\d{4}$/, "");
+  const newSlug = `${baseSlug}-${targetYear}`;
+
+  return createEvent({
+    title: source.title.replace(/\b\d{4}\b/, String(targetYear)),
+    slug: newSlug,
+    description: source.description,
+    longDescription: source.longDescription,
+    coverImage: source.coverImage,
+    startDate: newStart || `${targetYear}-11-01`,
+    endDate: newEnd || `${targetYear}-11-05`,
+    time: source.time,
+    location: source.location,
+    city: source.city,
+    state: source.state,
+    country: source.country || "India",
+    category: source.category,
+    price: source.price,
+    highlights: source.highlights ? [...source.highlights] : [],
+    organizer: source.organizer,
+    registrationLink: source.registrationLink,
+    status: "draft", // Stored as draft until admin verifies exact year dates
+    featured: source.featured,
+    timezone: source.timezone || "Asia/Kolkata",
+    isRecurring: true,
+    recurrenceFrequency: "annual",
+    seriesId,
+    editionYear: targetYear,
+    source: "manual",
+  });
+}
+
 /** Alias for findEventById — used by route handlers */
 export const getEventById = findEventById;
 
-/** Returns only published events */
-export function getPublishedEvents() {
-  return getAllEvents().filter((e) => e.status === "published");
+/** Returns eligible published events (filtered by publication status and scheduled dates) */
+export function getPublishedEvents(options?: {
+  includeExpired?: boolean;
+  now?: Date;
+}): EventRecord[] {
+  const now = options?.now || new Date();
+  return getAllEvents().filter((e) => {
+    if (!isEventLive(e, now)) return false;
+    if (options?.includeExpired === false && !isEventUpcoming(e, now)) return false;
+    return true;
+  });
 }

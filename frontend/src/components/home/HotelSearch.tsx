@@ -154,7 +154,11 @@ export default function HotelSearch({
       const res = await fetch(apiUrl(`/api/public/locations/autocomplete?${qParams.toString()}`), {
         signal: controller.signal,
       });
-      if (!res.ok) throw new Error("Autocomplete request failed");
+      if (!res.ok) return;
+
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) return;
+
       const data = await res.json();
       if (data.success && Array.isArray(data.suggestions)) {
         setSuggestions(data.suggestions);
@@ -444,6 +448,7 @@ export default function HotelSearch({
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#009F8D] flex-shrink-0" />
               <input
+                id="hero-destination-input"
                 type="text"
                 value={searchInput}
                 onChange={(e) => {

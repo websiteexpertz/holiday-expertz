@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedAdmin, checkAdminPermission } from "../../../../lib/security/adminAuthService";
-import { getAllEvents, createEvent, updateEvent, deleteEvent, getEventById } from "../../../../lib/storage/eventStore";
+import {
+  getAllEvents,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  getEventById,
+  duplicateEventForYear,
+} from "../../../../lib/storage/eventStore";
 import { recordAuditLog } from "../../../../lib/storage/auditLogStore";
 
 export async function GET(req: Request) {
@@ -10,7 +17,30 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    const events = getAllEvents();
+    const { searchParams } = new URL(req.url);
+    const statusFilter = searchParams.get("status");
+    const categoryFilter = searchParams.get("category");
+    const yearFilter = searchParams.get("year");
+
+    let events = getAllEvents();
+
+    if (statusFilter && statusFilter !== "all") {
+      events = events.filter((e) => e.status === statusFilter);
+    }
+
+    if (categoryFilter && categoryFilter !== "all") {
+      events = events.filter((e) => e.category?.toLowerCase() === categoryFilter.toLowerCase());
+    }
+
+    if (yearFilter) {
+      const y = parseInt(yearFilter, 10);
+      events = events.filter((e) => {
+        const startY = new Date(e.startDate).getFullYear();
+        const endY = new Date(e.endDate || e.startDate).getFullYear();
+        return startY === y || endY === y || e.editionYear === y;
+      });
+    }
+
     return NextResponse.json({ success: true, events });
   } catch (error) {
     console.error("Admin Events GET Error:", error);
@@ -26,24 +56,75 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
+
+    // Check if this is an annual/recurring event duplication action
+    if (body.action === "duplicate_year") {
+      if (!body.sourceId || !body.targetYear) {
+        return NextResponse.json(
+          { success: false, message: "sourceId and targetYear are required for year duplication" },
+          { status: 400 }
+        );
+      }
+
+      const duplicated = duplicateEventForYear(body.sourceId, body.targetYear, body.newDates);
+
+      recordAuditLog({
+        adminId: admin.id,
+        adminName: admin.fullName,
+        adminEmail: admin.email,
+        module: "upcoming_events",
+        action: "duplicate_event_year",
+        resourceId: duplicated.id,
+        resourceType: "event",
+        details: `Created annual occurrence "${duplicated.title}" for year ${body.targetYear}`,
+        status: "success",
+      });
+
+      return NextResponse.json({ success: true, event: duplicated });
+    }
+
     if (!body.title || !body.startDate || !body.endDate || !body.location) {
-      return NextResponse.json({ success: false, message: "Title, dates, and location are required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Title, start date, end date, and location are required" },
+        { status: 400 }
+      );
     }
 
     const event = createEvent({
       title: body.title,
       slug: body.slug,
       description: body.description || "",
-      coverImage: body.coverImage || "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+      longDescription: body.longDescription || body.description || "",
+      coverImage:
+        body.coverImage ||
+        "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
       startDate: body.startDate,
       endDate: body.endDate,
+      time: body.time || "09:00 AM - 08:00 PM",
       location: body.location,
       city: body.city || "Udaipur",
       state: body.state || "Rajasthan",
-      category: body.category || "Cultural Festival",
-      registrationLink: body.registrationLink,
+      country: body.country || "India",
+      category: body.category || "Cultural",
+      price: body.price || "Free Entry",
+      highlights: Array.isArray(body.highlights)
+        ? body.highlights
+        : body.highlights
+        ? [body.highlights]
+        : ["Cultural Performances", "Guided Heritage Access"],
+      organizer: body.organizer || "Heritage Tourism Council",
+      registrationLink: body.registrationLink || "",
       status: body.status || "published",
       featured: Boolean(body.featured),
+      timezone: body.timezone || "Asia/Kolkata",
+      publishAt: body.publishAt || undefined,
+      unpublishAt: body.unpublishAt || undefined,
+      isRecurring: Boolean(body.isRecurring),
+      recurrenceFrequency: body.isRecurring ? (body.recurrenceFrequency || "annual") : "none",
+      seriesId: body.seriesId || undefined,
+      editionYear: body.editionYear || new Date(body.startDate).getFullYear(),
+      source: body.source || "manual",
+      externalId: body.externalId || undefined,
     });
 
     recordAuditLog({
@@ -54,14 +135,17 @@ export async function POST(req: Request) {
       action: "create_event",
       resourceId: event.id,
       resourceType: "event",
-      details: `Created upcoming event "${event.title}"`,
+      details: `Created event "${event.title}" [status: ${event.status}]`,
       status: "success",
     });
 
     return NextResponse.json({ success: true, event });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Admin Events POST Error:", error);
-    return NextResponse.json({ success: false, message: "Failed to create event" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: error?.message || "Failed to create event" },
+      { status: 500 }
+    );
   }
 }
 

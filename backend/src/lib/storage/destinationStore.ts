@@ -139,7 +139,7 @@ function getInitialDestinations(): DestinationsStorageFormat {
       name: "Jaipur",
       stateId: "st_raj",
       countryId: "cnt_in",
-      image: "https://images.unsplash.com/photo-1603258849062-171881515eb6?auto=format&fit=crop&w=800&q=80",
+      image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80",
       isPopular: true,
       isActive: true,
       createdAt: now,

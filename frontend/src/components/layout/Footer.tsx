@@ -218,9 +218,9 @@ export default function Footer() {
             <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-white">Company</h4>
             <ul className="space-y-2.5 text-xs sm:text-[13px] text-[#9fb8b5]">
               <li>
-                <a href="#about" className="hover:text-teal-300 transition-colors">
+                <Link href="/about" className="hover:text-teal-300 transition-colors">
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#why-us" className="hover:text-teal-300 transition-colors">

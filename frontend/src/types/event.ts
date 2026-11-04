@@ -9,6 +9,7 @@ export type EventCategory =
 
 export interface EventItem {
   id: string;
+  slug?: string;
   title: string;
   category: Exclude<EventCategory, "All">;
   startDate: string; // YYYY-MM-DD
@@ -17,6 +18,7 @@ export interface EventItem {
   location: string; // venue name
   city: string;
   state: string;
+  country?: string;
   image: string;
   description: string;
   longDescription: string;

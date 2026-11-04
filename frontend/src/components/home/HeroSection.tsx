@@ -158,7 +158,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
   return (
     <section
       aria-label="Hero Luxury Hospitality Slideshow"
-      className="relative min-h-[520px] lg:min-h-[580px] flex flex-col justify-center pt-8 sm:pt-12 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 overflow-visible"
+      className="relative min-h-[560px] lg:min-h-[620px] flex flex-col justify-center pt-24 sm:pt-28 lg:pt-32 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 overflow-visible"
     >
       {/* 
         FOUR-IMAGE AUTOMATIC HERO SLIDESHOW
@@ -223,7 +223,7 @@ export default function HeroSection({ onSearch }: HeroSectionProps) {
         </div>
 
         {/* Booking Search Bar positioned directly under the text with reduced spacing */}
-        <div className="w-full pt-1 sm:pt-2 pb-1">
+        <div id="hero-search-bar" className="w-full pt-1 sm:pt-2 pb-1 scroll-mt-24">
           <HotelSearch onSearch={onSearch} />
         </div>
       </div>
