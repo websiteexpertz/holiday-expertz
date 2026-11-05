@@ -1,0 +1,33 @@
+{
+  "slots": [
+    {
+      "slotIndex": 0,
+      "slideNumber": 1,
+      "heading": "Small places. Big memories.",
+      "description": "Design-led stays with character.",
+      "updatedAt": "2026-11-05T15:25:21.081Z"
+    },
+    {
+      "slotIndex": 1,
+      "slideNumber": 2,
+      "heading": "Great stays. Smart prices.",
+      "description": "Clean, comfortable and easy on the wallet.",
+      "updatedAt": "2026-11-05T00:00:00.000Z"
+    },
+    {
+      "slotIndex": 2,
+      "slideNumber": 3,
+      "heading": "Stay local. Feel at home.",
+      "description": "Warm hosts, home-cooked meals, real stories.",
+      "updatedAt": "2026-11-05T00:00:00.000Z"
+    },
+    {
+      "slotIndex": 3,
+      "slideNumber": 4,
+      "heading": "Unwind. Recharge. Repeat.",
+      "description": "Beach and hill resorts made for slow days.",
+      "updatedAt": "2026-11-05T00:00:00.000Z"
+    }
+  ],
+  "updatedAt": "2026-11-05T15:25:21.081Z"
+}

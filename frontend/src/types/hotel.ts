@@ -71,6 +71,7 @@ export interface BlogPost {
   publishedDate: string;
   readTime: string;
   category: string;
+  isInformative?: boolean;
 }
 
 export type LocationType = "country" | "state" | "city" | "area" | "property";

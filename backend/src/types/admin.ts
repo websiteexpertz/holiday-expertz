@@ -249,6 +249,19 @@ export interface PaymentRecord {
 }
 
 // ── Blog, Events, Deals, Content ──
+export interface BlogCategoryRecord {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
+  isActive: boolean;
+  order?: number;
+  blogCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface BlogPostRecord {
   id: string;
   slug: string;
@@ -257,14 +270,21 @@ export interface BlogPostRecord {
   content: string;
   featuredImage: string;
   category: string;
+  categorySlug?: string;
   author: string;
   authorAvatar?: string;
+  authorRole?: string;
   readTime: string;
   status: "published" | "draft" | "scheduled" | "archived";
   featured: boolean;
+  isInformative?: boolean;
   tags?: string[];
+  additionalImages?: Array<{ url: string; alt?: string; caption?: string }>;
   seoTitle?: string;
   seoDescription?: string;
+  focusKeyword?: string;
+  canonicalUrl?: string;
+  ogImage?: string;
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -361,6 +381,19 @@ export interface HeroSlideItem {
   category: "Mountain Retreats" | "Private Villas" | "Heritage Stays" | "Riverside Escapes" | string;
   order: number;
   isActive: boolean;
+}
+
+export interface HeroBannerContentSlot {
+  slotIndex: number; // 0, 1, 2, 3
+  slideNumber: number; // 1, 2, 3, 4
+  heading: string;
+  description: string;
+  updatedAt: string;
+}
+
+export interface HeroBannerContentRecord {
+  slots: HeroBannerContentSlot[];
+  updatedAt: string;
 }
 
 export interface WebsiteHeroContent {

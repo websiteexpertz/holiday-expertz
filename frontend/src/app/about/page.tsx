@@ -32,7 +32,7 @@ export default function AboutUsPage() {
         {/* ========================================================================= */}
         <section
           aria-label="About Us Hero"
-          className="relative min-h-[460px] sm:min-h-[520px] lg:min-h-[580px] flex items-center justify-center overflow-hidden"
+          className="relative min-h-[380px] sm:min-h-[440px] lg:min-h-[480px] flex items-center justify-center overflow-hidden"
         >
           {/* Background Photography */}
           <div className="absolute inset-0 z-0">
@@ -51,7 +51,7 @@ export default function AboutUsPage() {
           </div>
 
           {/* Hero Content */}
-          <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16 sm:py-20 lg:py-24">
+          <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-10 sm:py-12 lg:py-14">
             {/* Small Section Label */}
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[#D97706] text-xs font-bold uppercase tracking-[0.22em] font-editorial-sans mb-5 shadow-xs">
               <Sparkles className="w-3.5 h-3.5 fill-current text-[#D97706]" />
@@ -78,22 +78,22 @@ export default function AboutUsPage() {
         {/* ========================================================================= */}
         <section
           aria-label="Introduction to Holiday Expertz"
-          className="py-16 sm:py-20 lg:py-24 bg-white border-b border-[#E8EAE5]/60"
+          className="pt-6 sm:pt-7 lg:pt-8 pb-6 sm:pb-7 lg:pb-8 bg-white border-b border-[#E8EAE5]/60"
         >
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
               {/* Text Column */}
-              <div className="lg:col-span-7 space-y-6">
+              <div className="lg:col-span-7 space-y-4">
+                <h2 className="font-editorial-serif text-3xl sm:text-4xl font-bold text-[#0b192c] tracking-tight leading-[1.2]">
+                  Curating the Art of Exceptional Travel Stays.
+                </h2>
+
                 <div className="inline-flex items-center gap-2 text-[#006F66] text-xs font-bold uppercase tracking-[0.18em] font-editorial-sans">
                   <span className="w-6 h-px bg-[#009F8D]" />
                   <span>Welcome to Holiday Expertz</span>
                 </div>
 
-                <h2 className="font-editorial-serif text-3xl sm:text-4xl font-bold text-[#0b192c] tracking-tight leading-[1.2]">
-                  Curating the Art of Exceptional Travel Stays.
-                </h2>
-
-                <div className="space-y-5 font-editorial-sans text-slate-700 text-base sm:text-[17px] leading-[1.8] font-normal">
+                <div className="space-y-5 font-editorial-sans text-slate-700 text-base sm:text-[17px] leading-[1.8] font-normal pt-2">
                   <p>
                     At Holiday Expertz, we believe that where you stay is an essential part of how you experience the world. From luxurious private villas and elegant heritage retreats to serene mountain hideaways and breathtaking beachfront escapes, we help you discover places that make every getaway special.
                   </p>
@@ -144,7 +144,7 @@ export default function AboutUsPage() {
         {/* ========================================================================= */}
         <section
           aria-label="Our Story"
-          className="py-16 sm:py-20 lg:py-24 bg-[#FAF9F6] border-b border-[#E8EAE5]/60"
+          className="pt-6 sm:pt-7 lg:pt-8 pb-6 sm:pb-7 lg:pb-8 bg-[#FAF9F6] border-b border-[#E8EAE5]/60"
         >
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
@@ -163,17 +163,17 @@ export default function AboutUsPage() {
               </div>
 
               {/* Text Column */}
-              <div className="lg:col-span-6 order-1 lg:order-2 space-y-6">
+              <div className="lg:col-span-6 order-1 lg:order-2 space-y-4">
+                <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0b192c] tracking-tight leading-[1.15]">
+                  Our Story
+                </h2>
+
                 <div className="inline-flex items-center gap-2 text-[#006F66] text-xs font-bold uppercase tracking-[0.18em] font-editorial-sans">
                   <span className="w-6 h-px bg-[#009F8D]" />
                   <span>The Heritage & Journey</span>
                 </div>
 
-                <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0b192c] tracking-tight leading-[1.15]">
-                  Our Story
-                </h2>
-
-                <div className="space-y-5 font-editorial-sans text-slate-700 text-base sm:text-[17px] leading-[1.8] font-normal">
+                <div className="space-y-5 font-editorial-sans text-slate-700 text-base sm:text-[17px] leading-[1.8] font-normal pt-2">
                   <p>
                     Born from a passion for travel and a belief that every destination has a unique story to tell, Holiday Expertz brings together exceptional accommodation options and inspiring destinations in one place.
                   </p>
@@ -191,19 +191,19 @@ export default function AboutUsPage() {
         {/* ========================================================================= */}
         <section
           aria-label="What We Offer"
-          className="py-16 sm:py-20 lg:py-24 bg-white border-b border-[#E8EAE5]/60 overflow-hidden"
+          className="pt-6 sm:pt-7 lg:pt-8 pb-6 sm:pb-7 lg:pb-8 bg-white border-b border-[#E8EAE5]/60 overflow-hidden"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Header */}
-            <div className="max-w-3xl mb-10 sm:mb-12">
-              <div className="inline-flex items-center gap-2 text-[#006F66] text-xs font-bold uppercase tracking-[0.18em] font-editorial-sans mb-2.5">
-                <span className="w-6 h-px bg-[#009F8D]" />
-                <span>Our Capabilities</span>
-              </div>
+            <div className="max-w-3xl mb-6 sm:mb-7 space-y-2.5">
               <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0b192c] tracking-tight leading-[1.15]">
                 What We Offer
               </h2>
-              <p className="font-editorial-sans text-slate-600 text-base sm:text-lg mt-3 leading-relaxed">
+              <div className="inline-flex items-center gap-2 text-[#006F66] text-xs font-bold uppercase tracking-[0.18em] font-editorial-sans">
+                <span className="w-6 h-px bg-[#009F8D]" />
+                <span>Our Capabilities</span>
+              </div>
+              <p className="font-editorial-sans text-slate-600 text-base sm:text-lg pt-1 leading-relaxed">
                 Discover everything that makes planning your next holiday easier and more inspiring.
               </p>
             </div>
@@ -218,22 +218,22 @@ export default function AboutUsPage() {
         {/* ========================================================================= */}
         <section
           aria-label="Our Mission"
-          className="py-16 sm:py-20 lg:py-24 bg-[#FAF9F6] border-b border-[#E8EAE5]/60"
+          className="pt-6 sm:pt-7 lg:pt-8 pb-6 sm:pb-7 lg:pb-8 bg-[#FAF9F6] border-b border-[#E8EAE5]/60"
         >
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
               {/* Text Column */}
-              <div className="lg:col-span-6 space-y-6">
+              <div className="lg:col-span-6 space-y-4">
+                <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0b192c] tracking-tight leading-[1.15]">
+                  Our Mission
+                </h2>
+
                 <div className="inline-flex items-center gap-2 text-[#006F66] text-xs font-bold uppercase tracking-[0.18em] font-editorial-sans">
                   <span className="w-6 h-px bg-[#009F8D]" />
                   <span>Purpose & Commitment</span>
                 </div>
 
-                <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0b192c] tracking-tight leading-[1.15]">
-                  Our Mission
-                </h2>
-
-                <p className="font-editorial-sans text-slate-700 text-base sm:text-[18px] leading-[1.85] font-normal">
+                <p className="font-editorial-sans text-slate-700 text-base sm:text-[18px] leading-[1.85] font-normal pt-2">
                   Our mission is to make extraordinary holiday experiences more accessible by helping travelers discover the right stays and destinations for their journeys. We strive to bring together quality accommodation, meaningful choices, and helpful service to make every stage of holiday planning more enjoyable.
                 </p>
               </div>
@@ -260,7 +260,7 @@ export default function AboutUsPage() {
         {/* ========================================================================= */}
         <section
           aria-label="Our Vision"
-          className="py-16 sm:py-20 lg:py-24 bg-white border-b border-[#E8EAE5]/60"
+          className="pt-6 sm:pt-7 lg:pt-8 pb-6 sm:pb-7 lg:pb-8 bg-white border-b border-[#E8EAE5]/60"
         >
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
@@ -279,17 +279,17 @@ export default function AboutUsPage() {
               </div>
 
               {/* Text Column */}
-              <div className="lg:col-span-6 order-1 lg:order-2 space-y-6">
+              <div className="lg:col-span-6 order-1 lg:order-2 space-y-4">
+                <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0b192c] tracking-tight leading-[1.15]">
+                  Our Vision
+                </h2>
+
                 <div className="inline-flex items-center gap-2 text-[#006F66] text-xs font-bold uppercase tracking-[0.18em] font-editorial-sans">
                   <span className="w-6 h-px bg-[#009F8D]" />
                   <span>The Future Ahead</span>
                 </div>
 
-                <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0b192c] tracking-tight leading-[1.15]">
-                  Our Vision
-                </h2>
-
-                <p className="font-editorial-sans text-slate-700 text-base sm:text-[18px] leading-[1.85] font-normal">
+                <p className="font-editorial-sans text-slate-700 text-base sm:text-[18px] leading-[1.85] font-normal pt-2">
                   We aspire to become a trusted name in holiday accommodation and travel experiences, inspiring people to explore new destinations, embrace different cultures, and create memories that last a lifetime.
                 </p>
               </div>
@@ -302,22 +302,22 @@ export default function AboutUsPage() {
         {/* ========================================================================= */}
         <section
           aria-label="Why Holiday Expertz"
-          className="py-16 sm:py-20 lg:py-24 bg-[#FAF9F6] border-b border-[#E8EAE5]/60"
+          className="pt-6 sm:pt-7 lg:pt-8 pb-6 sm:pb-7 lg:pb-8 bg-[#FAF9F6] border-b border-[#E8EAE5]/60"
         >
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
               {/* Text Column */}
-              <div className="lg:col-span-7 space-y-6">
+              <div className="lg:col-span-7 space-y-4">
+                <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0b192c] tracking-tight leading-[1.15]">
+                  Why Holiday Expertz?
+                </h2>
+
                 <div className="inline-flex items-center gap-2 text-[#006F66] text-xs font-bold uppercase tracking-[0.18em] font-editorial-sans">
                   <span className="w-6 h-px bg-[#009F8D]" />
                   <span>The HolidayExpertz Difference</span>
                 </div>
 
-                <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0b192c] tracking-tight leading-[1.15]">
-                  Why Holiday Expertz?
-                </h2>
-
-                <h3 className="font-editorial-serif italic text-xl sm:text-2xl text-[#006F66] leading-snug font-normal">
+                <h3 className="font-editorial-serif italic text-xl sm:text-2xl text-[#006F66] leading-snug font-normal pt-1">
                   Because every traveler deserves a stay that feels right for them.
                 </h3>
 
@@ -353,7 +353,7 @@ export default function AboutUsPage() {
         {/* ========================================================================= */}
         <section
           aria-label="Your Next Getaway Starts Here"
-          className="relative py-20 sm:py-24 lg:py-28 overflow-hidden flex items-center justify-center text-center"
+          className="relative py-12 sm:py-14 lg:py-16 overflow-hidden flex items-center justify-center text-center"
         >
           {/* Background Photography */}
           <div className="absolute inset-0 z-0">
@@ -368,17 +368,19 @@ export default function AboutUsPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#07101d]/90 via-[#0b192c]/80 to-[#0b192c]/85" />
           </div>
 
-          <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-300 text-xs font-bold uppercase tracking-widest font-editorial-sans">
-              <Compass className="w-3.5 h-3.5" />
-              <span>Begin Your Journey</span>
-            </div>
-
+          <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
             <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15]">
               Your Next Getaway Starts Here
             </h2>
 
-            <p className="font-editorial-sans text-slate-200 text-base sm:text-lg leading-relaxed max-w-xl mx-auto font-light">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-300 text-xs font-bold uppercase tracking-widest font-editorial-sans">
+                <Compass className="w-3.5 h-3.5" />
+                <span>Begin Your Journey</span>
+              </div>
+            </div>
+
+            <p className="font-editorial-sans text-slate-200 text-base sm:text-lg leading-relaxed max-w-xl mx-auto font-light pt-1">
               The world is full of beautiful places waiting to be discovered. Let Holiday Expertz help you find yours.
             </p>
 

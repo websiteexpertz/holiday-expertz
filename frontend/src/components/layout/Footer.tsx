@@ -228,13 +228,13 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#careers" className="hover:text-teal-300 transition-colors">
-                  Careers <span className="text-[9px] bg-[#123e38] text-teal-300 px-1.5 py-0.5 rounded font-mono">Hiring</span>
+                <a href="#privacy" className="hover:text-teal-300 transition-colors">
+                  Privacy Policy
                 </a>
               </li>
               <li>
-                <a href="#press" className="hover:text-teal-300 transition-colors">
-                  Press & Media
+                <a href="#terms" className="hover:text-teal-300 transition-colors">
+                  Terms & Conditions
                 </a>
               </li>
               <li>
@@ -312,6 +312,61 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
+
+            {/* Secure Payments (Right Side of Footer) */}
+            <div className="pt-4 space-y-2.5">
+              <span className="text-xs font-bold uppercase tracking-[0.16em] text-white block">
+                Secure Payments
+              </span>
+              <div className="grid grid-cols-2 gap-2 max-w-[210px]">
+                {/* VISA */}
+                <div
+                  className="w-full h-[40px] rounded-xl bg-[#1434CB] flex items-center justify-center p-1.5 shadow-sm hover:brightness-110 transition-all select-none"
+                  title="Visa"
+                >
+                  <svg className="h-4.5 w-auto" viewBox="0 0 78 24" fill="none">
+                    <path
+                      d="M30.4 1.5L20 23.5H13.6L7.9 5.8C7.6 4.7 7.3 4.2 6.4 3.7C4.9 2.9 2.3 2.1 0 1.6L0.2 0.7H11.2C12.7 0.7 13.9 1.7 14.3 3.3L17 17.5L23.8 0.7H30.4V1.5ZM57.5 16.3C57.6 10.3 49.3 10 49.4 7.2C49.5 6.3 50.3 5.4 52.1 5.2C53 5.1 55.6 5 58.4 6.3L59.5 1.2C58 0.7 56.1 0.2 53.7 0.2C47.4 0.2 43 3.6 43 8.3C42.8 12.1 46.2 14.2 48.8 15.5C51.5 16.8 52.4 17.6 52.4 18.8C52.3 20.6 50.2 21.4 48.3 21.4C44.9 21.4 42.9 20.4 41.3 19.6L40.2 24.9C41.8 25.6 44.8 26.2 47.9 26.2C54.6 26.2 57.5 22.9 57.5 16.3ZM74.5 23.5H80L75.2 0.7H70.1C69 0.7 68.1 1.3 67.7 2.3L57.8 23.5H64.3L65.6 19.9H73.6L74.5 23.5ZM67.4 15.1L70.7 6.1L72.6 15.1H67.4ZM40.9 0.7L35.7 23.5H29.5L34.7 0.7H40.9Z"
+                      fill="white"
+                    />
+                  </svg>
+                </div>
+
+                {/* Mastercard */}
+                <div
+                  className="w-full h-[40px] rounded-xl bg-[#FF5F00] flex flex-col items-center justify-center p-1 shadow-sm hover:brightness-110 transition-all select-none"
+                  title="Mastercard"
+                >
+                  <svg className="h-4.5 w-auto" viewBox="0 0 38 24" fill="none">
+                    <circle cx="14" cy="12" r="9" stroke="white" strokeWidth="2.2" fill="none" />
+                    <circle cx="24" cy="12" r="9" stroke="white" strokeWidth="2.2" fill="none" />
+                  </svg>
+                  <span className="text-[7.5px] font-bold text-white tracking-tighter leading-none mt-0.5">
+                    mastercard.
+                  </span>
+                </div>
+
+                {/* American Express */}
+                <div
+                  className="w-full h-[40px] rounded-xl bg-[#002663] flex flex-col items-center justify-center p-1 shadow-sm hover:brightness-110 transition-all select-none"
+                  title="American Express"
+                >
+                  <span className="text-[8px] font-black tracking-widest text-white leading-tight text-center font-sans">
+                    AMERICAN<br />EXPRESS
+                  </span>
+                </div>
+
+                {/* PayPal */}
+                <div
+                  className="w-full h-[40px] rounded-xl bg-[#0079C1] flex items-center justify-center p-1.5 shadow-sm hover:brightness-110 transition-all select-none"
+                  title="PayPal"
+                >
+                  <span className="text-sm font-black italic text-white tracking-tight font-sans">
+                    PayPal
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

@@ -57,28 +57,17 @@ export default function WhatsHappeningSection() {
   const [events, setEvents] = useState<EventItem[]>(upcomingEvents);
   const [selectedMonth, setSelectedMonth] = useState<number>(10);
   const [selectedYear, setSelectedYear] = useState<number>(2026);
-  const [currentCalMonth, setCurrentCalMonth] = useState<number | null>(null);
-  const [userHasManuallySelected, setUserHasManuallySelected] = useState<boolean>(false);
-  const monthButtonRefs = useRef<{ [key: number]: HTMLButtonElement | null }>({});
-  const monthScrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Synchronize with real calendar date on mount & real-time rollover
+  // Synchronize automatically with real calendar date on mount & real-time rollover
   useEffect(() => {
     const updateRealDate = () => {
       const now = new Date();
-      const realMonth = now.getMonth();
-      const realYear = now.getFullYear();
-
-      setCurrentCalMonth(realMonth);
-
-      if (!userHasManuallySelected) {
-        setSelectedMonth(realMonth);
-        setSelectedYear(realYear);
-      }
+      setSelectedMonth(now.getMonth());
+      setSelectedYear(now.getFullYear());
     };
 
     updateRealDate();
-    const interval = setInterval(updateRealDate, 60000); // Check every minute for date rollover
+    const interval = setInterval(updateRealDate, 60000); // Check every minute for real calendar month rollover
 
     const handleVisibility = () => {
       if (!document.hidden) updateRealDate();
@@ -89,19 +78,7 @@ export default function WhatsHappeningSection() {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [userHasManuallySelected]);
-
-  // Bring active month card smoothly into view
-  useEffect(() => {
-    const activeEl = monthButtonRefs.current[selectedMonth];
-    if (activeEl && monthScrollContainerRef.current) {
-      activeEl.scrollIntoView({
-        behavior: "smooth",
-        inline: "center",
-        block: "nearest",
-      });
-    }
-  }, [selectedMonth]);
+  }, []);
 
   // Fetch live published events from backend API if available
   useEffect(() => {
@@ -162,9 +139,9 @@ export default function WhatsHappeningSection() {
     };
   }, []);
 
-  // Filter events for the currently selected month and year
+  // Filter events for the currently active calendar month and year
   const monthEvents = useMemo(() => {
-    return events.filter((evt) => {
+    const filtered = events.filter((evt) => {
       if (!evt.startDate) return false;
       const s = new Date(evt.startDate + "T00:00:00");
       const e = evt.endDate ? new Date(evt.endDate + "T00:00:00") : s;
@@ -174,7 +151,7 @@ export default function WhatsHappeningSection() {
       const endMonth = e.getMonth();
       const endYear = e.getFullYear();
 
-      // Check if event falls in selected month & year (or spans into it)
+      // Check if event falls in current calendar month & year (or spans into it)
       const matchesStart = startMonth === selectedMonth && startYear === selectedYear;
       const matchesEnd = endMonth === selectedMonth && endYear === selectedYear;
       const spansMonth =
@@ -183,6 +160,9 @@ export default function WhatsHappeningSection() {
 
       return matchesStart || matchesEnd || spansMonth;
     });
+
+    if (filtered.length > 0) return filtered;
+    return events.slice(0, 8);
   }, [events, selectedMonth, selectedYear]);
 
   // Reuse existing auto-scrolling carousel hook
@@ -208,20 +188,7 @@ export default function WhatsHappeningSection() {
     ? [...monthEvents, ...monthEvents, ...monthEvents]
     : monthEvents;
 
-  const handleSelectMonth = (monthIndex: number) => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-
-    // If selected month is earlier than current month in current calendar year, show next year's occurrence
-    const targetYear = monthIndex < currentMonth ? currentYear + 1 : currentYear;
-
-    setSelectedMonth(monthIndex);
-    setSelectedYear(targetYear);
-    setUserHasManuallySelected(true);
-  };
-
-  const currentSelectedMonthData = MONTH_DATA[selectedMonth];
+  const currentSelectedMonthData = MONTH_DATA[selectedMonth] || MONTH_DATA[0];
 
   // Helper date formatter
   const formatDateDisplay = (startStr: string, endStr?: string) => {
@@ -250,23 +217,23 @@ export default function WhatsHappeningSection() {
       ref={sectionRef}
       id="events"
       aria-label="What's Happening Around the World"
-      className="py-14 sm:py-20 lg:py-24 bg-[#FAF9F6] border-b border-[#E8EAE5]/60 overflow-hidden"
+      className="pt-6 sm:pt-7 lg:pt-8 pb-6 sm:pb-7 lg:pb-8 bg-[#FAF9F6] border-b border-[#E8EAE5]/60 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-10">
-          <div className="space-y-3 max-w-3xl text-left">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-5 sm:mb-6">
+          <div className="space-y-2.5 sm:space-y-3 max-w-3xl text-left">
+            <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-[44px] font-bold text-[#0b192c] tracking-tight leading-[1.14]">
+              What&apos;s Happening Around the World
+            </h2>
+
             <div className="inline-flex items-center gap-2 text-[#006F66] text-xs font-bold uppercase tracking-[0.2em] font-editorial-sans">
               <span className="w-6 h-px bg-[#009F8D]" />
               <Sparkles className="w-3.5 h-3.5 text-[#D97706]" />
               <span>Cultural Calendars & Global Celebrations</span>
             </div>
 
-            <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-[44px] font-bold text-[#0b192c] tracking-tight leading-[1.14]">
-              What&apos;s Happening Around the World
-            </h2>
-
-            <p className="font-editorial-sans text-slate-600 sm:text-slate-700 text-sm sm:text-base leading-relaxed">
+            <p className="font-editorial-sans text-slate-600 sm:text-slate-700 text-sm sm:text-base leading-relaxed pt-0.5">
               Explore vibrant festivals, cultural celebrations, local events, and extraordinary experiences at destinations worth discovering. Make your next getaway even more memorable with experiences that bring every destination to life.
             </p>
           </div>
@@ -274,7 +241,7 @@ export default function WhatsHappeningSection() {
           {/* View All Events Link & Carousel Nav Arrows */}
           <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
             <Link
-              href={`/events?month=${selectedMonth + 1}&year=${selectedYear}`}
+              href="/events"
               className="text-xs sm:text-[13px] font-bold uppercase tracking-wider text-[#006F66] hover:text-[#009F8D] inline-flex items-center gap-1.5 transition-colors py-2 px-3 rounded-xl bg-white border border-slate-200 shadow-xs"
             >
               <span>View All Events</span>
@@ -304,68 +271,12 @@ export default function WhatsHappeningSection() {
           </div>
         </div>
 
-        {/* 
-          Horizontal Month Selector (All 12 Months in a Single Row)
-          - Horizontally scrollable on mobile
-          - Never wraps into multiple rows
-          - Compact, clickable month cards
-        */}
-        <div className="relative mb-10 sm:mb-12">
-          <div
-            ref={monthScrollContainerRef}
-            className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none pb-2 pt-1 flex-nowrap"
-          >
-            {MONTH_DATA.map((m) => {
-              const isSelected = selectedMonth === m.index;
-              const isCurrentCalendarMonth = currentCalMonth === m.index;
-
-              return (
-                <button
-                  key={m.name}
-                  ref={(el) => {
-                    monthButtonRefs.current[m.index] = el;
-                  }}
-                  type="button"
-                  onClick={() => handleSelectMonth(m.index)}
-                  className={`flex-shrink-0 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl text-left transition-all duration-200 cursor-pointer flex flex-col justify-between min-w-[96px] sm:min-w-[108px] ${
-                    isSelected
-                      ? "bg-[#0b192c] text-white shadow-md ring-2 ring-[#009F8D]/40 scale-102"
-                      : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/90 hover:border-slate-300 shadow-2xs"
-                  }`}
-                  aria-pressed={isSelected}
-                  aria-label={`Select ${m.name}`}
-                >
-                  <div className="flex items-center justify-between gap-1 w-full mb-1">
-                    <span
-                      className={`text-[10px] font-bold uppercase tracking-wider ${
-                        isSelected ? "text-amber-300" : "text-slate-400"
-                      }`}
-                    >
-                      {m.short}
-                    </span>
-                    {isCurrentCalendarMonth && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#009F8D]" title="Current Month" />
-                    )}
-                  </div>
-                  <span
-                    className={`font-editorial-serif text-sm sm:text-base font-bold tracking-tight truncate ${
-                      isSelected ? "text-white" : "text-[#172B2A]"
-                    }`}
-                  >
-                    {m.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* Selected Month Status Indicator */}
-        <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-200/60 text-xs text-slate-500 font-medium font-editorial-sans">
+        <div className="flex items-center justify-between mb-4 pb-2.5 border-b border-slate-200/60 text-xs text-slate-500 font-medium font-editorial-sans">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#009F8D]" />
             <span>
-              Showing celebrations in{" "}
+              Showing celebrations for{" "}
               <strong className="text-[#0b192c] font-bold">
                 {currentSelectedMonthData.name} {selectedYear}
               </strong>
@@ -495,18 +406,11 @@ export default function WhatsHappeningSection() {
               We are constantly scouting new festivals and cultural celebrations. Explore another month or view the full annual calendar.
             </p>
             <div className="flex items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => handleSelectMonth((selectedMonth + 1) % 12)}
-                className="px-4 py-2 rounded-xl bg-[#0b192c] hover:bg-[#009F8D] text-white text-xs font-semibold transition-colors shadow-xs cursor-pointer"
-              >
-                Explore Next Month →
-              </button>
               <Link
                 href="/events"
-                className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors"
+                className="px-4 py-2 rounded-xl bg-[#0b192c] hover:bg-[#009F8D] text-white text-xs font-semibold transition-colors shadow-xs"
               >
-                View All Events
+                View Full Events Calendar →
               </Link>
             </div>
           </div>

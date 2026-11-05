@@ -13,11 +13,14 @@ import {
   BookingRecord,
   PaymentRecord,
   BlogPostRecord,
+  BlogCategoryRecord,
   EventRecord,
   DealRecord,
   ReviewRecord,
   ContactInquiryRecord,
   WebsiteContentRecord,
+  HeroBannerContentRecord,
+  HeroBannerContentSlot,
   WebsiteSettingsRecord,
   CustomerUserRecord,
   AuditLogRecord,
@@ -404,8 +407,13 @@ export const adminClient = {
   },
 
   blogs: {
-    getAll: async () => {
-      return request<{ blogs: BlogPostRecord[] }>("/api/admin/blogs", { method: "GET" });
+    getAll: async (params?: { category?: string; status?: string; search?: string }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.category) searchParams.set("category", params.category);
+      if (params?.status) searchParams.set("status", params.status);
+      if (params?.search) searchParams.set("search", params.search);
+      const qs = searchParams.toString() ? `?${searchParams.toString()}` : "";
+      return request<{ blogs: BlogPostRecord[] }>(`/api/admin/blogs${qs}`, { method: "GET" });
     },
     create: async (payload: Partial<BlogPostRecord>) => {
       return request<{ blog: BlogPostRecord }>("/api/admin/blogs", { method: "POST", body: JSON.stringify(payload) });
@@ -415,6 +423,28 @@ export const adminClient = {
     },
     delete: async (id: string) => {
       return request<{ message: string }>(`/api/admin/blogs?id=${id}`, { method: "DELETE" });
+    },
+  },
+
+  blogCategories: {
+    getAll: async () => {
+      return request<{ categories: BlogCategoryRecord[] }>("/api/admin/blog-categories", { method: "GET" });
+    },
+    create: async (payload: Partial<BlogCategoryRecord>) => {
+      return request<{ category: BlogCategoryRecord }>("/api/admin/blog-categories", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+    update: async (id: string, updates: Partial<BlogCategoryRecord>) => {
+      return request<{ category: BlogCategoryRecord }>("/api/admin/blog-categories", {
+        method: "PUT",
+        body: JSON.stringify({ id, ...updates }),
+      });
+    },
+    delete: async (id: string, reassignTo?: string) => {
+      const qs = reassignTo ? `&reassignTo=${encodeURIComponent(reassignTo)}` : "";
+      return request<{ message: string }>(`/api/admin/blog-categories?id=${id}${qs}`, { method: "DELETE" });
     },
   },
 
@@ -492,6 +522,24 @@ export const adminClient = {
     },
     update: async (updates: Partial<WebsiteContentRecord>) => {
       return request<{ content: WebsiteContentRecord }>("/api/admin/content", { method: "PUT", body: JSON.stringify(updates) });
+    },
+  },
+
+  heroContent: {
+    get: async () => {
+      return request<{ heroContent: HeroBannerContentRecord }>("/api/admin/hero-content", { method: "GET" });
+    },
+    updateSlide: async (slideNumber: number, payload: { heading: string; description: string }) => {
+      return request<{ heroContent: HeroBannerContentRecord }>("/api/admin/hero-content", {
+        method: "PUT",
+        body: JSON.stringify({ slideNumber, ...payload }),
+      });
+    },
+    updateAll: async (slots: Array<{ slideNumber: number; heading: string; description: string }>) => {
+      return request<{ heroContent: HeroBannerContentRecord }>("/api/admin/hero-content", {
+        method: "PUT",
+        body: JSON.stringify({ slots }),
+      });
     },
   },
 

@@ -82,20 +82,20 @@ export default function HandpickedProperties({
       ref={sectionRef}
       id="handpicked"
       aria-label="A Collection of Exceptional Stays"
-      className="pt-8 sm:pt-10 lg:pt-12 pb-6 sm:pb-8 lg:pb-10 bg-[#FAF9F6] border-b border-[#E8EAE5]/60 scroll-mt-20 overflow-hidden"
+      className="pt-6 sm:pt-7 lg:pt-8 pb-5 sm:pb-6 lg:pb-7 bg-[#FAF9F6] border-b border-[#E8EAE5]/60 scroll-mt-20 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-10">
-          <div className="space-y-3 max-w-3xl text-left">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-5 sm:mb-6">
+          <div className="space-y-2.5 sm:space-y-3 max-w-3xl text-left">
+            <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#172B2A] tracking-tight leading-[1.12]">
+              A Collection of Exceptional Stays
+            </h2>
             <div className="inline-flex items-center gap-2 text-[#006F66] text-xs font-bold uppercase tracking-[0.18em] font-editorial-sans">
               <span className="w-6 h-px bg-[#009F8D]" />
               <span>Handpicked Properties</span>
             </div>
-            <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#172B2A] tracking-tight leading-[1.12]">
-              A Collection of Exceptional Stays
-            </h2>
-            <p className="font-editorial-sans text-slate-600 sm:text-slate-700 text-sm sm:text-base leading-relaxed">
+            <p className="font-editorial-sans text-slate-600 sm:text-slate-700 text-sm sm:text-base leading-relaxed pt-0.5">
               Explore an inspiring collection of heritage palaces, elegant havelis, beachfront escapes, serene mountain retreats, and luxurious private pool villas. Discover distinctive stays, thoughtfully selected for comfort, character, and memorable holiday experiences.
             </p>
           </div>
@@ -155,7 +155,7 @@ export default function HandpickedProperties({
         </div>
 
         {/* Category Tabs Filter (Edge-to-edge scroll on mobile) */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 sm:mb-8 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 font-editorial-sans">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 sm:mb-5 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 font-editorial-sans">
           <div className="flex items-center gap-1 text-xs font-bold text-[#697875] pr-2 flex-shrink-0">
             <Filter className="w-3.5 h-3.5 text-[#009F8D]" />
             <span>Filter:</span>

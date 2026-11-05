@@ -15,6 +15,7 @@ export const mockBlogs: BlogPost[] = [
     publishedDate: "October 14, 2026",
     readTime: "5 min read",
     category: "Weekend Escapes",
+    isInformative: true,
   },
   {
     id: "blog-2",

@@ -1,14 +1,82 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { BookOpen, Calendar, Clock, ArrowRight, X, User, ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Calendar, Clock, ArrowRight, ChevronLeft, ChevronRight, BookOpen, Sparkles } from "lucide-react";
 import { mockBlogs } from "@/data/blogs";
-import { BlogPost } from "@/types/hotel";
 import { useAutoScrollCarousel } from "@/hooks/useAutoScrollCarousel";
+import { apiUrl } from "@/lib/apiUrl";
+import { BlogPost } from "@/types/hotel";
 
 export default function BlogSection() {
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+  const router = useRouter();
+  const [blogs, setBlogs] = useState<BlogPost[]>(() => {
+    // Sort mockBlogs so informative blogs appear up front
+    return [...mockBlogs].sort((a, b) => {
+      const aInf = Boolean(a.isInformative);
+      const bInf = Boolean(b.isInformative);
+      if (aInf !== bInf) return aInf ? -1 : 1;
+      return 0;
+    });
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchBlogs() {
+      try {
+        const res = await fetch(apiUrl("/api/public/blogs"), { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (isMounted && data.success && Array.isArray(data.blogs) && data.blogs.length > 0) {
+          const mapped: BlogPost[] = data.blogs.map((b: any) => ({
+            id: b.id,
+            title: b.title,
+            slug: b.slug,
+            excerpt: b.excerpt,
+            coverImage:
+              b.featuredImage ||
+              b.coverImage ||
+              "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=800&q=80",
+            author: {
+              name: b.author || "Editorial Team",
+              avatar:
+                b.authorAvatar ||
+                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+              role: b.authorRole || "Curator",
+            },
+            publishedDate: b.publishedAt
+              ? new Date(b.publishedAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "Recently Published",
+            readTime: b.readTime || "5 min read",
+            category: b.category || "Travel Guides",
+            isInformative: Boolean(b.isInformative),
+          }));
+
+          // Ensure informative blogs are visible up front
+          mapped.sort((a, b) => {
+            const aInf = Boolean(a.isInformative);
+            const bInf = Boolean(b.isInformative);
+            if (aInf !== bInf) return aInf ? -1 : 1;
+            return 0;
+          });
+
+          setBlogs(mapped);
+        }
+      } catch (err) {
+        // Fallback remains mockBlogs
+      }
+    }
+    fetchBlogs();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const {
     sectionRef,
@@ -24,44 +92,52 @@ export default function BlogSection() {
     handleTouchEnd,
     handleTouchCancel,
   } = useAutoScrollCarousel({
-    itemsCount: mockBlogs.length,
+    itemsCount: blogs.length,
     speed: 0.58,
-    pauseOnHover: false,
-    isModalOpen: selectedPost !== null,
+    pauseOnHover: true,
+    isModalOpen: false,
   });
 
   const itemsToRender = canAutoScroll
-    ? [...mockBlogs, ...mockBlogs, ...mockBlogs]
-    : mockBlogs;
+    ? [...blogs, ...blogs, ...blogs]
+    : blogs;
+
+  const handleCardClick = (slug: string) => {
+    router.push(`/blog/${slug}`);
+  };
 
   return (
     <section
       ref={sectionRef}
       id="blog"
       aria-label="Guides to Extraordinary Getaways"
-      className="pt-8 sm:pt-10 lg:pt-12 pb-12 sm:pb-16 lg:pb-20 bg-[#FAF9F6] border-b border-[#E8EAE5]/60 scroll-mt-20 overflow-hidden"
+      className="pt-6 sm:pt-7 lg:pt-8 pb-8 sm:pb-10 lg:pb-12 bg-[#FAF9F6] border-b border-[#E8EAE5]/60 scroll-mt-20 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-14">
-          <div className="space-y-3 max-w-3xl text-left">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6 sm:mb-7">
+          <div className="space-y-2.5 sm:space-y-3 max-w-3xl text-left">
+            <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#172B2A] tracking-tight leading-[1.12]">
+              Guides to Extraordinary Getaways
+            </h2>
             <div className="inline-flex items-center gap-2 text-[#006F66] text-xs font-bold uppercase tracking-[0.18em] font-editorial-sans">
               <span className="w-6 h-px bg-[#009F8D]" />
               <span>Travel Journal</span>
             </div>
-            <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#172B2A] tracking-tight leading-[1.12]">
-              Guides to Extraordinary Getaways
-            </h2>
-            <p className="font-editorial-sans text-slate-600 sm:text-slate-700 text-sm sm:text-base leading-relaxed">
+            <p className="font-editorial-sans text-slate-600 sm:text-slate-700 text-sm sm:text-base leading-relaxed pt-0.5">
               Discover inspiring destinations, insider travel tips, exceptional places to stay, and expert recommendations to make every getaway extraordinary.
             </p>
           </div>
 
-          {/* Controls: Weekly Pill & Navigation Arrows */}
+          {/* Controls: Weekly Pill, View All & Navigation Arrows */}
           <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 flex-wrap font-editorial-sans">
-            <span className="text-xs text-[#697875] font-semibold bg-white px-3.5 py-2 rounded-xl border border-[#E8EAE5] shadow-xs">
-              Updated Weekly
-            </span>
+            <Link
+              href="/blog"
+              className="text-xs text-[#006F66] hover:text-[#009F8D] font-bold bg-[#E7F6F3] hover:bg-[#d8f1ec] px-3.5 py-2 rounded-xl border border-[#009F8D]/30 shadow-xs transition-colors inline-flex items-center gap-1.5"
+            >
+              <span>View All Articles</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
 
             {canAutoScroll && (
               <div className="flex items-center gap-1.5 sm:gap-2">
@@ -137,20 +213,20 @@ export default function BlogSection() {
             }}
           >
             {itemsToRender.map((post, index) => {
-              const copyIndex = Math.floor(index / mockBlogs.length);
+              const copyIndex = Math.floor(index / Math.max(blogs.length, 1));
               const uniqueKey = `blog-${post.id}-copy-${copyIndex}-${index}`;
 
               return (
                 <article
                   key={uniqueKey}
                   data-carousel-card
-                  onClick={() => setSelectedPost(post)}
+                  onClick={() => handleCardClick(post.slug)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      setSelectedPost(post);
+                      handleCardClick(post.slug);
                     }
                   }}
                   className="flex-shrink-0 relative transition-transform duration-300 w-[82vw] max-w-[340px] sm:max-w-none sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] h-[360px] sm:h-[420px] rounded-3xl overflow-hidden group/card shadow-md hover:shadow-2xl cursor-pointer select-none"
@@ -172,9 +248,17 @@ export default function BlogSection() {
                   <div className="absolute inset-0 p-5 sm:p-6 flex flex-col justify-between text-white z-10">
                     {/* Top Badges Row */}
                     <div className="flex justify-between items-start gap-2">
-                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md border border-white/30 text-white shadow-sm">
-                        {post.category}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md border border-white/30 text-white shadow-sm">
+                          {post.category}
+                        </span>
+                        {post.isInformative && (
+                          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30 flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 fill-current text-slate-950" />
+                            <span>Informative</span>
+                          </span>
+                        )}
+                      </div>
 
                       <div className="flex items-center gap-1 text-xs font-bold text-white bg-white/20 backdrop-blur-md border border-white/30 px-2.5 py-1 rounded-full shadow-sm">
                         <Clock className="w-3.5 h-3.5 text-teal-300" />
@@ -234,7 +318,7 @@ export default function BlogSection() {
             <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
               {/* Pagination Dots */}
               <div className="flex items-center gap-1.5 max-w-full overflow-x-auto py-1 scrollbar-none">
-                {mockBlogs.map((post, i) => (
+                {blogs.map((post, i) => (
                   <button
                     key={`dot-${post.id}-${i}`}
                     type="button"
@@ -266,7 +350,7 @@ export default function BlogSection() {
                   </span>{" "}
                   of{" "}
                   <span className="text-slate-900 font-bold">
-                    {mockBlogs.length}
+                    {blogs.length}
                   </span>{" "}
                   articles
                 </span>
@@ -275,95 +359,6 @@ export default function BlogSection() {
           )}
         </div>
       </div>
-
-      {/* Article Reader Preview Modal */}
-      {selectedPost && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-md animate-in fade-in"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-slate-100">
-            {/* Top Close Bar */}
-            <div className="p-4 sm:p-6 pb-2 flex items-center justify-between border-b border-slate-100">
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200">
-                {selectedPost.category}
-              </span>
-              <button
-                type="button"
-                onClick={() => setSelectedPost(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 transition-colors"
-                aria-label="Close article"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Scrollable Article Body */}
-            <div className="p-6 sm:p-8 overflow-y-auto space-y-6">
-              <div className="space-y-3">
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
-                  {selectedPost.title}
-                </h2>
-
-                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 pb-2 border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <User className="w-3.5 h-3.5 text-teal-600" />
-                    <span className="font-semibold text-slate-700">
-                      {selectedPost.author.name}
-                    </span>
-                    <span>• {selectedPost.author.role}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{selectedPost.publishedDate}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{selectedPost.readTime}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden bg-slate-100">
-                <Image
-                  src={selectedPost.coverImage}
-                  alt={selectedPost.title}
-                  fill
-                  sizes="700px"
-                  className="object-cover"
-                />
-              </div>
-
-              {/* Sample Article Content */}
-              <div className="prose prose-slate max-w-none text-slate-700 text-sm sm:text-base leading-relaxed space-y-4">
-                <p className="font-semibold text-slate-900 text-base sm:text-lg">
-                  {selectedPost.excerpt}
-                </p>
-                <p>
-                  Traveling across India offers an extraordinary kaleidoscope of scenery, architecture, and traditions. When planning your journey, curating the right hotel forms the foundation of every experience.
-                </p>
-                <p>
-                  At HolidayExpertz, our specialists evaluate properties based on three core pillars: authentic hospitality, distinctive regional character, and effortless comfort. Whether waking up to tea-carpeted slopes in Munnar or admiring palace courtyards in Udaipur, choosing the right base turns a simple trip into a cherished memory.
-                </p>
-                <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200 text-teal-900 text-xs sm:text-sm font-medium">
-                  💡 <strong>Expert Tip:</strong> Always verify check-in flexibility and look for stays offering tailored regional culinary experiences and verified guest testimonials.
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setSelectedPost(null)}
-                  className="px-6 py-2.5 bg-slate-900 hover:bg-teal-600 text-white font-bold text-sm rounded-xl transition-colors"
-                >
-                  Done Reading
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

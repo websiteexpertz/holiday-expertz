@@ -206,20 +206,20 @@ export default function PopularDestinations() {
       ref={sectionRef}
       id="popular-destinations"
       aria-label="Discover Your Kind of Getaway"
-      className="py-16 sm:py-20 lg:py-24 bg-[#FAF9F6] border-b border-[#E8EAE5]/60 overflow-hidden scroll-mt-20"
+      className="pt-6 sm:pt-7 lg:pt-8 pb-6 sm:pb-7 lg:pb-8 bg-[#FAF9F6] border-b border-[#E8EAE5]/60 overflow-hidden scroll-mt-20"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-14">
-          <div className="space-y-3 max-w-3xl text-left">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6 sm:mb-7">
+          <div className="space-y-2.5 sm:space-y-3 max-w-3xl text-left">
+            <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#172B2A] tracking-tight leading-[1.12]">
+              Discover Your Kind of Getaway
+            </h2>
             <div className="inline-flex items-center gap-2 text-[#006F66] text-xs font-bold uppercase tracking-[0.18em] font-editorial-sans">
               <span className="w-6 h-px bg-[#009F8D]" />
               <span>Explore The World</span>
             </div>
-            <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#172B2A] tracking-tight leading-[1.12]">
-              Discover Your Kind of Getaway
-            </h2>
-            <p className="font-editorial-sans text-slate-600 sm:text-slate-700 text-sm sm:text-base leading-relaxed">
+            <p className="font-editorial-sans text-slate-600 sm:text-slate-700 text-sm sm:text-base leading-relaxed pt-0.5">
               From grand heritage palaces and luxurious private villas to tranquil mountain retreats, tropical beachfront escapes, and charming countryside cottages, explore stays that match your travel style and turn every getaway into an extraordinary experience.
             </p>
           </div>
