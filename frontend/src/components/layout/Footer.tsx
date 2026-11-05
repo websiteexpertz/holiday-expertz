@@ -4,26 +4,35 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { apiUrl } from "@/lib/apiUrl";
 import {
   Compass,
   Mail,
-  Phone,
-  MapPin,
   Send,
   CheckCircle2,
   AlertCircle,
   ShieldCheck,
   Heart,
+  Sparkles,
+  Loader2,
+  ArrowRight,
 } from "lucide-react";
 
 export default function Footer() {
   const router = useRouter();
   const { isAuthenticated, owner } = useAuth();
-  const [email, setEmail] = useState("");
-  const [subscriptionState, setSubscriptionState] = useState<
-    "idle" | "success" | "error"
-  >("idle");
-  const [errorMessage, setErrorMessage] = useState("");
+
+  // Contact Form State
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [serverMessage, setServerMessage] = useState("");
 
   const handleListPropertyClick = (e: React.MouseEvent) => {
     if (isAuthenticated && owner) {
@@ -32,95 +41,281 @@ export default function Footer() {
     }
   };
 
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneDigits = formData.phone.replace(/\D/g, "");
 
-    if (!email.trim()) {
-      setSubscriptionState("error");
-      setErrorMessage("Please enter an email address.");
-      return;
+    if (!formData.firstName.trim()) {
+      errors.firstName = "First name is required";
+    }
+    if (!formData.lastName.trim()) {
+      errors.lastName = "Last name is required";
+    }
+    if (!formData.email.trim()) {
+      errors.email = "Email address is required";
+    } else if (!emailRegex.test(formData.email.trim())) {
+      errors.email = "Please enter a valid email address";
+    }
+    if (!formData.phone.trim()) {
+      errors.phone = "Phone number is required";
+    } else if (phoneDigits.length < 6 || phoneDigits.length > 16) {
+      errors.phone = "Please enter a valid phone number (6-16 digits with country code)";
+    }
+    if (!formData.message.trim()) {
+      errors.message = "Message is required";
+    } else if (formData.message.trim().length < 5) {
+      errors.message = "Message must be at least 5 characters";
     }
 
-    if (!emailRegex.test(email.trim())) {
-      setSubscriptionState("error");
-      setErrorMessage("Please enter a valid email address (e.g., user@domain.com).");
-      return;
-    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
-    setSubscriptionState("success");
-    setErrorMessage("");
-    setEmail("");
+  const handleSubmitContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setFormStatus("submitting");
+    setServerMessage("");
+
+    try {
+      const res = await fetch(apiUrl("/api/public/inquiries"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          email: formData.email.trim().toLowerCase(),
+          phone: formData.phone.trim(),
+          message: formData.message.trim(),
+          subject: "Website Contact Form Enquiry",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setFormStatus("success");
+        setServerMessage(
+          data.message ||
+            "Thank you for contacting Holiday Expertz! Your message has been received. Our team will get back to you shortly."
+        );
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          message: "",
+        });
+        setFieldErrors({});
+      } else {
+        setFormStatus("error");
+        setServerMessage(data.message || "Failed to submit enquiry. Please try again.");
+      }
+    } catch (err) {
+      setFormStatus("error");
+      setServerMessage("Unable to send message. Please check your connection and try again.");
+    }
   };
 
   return (
     <footer id="contact" className="bg-[#071f1d] text-[#9fb8b5] pt-16 pb-12 border-t border-[#133d38]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top Newsletter Banner */}
-        <div className="bg-gradient-to-r from-[#0a2e2a] via-[#0e3b36] to-[#0a2e2a] border border-[#174842] rounded-3xl p-8 lg:p-10 mb-16 shadow-xl">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-6 space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E7F6F3]/10 text-teal-300 text-xs font-semibold border border-teal-400/20 font-editorial-sans">
-                <Mail className="w-3.5 h-3.5" />
-                <span>Curated Escapes & Editorial Notes</span>
+        {/* Contact Us Form Banner */}
+        <div className="bg-gradient-to-r from-[#0a2e2a] via-[#0e3b36] to-[#0a2e2a] border border-[#174842] rounded-3xl p-8 lg:p-12 mb-16 shadow-xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+            {/* Left Column: Heading, Badge, Description */}
+            <div className="lg:col-span-5 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#E7F6F3]/10 text-teal-300 text-xs font-semibold border border-teal-400/20 font-editorial-sans tracking-wider uppercase">
+                <Sparkles className="w-3.5 h-3.5 text-teal-300" />
+                <span>GET IN TOUCH</span>
               </div>
-              <h3 className="font-editorial-serif text-2xl sm:text-3xl lg:text-4xl font-normal text-white tracking-tight">
-                Receive handpicked sanctuaries in your inbox.
+
+              <h3 className="font-editorial-serif text-2xl sm:text-3xl lg:text-4xl font-normal text-white tracking-tight leading-tight">
+                Let's make your next journey extraordinary.
               </h3>
-              <p className="font-editorial-sans text-xs sm:text-sm text-[#9fb8b5] max-w-lg font-light">
-                Subscribe for private invitations, newly curated palace havelis, and seasonal retreat updates. Unsubscribe anytime.
+
+              <p className="font-editorial-sans text-xs sm:text-sm text-[#9fb8b5] font-light leading-relaxed">
+                Have a question, need assistance, or want to explore something special? We'd love to hear from you. Send us a message and our team will get back to you.
               </p>
+
+              {/* Quick direct contact badges */}
+              <div className="pt-2 sm:pt-4 space-y-2.5 font-editorial-sans text-xs text-[#9fb8b5]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-[#071f1d] border border-[#1b4e47] flex items-center justify-center text-teal-400 shrink-0">
+                    <Mail className="w-3.5 h-3.5" />
+                  </div>
+                  <span>concierge@holidayexpertz.com</span>
+                </div>
+              </div>
             </div>
 
-            <div className="lg:col-span-6">
-              <form onSubmit={handleSubscribe} className="space-y-3 font-editorial-sans">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (subscriptionState !== "idle") setSubscriptionState("idle");
-                      }}
-                      placeholder="Enter your email address..."
-                      className="w-full px-4 py-3.5 pl-11 rounded-xl bg-[#071f1d]/90 border border-[#1b4e47] text-white placeholder-[#6d8a87] text-xs sm:text-sm focus:outline-none focus:border-[#009F8D] focus:ring-1 focus:ring-[#009F8D] transition-all"
-                      aria-label="Email for newsletter"
-                    />
-                    <Mail className="w-4 h-4 text-[#6d8a87] absolute left-4 top-1/2 -translate-y-1/2" />
+            {/* Right Column: Contact Form */}
+            <div className="lg:col-span-7 bg-[#071f1d]/60 border border-[#174842]/80 rounded-2xl p-6 sm:p-7">
+              <h4 className="font-editorial-serif text-xl sm:text-2xl font-normal text-white tracking-tight mb-4">
+                Send Us a Message
+              </h4>
+
+              {/* Success Notification Alert */}
+              {formStatus === "success" && (
+                <div className="mb-5 p-4 rounded-xl bg-teal-950/60 border border-teal-600/50 text-teal-200 text-xs sm:text-sm flex items-start gap-3 animate-in fade-in">
+                  <CheckCircle2 className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-bold text-white">Message Sent Successfully</p>
+                    <p className="leading-relaxed">
+                      {serverMessage || "Thank you for contacting Holiday Expertz! Your message has been received. Our team will get back to you shortly."}
+                    </p>
                   </div>
-                  <button
-                    type="submit"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#009F8D] hover:bg-[#006F66] text-white font-semibold text-xs sm:text-sm rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
-                  >
-                    <span>Subscribe</span>
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
+                </div>
+              )}
+
+              {/* General Error Alert */}
+              {formStatus === "error" && (
+                <div className="mb-5 p-3.5 rounded-xl bg-rose-950/60 border border-rose-700/60 text-rose-200 text-xs flex items-center gap-2.5 animate-in fade-in">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>{serverMessage}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmitContact} className="space-y-4 font-editorial-sans" noValidate>
+                {/* Row 1: First Name & Last Name */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.firstName}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, firstName: e.target.value }));
+                        if (fieldErrors.firstName) setFieldErrors((prev) => ({ ...prev, firstName: "" }));
+                      }}
+                      placeholder="Enter first name"
+                      className={`w-full px-3.5 py-2.5 rounded-xl bg-[#071f1d]/90 border text-white placeholder-[#6d8a87] text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#009F8D] transition-all ${
+                        fieldErrors.firstName ? "border-rose-500 focus:border-rose-500" : "border-[#1b4e47] focus:border-[#009F8D]"
+                      }`}
+                    />
+                    {fieldErrors.firstName && (
+                      <p className="text-[11px] text-rose-400 mt-1">{fieldErrors.firstName}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.lastName}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, lastName: e.target.value }));
+                        if (fieldErrors.lastName) setFieldErrors((prev) => ({ ...prev, lastName: "" }));
+                      }}
+                      placeholder="Enter last name"
+                      className={`w-full px-3.5 py-2.5 rounded-xl bg-[#071f1d]/90 border text-white placeholder-[#6d8a87] text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#009F8D] transition-all ${
+                        fieldErrors.lastName ? "border-rose-500 focus:border-rose-500" : "border-[#1b4e47] focus:border-[#009F8D]"
+                      }`}
+                    />
+                    {fieldErrors.lastName && (
+                      <p className="text-[11px] text-rose-400 mt-1">{fieldErrors.lastName}</p>
+                    )}
+                  </div>
                 </div>
 
-                {/* Feedback State */}
-                {subscriptionState === "success" && (
-                  <div className="flex items-start gap-2 text-xs text-teal-300 bg-[#072421] border border-teal-700/50 p-3 rounded-lg animate-in fade-in">
-                    <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5 text-teal-300" />
-                    <div>
-                      <p className="font-semibold">Subscription successful!</p>
-                      <p className="text-teal-300/80">
-                        Thank you for subscribing. You will receive our next curated collection.
-                      </p>
-                    </div>
+                {/* Row 2: Email Address & Phone Number */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, email: e.target.value }));
+                        if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
+                      }}
+                      placeholder="Enter your email address"
+                      className={`w-full px-3.5 py-2.5 rounded-xl bg-[#071f1d]/90 border text-white placeholder-[#6d8a87] text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#009F8D] transition-all ${
+                        fieldErrors.email ? "border-rose-500 focus:border-rose-500" : "border-[#1b4e47] focus:border-[#009F8D]"
+                      }`}
+                    />
+                    {fieldErrors.email && (
+                      <p className="text-[11px] text-rose-400 mt-1">{fieldErrors.email}</p>
+                    )}
                   </div>
-                )}
 
-                {subscriptionState === "error" && (
-                  <div className="flex items-center gap-2 text-xs text-rose-300 bg-rose-950/40 border border-rose-800/60 p-3 rounded-lg animate-in fade-in">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-300" />
-                    <span>{errorMessage}</span>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Phone Number *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={formData.phone}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, phone: e.target.value }));
+                        if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: "" }));
+                      }}
+                      placeholder="Enter phone number"
+                      className={`w-full px-3.5 py-2.5 rounded-xl bg-[#071f1d]/90 border text-white placeholder-[#6d8a87] text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#009F8D] transition-all ${
+                        fieldErrors.phone ? "border-rose-500 focus:border-rose-500" : "border-[#1b4e47] focus:border-[#009F8D]"
+                      }`}
+                    />
+                    {fieldErrors.phone && (
+                      <p className="text-[11px] text-rose-400 mt-1">{fieldErrors.phone}</p>
+                    )}
                   </div>
-                )}
+                </div>
 
-                <p className="text-[11px] text-[#6d8a87]">
-                  We honor your privacy. Zero spam. Unsubscribe whenever you wish.
-                </p>
+                {/* Row 3: Message */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Message *
+                  </label>
+                  <textarea
+                    rows={4}
+                    required
+                    value={formData.message}
+                    onChange={(e) => {
+                      setFormData((prev) => ({ ...prev, message: e.target.value }));
+                      if (fieldErrors.message) setFieldErrors((prev) => ({ ...prev, message: "" }));
+                    }}
+                    placeholder="Tell us how we can help you..."
+                    className={`w-full px-3.5 py-2.5 rounded-xl bg-[#071f1d]/90 border text-white placeholder-[#6d8a87] text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#009F8D] transition-all resize-y ${
+                      fieldErrors.message ? "border-rose-500 focus:border-rose-500" : "border-[#1b4e47] focus:border-[#009F8D]"
+                    }`}
+                  />
+                  {fieldErrors.message && (
+                    <p className="text-[11px] text-rose-400 mt-1">{fieldErrors.message}</p>
+                  )}
+                </div>
+
+                {/* Submit Button */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={formStatus === "submitting"}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#009F8D] hover:bg-[#00897a] disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                  >
+                    {formStatus === "submitting" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                        <span>Sending Message...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Send Message</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
               </form>
             </div>
           </div>
@@ -145,14 +340,6 @@ export default function Footer() {
             </p>
 
             <div className="space-y-2.5 pt-2 text-xs text-[#9fb8b5] font-editorial-sans">
-              <div className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-[#009F8D] flex-shrink-0 mt-0.5" />
-                <span>Level 4, Signature Tower, Gurugram, Haryana 122002</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-[#009F8D] flex-shrink-0" />
-                <span>+91 80000 12345</span>
-              </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-[#009F8D] flex-shrink-0" />
                 <span>concierge@holidayexpertz.com</span>
@@ -223,19 +410,19 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="#why-us" className="hover:text-teal-300 transition-colors">
+                <Link href="/#extraordinary" className="hover:text-teal-300 transition-colors">
                   Why Choose Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#privacy" className="hover:text-teal-300 transition-colors">
+                <Link href="/privacy" className="hover:text-teal-300 transition-colors">
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#terms" className="hover:text-teal-300 transition-colors">
+                <Link href="/terms" className="hover:text-teal-300 transition-colors">
                   Terms & Conditions
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#contact" className="hover:text-teal-300 transition-colors">
@@ -375,12 +562,12 @@ export default function Footer() {
           <p>© 2026 HolidayExpertz Inc. All rights reserved.</p>
 
           <div className="flex flex-wrap items-center gap-6">
-            <a href="#privacy" className="hover:text-white transition-colors">
+            <Link href="/privacy" className="hover:text-white transition-colors">
               Privacy Policy
-            </a>
-            <a href="#terms" className="hover:text-white transition-colors">
+            </Link>
+            <Link href="/terms" className="hover:text-white transition-colors">
               Terms & Conditions
-            </a>
+            </Link>
             <a href="#cookies" className="hover:text-white transition-colors">
               Cookie Preferences
             </a>

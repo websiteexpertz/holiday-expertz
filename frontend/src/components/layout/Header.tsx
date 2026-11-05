@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -9,63 +10,70 @@ import {
   Menu,
   X,
   User,
+  Building,
   Building2,
+  Home,
+  Gem,
+  HousePlus,
+  PanelsTopLeft,
   LayoutDashboard,
+  Briefcase,
+  MountainSnow,
+  TreePine,
+  Warehouse,
+  TreeDeciduous,
+  Castle,
+  Landmark,
+  HouseHeart,
+  Mountain,
+  Palmtree,
+  Waves,
+  Crown,
   Search,
   ChevronDown,
   ChevronRight,
   LogOut,
   ShieldCheck,
-  Palmtree,
-  Home,
   Sparkles,
   ArrowRight,
 } from "lucide-react";
 
 interface PropertyTypeNavItem {
   name: string;
-  tagline: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
-const PROPERTY_TYPE_ITEMS: PropertyTypeNavItem[] = [
-  {
-    name: "Luxury Hotels",
-    tagline: "5-star sanctuaries & premier hospitality",
-    href: "/properties?type=Luxury+Hotels",
-    icon: Building2,
-  },
-  {
-    name: "Resorts",
-    tagline: "Mountain, wellness & lakeside retreats",
-    href: "/properties?type=Resorts",
-    icon: Palmtree,
-  },
-  {
-    name: "Villas",
-    tagline: "Private secluded estates with plunge pools",
-    href: "/properties?type=Villas",
-    icon: Sparkles,
-  },
-  {
-    name: "Heritage & Palace Stays",
-    tagline: "Royal courtyards & historic palaces",
-    href: "/properties?type=Palace+Stays",
-    icon: ShieldCheck,
-  },
-  {
-    name: "Homestays",
-    tagline: "Warm, authentic local hospitality",
-    href: "/properties?type=Homestays",
-    icon: Home,
-  },
-  {
-    name: "Boutique Stays",
-    tagline: "Design-forward intimate getaways",
-    href: "/properties?type=Boutique+Stays",
-    icon: Compass,
-  },
+// 20 Exact Curated Property Types in 2 Columns
+const PROPERTY_TYPES_COL_1: PropertyTypeNavItem[] = [
+  { name: "Villa", href: "/properties?type=Villa", icon: Home },
+  { name: "Condo", href: "/properties?type=Condo", icon: Building },
+  { name: "Apartment", href: "/properties?type=Apartment", icon: Building2 },
+  { name: "Penthouse", href: "/properties?type=Penthouse", icon: Gem },
+  { name: "Townhouse", href: "/properties?type=Townhouse", icon: HousePlus },
+  { name: "Duplex", href: "/properties?type=Duplex", icon: PanelsTopLeft },
+  { name: "Studio Apartment", href: "/properties?type=Studio+Apartment", icon: LayoutDashboard },
+  { name: "Serviced Apartment", href: "/properties?type=Serviced+Apartment", icon: Briefcase },
+  { name: "Chalet", href: "/properties?type=Chalet", icon: MountainSnow },
+  { name: "Cottage", href: "/properties?type=Cottage", icon: Home },
+];
+
+const PROPERTY_TYPES_COL_2: PropertyTypeNavItem[] = [
+  { name: "Cabin", href: "/properties?type=Cabin", icon: TreePine },
+  { name: "Bungalow", href: "/properties?type=Bungalow", icon: Home },
+  { name: "Farmhouse", href: "/properties?type=Farmhouse", icon: Warehouse },
+  { name: "Treehouse", href: "/properties?type=Treehouse", icon: TreeDeciduous },
+  { name: "Private Estate", href: "/properties?type=Private+Estate", icon: Castle },
+  { name: "Mansion", href: "/properties?type=Mansion", icon: Landmark },
+  { name: "Private Retreat", href: "/properties?type=Private+Retreat", icon: HouseHeart },
+  { name: "Lodge", href: "/properties?type=Lodge", icon: Mountain },
+  { name: "Resort", href: "/properties?type=Resort", icon: Palmtree },
+  { name: "Pool Villa", href: "/properties?type=Pool+Villa", icon: Waves },
+];
+
+const ALL_PROPERTY_TYPES: PropertyTypeNavItem[] = [
+  ...PROPERTY_TYPES_COL_1,
+  ...PROPERTY_TYPES_COL_2,
 ];
 
 interface HeaderProps {
@@ -96,6 +104,24 @@ export default function Header({
   const [avatarError, setAvatarError] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const propertyDropdownRef = useRef<HTMLDivElement>(null);
+  const propertyCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handlePropertyMenuEnter = () => {
+    if (propertyCloseTimerRef.current) {
+      clearTimeout(propertyCloseTimerRef.current);
+      propertyCloseTimerRef.current = null;
+    }
+    setPropertyDropdownOpen(true);
+  };
+
+  const handlePropertyMenuLeave = () => {
+    if (propertyCloseTimerRef.current) {
+      clearTimeout(propertyCloseTimerRef.current);
+    }
+    propertyCloseTimerRef.current = setTimeout(() => {
+      setPropertyDropdownOpen(false);
+    }, 200);
+  };
 
   const mounted = React.useSyncExternalStore(
     () => () => {},
@@ -158,6 +184,7 @@ export default function Header({
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
+      if (propertyCloseTimerRef.current) clearTimeout(propertyCloseTimerRef.current);
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
     };
@@ -240,12 +267,18 @@ export default function Header({
                       key={link.label}
                       ref={propertyDropdownRef}
                       className="relative"
-                      onMouseEnter={() => setPropertyDropdownOpen(true)}
-                      onMouseLeave={() => setPropertyDropdownOpen(false)}
+                      onMouseEnter={handlePropertyMenuEnter}
+                      onMouseLeave={handlePropertyMenuLeave}
                     >
                       <button
                         type="button"
-                        onClick={() => setPropertyDropdownOpen((prev) => !prev)}
+                        onClick={() => {
+                          if (propertyCloseTimerRef.current) {
+                            clearTimeout(propertyCloseTimerRef.current);
+                            propertyCloseTimerRef.current = null;
+                          }
+                          setPropertyDropdownOpen((prev) => !prev);
+                        }}
                         className={`relative text-[13.5px] whitespace-nowrap transition-colors duration-200 py-1 inline-flex items-center gap-1 cursor-pointer focus:outline-none ${
                           link.active || propertyDropdownOpen
                             ? "text-[#009F8D] font-semibold"
@@ -262,53 +295,146 @@ export default function Header({
                         />
                       </button>
 
-                      {/* Dropdown Card */}
+                      {/* Desktop Mega-Menu Dropdown */}
                       {propertyDropdownOpen && (
                         <div
                           role="menu"
-                          className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50"
+                          onMouseEnter={handlePropertyMenuEnter}
+                          onMouseLeave={handlePropertyMenuLeave}
+                          className="fixed top-[66px] sm:top-[70px] left-1/2 -translate-x-1/2 w-[920px] lg:w-[1000px] xl:w-[1060px] max-w-[96vw] z-50 pt-3 animate-in fade-in zoom-in-95 duration-200"
                         >
-                          <div className="w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2.5 animate-in fade-in zoom-in-95 duration-150">
-                            <div className="px-3 pt-2 pb-1.5 border-b border-slate-100 mb-1">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                Browse Stays by Category
-                              </span>
-                            </div>
-                            <div className="space-y-0.5">
-                              {PROPERTY_TYPE_ITEMS.map((item) => {
-                                const Icon = item.icon;
-                                return (
-                                  <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    role="menuitem"
-                                    onClick={() => setPropertyDropdownOpen(false)}
-                                    className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-[#F2FAF7] transition-colors group/item"
-                                  >
-                                    <div className="w-8 h-8 rounded-lg bg-slate-50 group-hover/item:bg-[#E7F6F3] border border-slate-200/60 group-hover/item:border-[#009F8D]/40 flex items-center justify-center text-slate-500 group-hover/item:text-[#009F8D] flex-shrink-0 transition-colors">
-                                      <Icon className="w-4 h-4" />
+                          {/* Main Mega-Menu Card */}
+                          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200/90 p-5 lg:p-6 overflow-hidden">
+                            {/* Two-Part Layout: Left Promotional Panel (34%) + Right 20 Categories (66%) */}
+                            <div className="flex flex-col lg:flex-row gap-5 lg:gap-6 items-stretch">
+                              {/* Left Side: Promotional Panel */}
+                              <div className="w-full lg:w-[34%] relative rounded-2xl overflow-hidden min-h-[440px] flex flex-col justify-end p-6 text-white group shadow-xs">
+                                <Image
+                                  src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=900&q=85"
+                                  alt="Luxury Private Pool Villa"
+                                  fill
+                                  priority
+                                  sizes="340px"
+                                  className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+                                />
+                                {/* Dark Green Gradient Overlay at Bottom */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#071f1d] via-[#071f1d]/65 to-black/20" />
+
+                                {/* Promotional Text Content */}
+                                <div className="relative z-10">
+                                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-300 text-[10px] font-bold uppercase tracking-[0.2em] font-editorial-sans mb-2.5 shadow-xs">
+                                    <Sparkles className="w-3 h-3 text-emerald-300" />
+                                    <span>FIND YOUR PERFECT STAY</span>
+                                  </div>
+
+                                  <h3 className="font-editorial-serif text-2xl lg:text-[26px] font-bold text-white tracking-tight leading-[1.2]">
+                                    Explore Our Property Types
+                                  </h3>
+
+                                  <p className="font-editorial-sans text-xs text-slate-200 font-light mt-2 leading-relaxed">
+                                    From luxurious villas to cozy cottages, find the ideal stay for your next getaway.
+                                  </p>
+
+                                  <div className="pt-4">
+                                    <Link
+                                      href="/properties"
+                                      onClick={() => setPropertyDropdownOpen(false)}
+                                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FDFBF7] hover:bg-white text-[#071f1d] font-bold text-xs transition-all shadow-md active:scale-95 group/btn cursor-pointer"
+                                    >
+                                      <span>Browse All Types</span>
+                                      <ArrowRight className="w-3.5 h-3.5 text-[#006F66] group-hover/btn:translate-x-0.5 transition-transform" />
+                                    </Link>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Right Side: Property Type Categories (2-Column Grid of 20 Items) */}
+                              <div className="w-full lg:w-[66%] flex flex-col justify-between">
+                                <div>
+                                  {/* Subtitle label */}
+                                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 px-1">
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 font-editorial-sans">
+                                      20 Curated Stays by Architecture &amp; Style
+                                    </span>
+                                    <span className="text-[11px] font-semibold text-[#006F66]">
+                                      Select to Filter
+                                    </span>
+                                  </div>
+
+                                  {/* 2-Column Grid */}
+                                  <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                                    {/* Column 1: Items 1 to 10 */}
+                                    <div className="space-y-0.5">
+                                      {PROPERTY_TYPES_COL_1.map((item) => {
+                                        const Icon = item.icon;
+                                        return (
+                                          <Link
+                                            key={item.name}
+                                            href={item.href}
+                                            role="menuitem"
+                                            onClick={() => setPropertyDropdownOpen(false)}
+                                            className="flex items-center justify-between px-3 py-1.5 rounded-xl hover:bg-[#F2FAF7] transition-all duration-150 group/item cursor-pointer"
+                                          >
+                                            <div className="flex items-center gap-2.5 min-w-0">
+                                              <div className="w-7 h-7 rounded-lg bg-[#E7F6F3] group-hover/item:bg-[#009F8D] text-[#006F66] group-hover/item:text-white flex items-center justify-center transition-all duration-200 shrink-0">
+                                                <Icon className="w-3.5 h-3.5" />
+                                              </div>
+                                              <span className="text-xs font-medium text-slate-700 group-hover/item:text-[#006F66] group-hover/item:font-semibold transition-colors truncate">
+                                                {item.name}
+                                              </span>
+                                            </div>
+                                            <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover/item:text-[#009F8D] group-hover/item:translate-x-0.5 transition-all shrink-0 ml-1" />
+                                          </Link>
+                                        );
+                                      })}
                                     </div>
-                                    <div className="min-w-0">
-                                      <div className="text-xs font-bold text-[#0b192c] group-hover/item:text-[#009F8D] transition-colors">
-                                        {item.name}
-                                      </div>
-                                      <div className="text-[11px] text-slate-500 truncate">
-                                        {item.tagline}
-                                      </div>
+
+                                    {/* Column 2: Items 11 to 20 */}
+                                    <div className="space-y-0.5">
+                                      {PROPERTY_TYPES_COL_2.map((item) => {
+                                        const Icon = item.icon;
+                                        return (
+                                          <Link
+                                            key={item.name}
+                                            href={item.href}
+                                            role="menuitem"
+                                            onClick={() => setPropertyDropdownOpen(false)}
+                                            className="flex items-center justify-between px-3 py-1.5 rounded-xl hover:bg-[#F2FAF7] transition-all duration-150 group/item cursor-pointer"
+                                          >
+                                            <div className="flex items-center gap-2.5 min-w-0">
+                                              <div className="w-7 h-7 rounded-lg bg-[#E7F6F3] group-hover/item:bg-[#009F8D] text-[#006F66] group-hover/item:text-white flex items-center justify-center transition-all duration-200 shrink-0">
+                                                <Icon className="w-3.5 h-3.5" />
+                                              </div>
+                                              <span className="text-xs font-medium text-slate-700 group-hover/item:text-[#006F66] group-hover/item:font-semibold transition-colors truncate">
+                                                {item.name}
+                                              </span>
+                                            </div>
+                                            <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover/item:text-[#009F8D] group-hover/item:translate-x-0.5 transition-all shrink-0 ml-1" />
+                                          </Link>
+                                        );
+                                      })}
                                     </div>
-                                  </Link>
-                                );
-                              })}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
 
-                            <div className="pt-2 mt-1 border-t border-slate-100">
+                            {/* Bottom Footer Inside Dropdown */}
+                            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between px-1">
+                              {/* Left/Center Text with Crown Icon */}
+                              <div className="flex items-center gap-2 text-xs font-medium text-slate-600 font-editorial-sans">
+                                <Crown className="w-4 h-4 text-amber-500 fill-amber-500/20 shrink-0" />
+                                <span>Luxury Stays. Unforgettable Experiences.</span>
+                              </div>
+
+                              {/* Right Side Button */}
                               <Link
                                 href="/properties"
                                 role="menuitem"
                                 onClick={() => setPropertyDropdownOpen(false)}
-                                className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 hover:bg-[#E7F6F3] text-xs font-semibold text-[#006F66] transition-colors"
+                                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#071f1d] hover:bg-[#0b2e2a] text-white font-bold text-xs transition-all shadow-xs hover:shadow active:scale-95 cursor-pointer"
                               >
-                                <span>Explore All Property Types</span>
+                                <span>View All Properties</span>
                                 <ArrowRight className="w-3.5 h-3.5" />
                               </Link>
                             </div>
@@ -601,32 +727,69 @@ export default function Header({
                       </button>
 
                       {mobilePropertyExpanded && (
-                        <div className="pl-3 pr-2 py-1 space-y-1 bg-slate-50/80 rounded-xl my-1 border border-slate-100">
-                          {PROPERTY_TYPE_ITEMS.map((item) => (
+                        <div className="pl-2 pr-2 py-2 space-y-2 bg-slate-50/90 rounded-2xl my-1.5 border border-slate-200/80">
+                          {/* Mini Promo Card */}
+                          <div className="p-3.5 rounded-xl bg-[#071f1d] text-white flex items-center justify-between gap-3 shadow-xs">
+                            <div>
+                              <div className="text-[9px] uppercase font-bold text-emerald-400 tracking-widest font-editorial-sans">
+                                Find Your Perfect Stay
+                              </div>
+                              <div className="font-editorial-serif text-sm font-bold text-white leading-tight mt-0.5">
+                                Explore Our Property Types
+                              </div>
+                            </div>
                             <Link
-                              key={item.name}
-                              href={item.href}
+                              href="/properties"
                               onClick={() => {
                                 setMobileMenuOpen(false);
                                 setMobilePropertyExpanded(false);
                               }}
-                              className="flex items-center justify-between px-2.5 py-2 text-xs font-medium text-slate-700 hover:text-[#009F8D] transition-colors rounded-lg hover:bg-white"
+                              className="px-3 py-1.5 bg-[#FAF9F6] text-[#071f1d] text-[11px] font-bold rounded-lg shrink-0 shadow-xs active:scale-95 transition-transform"
                             >
-                              <span>{item.name}</span>
-                              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                              Browse All →
                             </Link>
-                          ))}
-                          <Link
-                            href="/properties"
-                            onClick={() => {
-                              setMobileMenuOpen(false);
-                              setMobilePropertyExpanded(false);
-                            }}
-                            className="flex items-center justify-between px-2.5 py-2 text-xs font-bold text-[#006F66] hover:underline pt-1.5 border-t border-slate-200/60"
-                          >
-                            <span>Explore All Property Types</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </Link>
+                          </div>
+
+                          {/* 20 Property Types Single-Column List */}
+                          <div className="space-y-0.5 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
+                            {ALL_PROPERTY_TYPES.map((item) => {
+                              const Icon = item.icon;
+                              return (
+                                <Link
+                                  key={item.name}
+                                  href={item.href}
+                                  onClick={() => {
+                                    setMobileMenuOpen(false);
+                                    setMobilePropertyExpanded(false);
+                                  }}
+                                  className="flex items-center justify-between px-2.5 py-2 text-xs font-medium text-slate-700 hover:text-[#009F8D] transition-colors rounded-xl hover:bg-white min-h-[38px]"
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className="w-6 h-6 rounded-md bg-[#E7F6F3] text-[#006F66] flex items-center justify-center shrink-0">
+                                      <Icon className="w-3.5 h-3.5" />
+                                    </div>
+                                    <span className="truncate">{item.name}</span>
+                                  </div>
+                                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
+                                </Link>
+                              );
+                            })}
+                          </div>
+
+                          {/* Mobile View All Button */}
+                          <div className="pt-2 border-t border-slate-200">
+                            <Link
+                              href="/properties"
+                              onClick={() => {
+                                setMobileMenuOpen(false);
+                                setMobilePropertyExpanded(false);
+                              }}
+                              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full bg-[#071f1d] hover:bg-[#0b2e2a] text-white text-xs font-bold transition-all shadow-xs"
+                            >
+                              <span>View All Properties</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </Link>
+                          </div>
                         </div>
                       )}
                     </div>

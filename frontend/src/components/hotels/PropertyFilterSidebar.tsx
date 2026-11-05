@@ -213,12 +213,12 @@ export default function PropertyFilterSidebar({
         }`}
       >
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-teal-600" />
+          <SlidersHorizontal className="w-4 h-4 text-[#2563eb]" />
           <h3 className="text-sm font-bold text-slate-900 tracking-tight">
-            Filter by:
+            Filters
           </h3>
           {activeCount > 0 && (
-            <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+            <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
               {activeCount} active
             </span>
           )}
@@ -256,119 +256,146 @@ export default function PropertyFilterSidebar({
           isMobileDrawer ? "p-5 flex-1" : ""
         }`}
       >
-        {/* 1. Price Per Night Filter */}
-        <section className="space-y-3 pt-3 first:pt-0">
+        {/* 1. Suggested For You */}
+        <section className="space-y-2.5 pt-1 first:pt-0">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-editorial-sans">
+            Suggested for you
+          </h4>
+          <button
+            type="button"
+            onClick={() => {
+              const isPopular = filters.minRating === 4.5;
+              onChange({ ...filters, minRating: isPopular ? null : 4.5 });
+            }}
+            className="w-full flex items-center justify-between py-1 px-0.5 cursor-pointer text-xs select-none group text-left"
+          >
+            <div className="flex items-center gap-2.5">
+              <div
+                className={`w-4 h-4 rounded border flex items-center justify-center transition-all shrink-0 ${
+                  filters.minRating === 4.5
+                    ? "bg-[#2563eb] border-[#2563eb] text-white"
+                    : "border-slate-300 bg-white group-hover:border-slate-400"
+                }`}
+              >
+                {filters.minRating === 4.5 && <Check className="w-3 h-3 stroke-[3]" />}
+              </div>
+              <span className="flex items-center gap-1.5 font-medium text-slate-700 group-hover:text-slate-900">
+                <span>🔥</span>
+                <span>Popular Hotels</span>
+              </span>
+            </div>
+          </button>
+        </section>
+
+        {/* 2. Price Per Night Filter (Exact match to reference image slider) */}
+        <section className="space-y-2 pt-4">
           <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
-              Your Budget (Per Night)
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-editorial-sans">
+              PRICE PER NIGHT
             </h4>
-            {(filters.minPrice !== null || filters.maxPrice !== null) && (
+            {filters.maxPrice !== null && (
               <button
                 type="button"
                 onClick={() => {
-                  setMinPriceInput("");
-                  setMaxPriceInput("");
-                  onChange({ ...filters, minPrice: null, maxPrice: null });
+                  onChange({ ...filters, maxPrice: null });
                 }}
-                className="text-[11px] font-semibold text-teal-600 hover:underline cursor-pointer"
+                className="text-[11px] font-semibold text-[#2563eb] hover:underline cursor-pointer"
               >
                 Reset
               </button>
             )}
           </div>
 
-          {/* Quick Preset Buttons */}
-          <div className="grid grid-cols-2 gap-1.5">
-            {[
-              { label: "Under ₹10k", min: null, max: 10000 },
-              { label: "₹10k - ₹20k", min: 10000, max: 20000 },
-              { label: "₹20k - ₹30k", min: 20000, max: 30000 },
-              { label: "₹30k+", min: 30000, max: null },
-            ].map((preset) => {
-              const isSelected =
-                filters.minPrice === preset.min && filters.maxPrice === preset.max;
+          <p className="text-xs sm:text-sm font-medium text-slate-600">
+            Up to ₹{(filters.maxPrice ?? 30000).toLocaleString("en-IN")} per night
+          </p>
+
+          {/* Blue Slider Track with Circular Thumb */}
+          <div className="pt-2 pb-1">
+            <input
+              type="range"
+              min="1000"
+              max="30000"
+              step="500"
+              value={filters.maxPrice ?? 30000}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                onChange({ ...filters, maxPrice: val >= 30000 ? null : val });
+              }}
+              style={{
+                background: `linear-gradient(to right, #2563eb 0%, #2563eb ${
+                  (((filters.maxPrice ?? 30000) - 1000) / (30000 - 1000)) * 100
+                }%, #e2e8f0 ${
+                  (((filters.maxPrice ?? 30000) - 1000) / (30000 - 1000)) * 100
+                }%, #e2e8f0 100%)`,
+              }}
+              className="w-full h-2 rounded-full appearance-none cursor-pointer accent-[#2563eb] focus:outline-none"
+            />
+          </div>
+        </section>
+
+        {/* 3. Star Category (Matching reference image) */}
+        <section className="space-y-2 pt-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-editorial-sans">
+              STAR CATEGORY
+            </h4>
+            {filters.starRating !== null && (
+              <button
+                type="button"
+                onClick={() => selectStarRating(null)}
+                className="text-[11px] font-semibold text-[#2563eb] hover:underline cursor-pointer"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            {STAR_TIERS.map((tier) => {
+              const isChecked = filters.starRating === tier.stars;
+              const count = getStarCount(tier.stars);
               return (
                 <button
-                  key={preset.label}
+                  key={tier.label}
                   type="button"
-                  onClick={() => {
-                    if (isSelected) {
-                      setMinPriceInput("");
-                      setMaxPriceInput("");
-                      onChange({ ...filters, minPrice: null, maxPrice: null });
-                    } else {
-                      setMinPriceInput(preset.min ? String(preset.min) : "");
-                      setMaxPriceInput(preset.max ? String(preset.max) : "");
-                      onChange({
-                        ...filters,
-                        minPrice: preset.min,
-                        maxPrice: preset.max,
-                      });
-                    }
-                  }}
-                  className={`py-1.5 px-2 rounded-xl text-xs font-semibold text-center transition-all border cursor-pointer ${
-                    isSelected
-                      ? "bg-teal-50 border-teal-500 text-teal-800 font-bold shadow-xs"
-                      : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
-                  }`}
+                  onClick={() => selectStarRating(tier.stars)}
+                  className="w-full flex items-center justify-between py-1 px-0.5 cursor-pointer text-xs text-left select-none group"
                 >
-                  {preset.label}
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div
+                      className={`w-4 h-4 rounded border flex items-center justify-center transition-all shrink-0 ${
+                        isChecked
+                          ? "bg-[#2563eb] border-[#2563eb] text-white"
+                          : "border-slate-300 bg-white group-hover:border-slate-400"
+                      }`}
+                    >
+                      {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-3.5 h-3.5 ${
+                              i < tier.stars
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-slate-200"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="font-medium text-slate-700 group-hover:text-slate-900">
+                        {tier.stars} Star
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-medium pl-2 shrink-0">
+                    ({count})
+                  </span>
                 </button>
               );
             })}
-          </div>
-
-          {/* Custom Min / Max Inputs */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                Min Price (₹)
-              </label>
-              <div className="relative">
-                <span className="absolute left-2.5 top-2 text-xs text-slate-400 font-semibold">
-                  ₹
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  step="500"
-                  placeholder="0"
-                  value={minPriceInput}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setMinPriceInput(val);
-                    const n = val.trim() !== "" ? Math.max(0, Number(val)) : null;
-                    onChange({ ...filters, minPrice: n });
-                  }}
-                  className="w-full pl-6 pr-2 py-1.5 text-xs font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                Max Price (₹)
-              </label>
-              <div className="relative">
-                <span className="absolute left-2.5 top-2 text-xs text-slate-400 font-semibold">
-                  ₹
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  step="500"
-                  placeholder="30,000"
-                  value={maxPriceInput}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setMaxPriceInput(val);
-                    const n = val.trim() !== "" ? Math.max(0, Number(val)) : null;
-                    onChange({ ...filters, maxPrice: n });
-                  }}
-                  className="w-full pl-6 pr-2 py-1.5 text-xs font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-                />
-              </div>
-            </div>
           </div>
         </section>
 
@@ -559,71 +586,6 @@ export default function PropertyFilterSidebar({
           </div>
         </section>
 
-        {/* 5. Star Classification */}
-        <section className="space-y-2 pt-3">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
-              Property Class
-            </h4>
-            {filters.starRating !== null && (
-              <button
-                type="button"
-                onClick={() => selectStarRating(null)}
-                className="text-[11px] font-semibold text-teal-600 hover:underline cursor-pointer"
-              >
-                Reset
-              </button>
-            )}
-          </div>
-
-          <div className="space-y-1">
-            {STAR_TIERS.map((tier) => {
-              const isChecked = filters.starRating === tier.stars;
-              const count = getStarCount(tier.stars);
-              return (
-                <button
-                  key={tier.label}
-                  type="button"
-                  onClick={() => selectStarRating(tier.stars)}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl cursor-pointer transition-colors text-xs text-left select-none ${
-                    isChecked
-                      ? "bg-teal-50/90 text-teal-900 font-bold"
-                      : "hover:bg-slate-50 text-slate-700"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div
-                      className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0 ${
-                        isChecked
-                          ? "border-teal-600 bg-teal-600 text-white"
-                          : "border-slate-300 bg-white"
-                      }`}
-                    >
-                      {isChecked && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-3 h-3 ${
-                            i < tier.stars
-                              ? "fill-amber-400 text-amber-400"
-                              : "text-slate-200"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <span className="text-[11px] text-slate-400 font-medium pl-2 shrink-0">
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
       </div>
 
       {/* ── Mobile Drawer Bottom Sticky Action Bar ── */}

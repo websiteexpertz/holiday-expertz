@@ -141,16 +141,18 @@ export default function AdminInquiriesPage() {
                   </p>
 
                   <div className="flex items-center gap-4 text-xs text-slate-400 flex-wrap pt-1">
-                    <span className="font-semibold text-slate-200">{inq.name}</span>
+                    <span className="font-semibold text-slate-200">
+                      {inq.firstName && inq.lastName ? `${inq.firstName} ${inq.lastName}` : inq.name}
+                    </span>
                     <a href={`mailto:${inq.email}`} className="text-teal-400 hover:underline flex items-center gap-1">
                       <Mail className="w-3.5 h-3.5" />
                       <span>{inq.email}</span>
                     </a>
                     {inq.phone && (
-                      <span className="text-slate-400 flex items-center gap-1">
+                      <a href={`tel:${inq.phone}`} className="text-slate-300 hover:text-teal-400 flex items-center gap-1 transition-colors">
                         <Phone className="w-3.5 h-3.5" />
                         <span>{inq.phone}</span>
-                      </span>
+                      </a>
                     )}
                   </div>
 

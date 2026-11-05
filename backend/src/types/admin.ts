@@ -360,6 +360,8 @@ export interface ReviewRecord {
 export interface ContactInquiryRecord {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   phone?: string;
   subject: string;

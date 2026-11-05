@@ -12,6 +12,7 @@
     "readTime": "5 min read",
     "status": "published",
     "featured": true,
+    "isInformative": true,
     "tags": [
       "Weekend",
       "India",
@@ -35,6 +36,7 @@
     "readTime": "7 min read",
     "status": "published",
     "featured": true,
+    "isInformative": true,
     "tags": [
       "Hotels",
       "Booking Tips",
@@ -80,6 +82,7 @@
     "readTime": "8 min read",
     "status": "published",
     "featured": true,
+    "isInformative": false,
     "tags": [
       "Rajasthan",
       "Udaipur",

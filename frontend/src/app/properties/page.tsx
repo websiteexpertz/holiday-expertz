@@ -279,6 +279,51 @@ function PropertiesContent() {
     router.replace(`/properties?${params.toString()}`, { scroll: false });
   };
 
+  // Helper for safe property type matching across the 20 luxury property types
+  const matchPropertyCategory = (prop: Property, category: string): boolean => {
+    if (!category || category === "All") return true;
+    const catLower = category.toLowerCase().trim();
+    const propTypeLower = (prop.propertyType || "").toLowerCase().trim();
+
+    // Exact or plural/singular equivalence
+    if (propTypeLower === catLower) return true;
+    if (propTypeLower === catLower + "s") return true;
+    if (propTypeLower + "s" === catLower) return true;
+
+    // Mapping for 20 luxury property types to database categories & keywords
+    const typeMap: Record<string, string[]> = {
+      villa: ["villa", "villas", "pool villa"],
+      condo: ["condo", "apartment", "apartments", "suite"],
+      apartment: ["apartment", "apartments", "condo", "flat", "suite"],
+      penthouse: ["penthouse", "luxury", "suite", "palace stays"],
+      townhouse: ["townhouse", "villa", "homestay"],
+      duplex: ["duplex", "villa", "apartment"],
+      "studio apartment": ["studio", "apartment", "apartments"],
+      "serviced apartment": ["serviced", "apartment", "apartments", "hotel"],
+      chalet: ["chalet", "mountain", "lodge", "resort"],
+      cottage: ["cottage", "homestay", "boutique stays"],
+      cabin: ["cabin", "lodge", "cottage", "homestay"],
+      bungalow: ["bungalow", "villa", "villas", "homestay"],
+      farmhouse: ["farmhouse", "farm", "estate", "homestay"],
+      treehouse: ["treehouse", "tree house", "retreat", "resort"],
+      "private estate": ["estate", "palace stays", "palace", "villas", "villa"],
+      mansion: ["mansion", "palace stays", "palace", "villas", "villa"],
+      "private retreat": ["retreat", "resorts", "resort", "boutique stays", "villas"],
+      lodge: ["lodge", "resorts", "resort", "chalet"],
+      resort: ["resorts", "resort", "boutique stays", "luxury hotels"],
+      "pool villa": ["pool villa", "villa", "villas", "private pool"],
+    };
+
+    const targetKeywords = typeMap[catLower] || [catLower];
+
+    if (targetKeywords.some((k) => propTypeLower.includes(k))) return true;
+
+    const searchContent = `${prop.name} ${prop.shortDescription || ""} ${prop.detailedDescription || ""}`.toLowerCase();
+    if (targetKeywords.some((k) => searchContent.includes(k))) return true;
+
+    return false;
+  };
+
   // Filtered & Sorted Properties List
   const filteredProperties = useMemo(() => {
     return properties
@@ -293,7 +338,7 @@ function PropertiesContent() {
           if (!sidebarFilters.types.includes(p.propertyType)) {
             return false;
           }
-        } else if (selectedCategory !== "All" && p.propertyType !== selectedCategory) {
+        } else if (selectedCategory !== "All" && !matchPropertyCategory(p, selectedCategory)) {
           return false;
         }
 

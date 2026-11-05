@@ -73,7 +73,7 @@ export default function WhatMakesUsExtraordinary() {
     <section
       id="extraordinary"
       aria-label="What Makes Us Extraordinary"
-      className="pt-6 sm:pt-7 lg:pt-8 pb-5 sm:pb-6 lg:pb-7 bg-white border-b border-[#E8EAE5]/60 overflow-hidden"
+      className="scroll-mt-24 pt-6 sm:pt-7 lg:pt-8 pb-5 sm:pb-6 lg:pb-7 bg-white border-b border-[#E8EAE5]/60 overflow-hidden"
     >
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Subtle Golden-Orange Decorative Accent above Heading */}

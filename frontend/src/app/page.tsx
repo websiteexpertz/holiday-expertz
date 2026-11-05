@@ -157,7 +157,7 @@ export default function Home() {
         <HeroSection onSearch={handleSearch} />
 
         {/* Section: What Makes Us Extraordinary */}
-        <div id="about" className="scroll-mt-20">
+        <div id="why-choose-us" className="scroll-mt-24">
           <WhatMakesUsExtraordinary />
         </div>
 

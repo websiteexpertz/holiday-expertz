@@ -18,6 +18,75 @@ interface PropertiesHeroSlideshowProps {
   totalProperties: number;
 }
 
+// Fixed default banner images matching the home page hero banner
+const DEFAULT_HERO_SLIDES: DestinationHeroImage[] = [
+  {
+    id: "homepage-banner-slide-1",
+    destinationType: "country",
+    countryId: "default",
+    imageUrl:
+      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=2400&q=85",
+    altText: "Tropical luxury villa with infinity pool overlooking mountain range",
+    title: "Curated Escapes & Luxury Sanctuaries",
+    locationName: "Handpicked Luxury Retreats",
+    headline: "Small places. Big memories.",
+    description:
+      "Browse handpicked villas, heritage hotels, and luxury resorts across iconic destinations.",
+    order: 1,
+    isActive: true,
+    createdAt: "",
+    updatedAt: "",
+  },
+  {
+    id: "homepage-banner-slide-2",
+    destinationType: "country",
+    countryId: "default",
+    imageUrl:
+      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=2400&q=85",
+    altText: "Private luxury villa with turquoise swimming pool and sun loungers",
+    title: "Private Villas & Secluded Havens",
+    locationName: "Exclusive Private Escapes",
+    headline: "Private Sanctuaries for Pure Relaxation",
+    description: "Indulge in private luxury villas with world-class amenities and dedicated concierge service.",
+    order: 2,
+    isActive: true,
+    createdAt: "",
+    updatedAt: "",
+  },
+  {
+    id: "homepage-banner-slide-3",
+    destinationType: "country",
+    countryId: "default",
+    imageUrl:
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2400&q=85",
+    altText: "Regal heritage palace hotel with serene courtyard reflections",
+    title: "Heritage Palaces & Royal Grandeur",
+    locationName: "Timeless Heritage Stays",
+    headline: "Experience Royal Living and Timeless Charm",
+    description: "Discover historic palaces restored into ultra-luxury accommodations steeped in history.",
+    order: 3,
+    isActive: true,
+    createdAt: "",
+    updatedAt: "",
+  },
+  {
+    id: "homepage-banner-slide-4",
+    destinationType: "country",
+    countryId: "default",
+    imageUrl:
+      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=2400&q=85",
+    altText: "Luxury riverside retreat amidst tranquil tropical waters",
+    title: "Scenic Waterfront & Nature Resorts",
+    locationName: "Tranquil Riverside Escapes",
+    headline: "Serenity by the Water",
+    description: "Unwind at secluded waterfront retreats designed for total rejuvenation.",
+    order: 4,
+    isActive: true,
+    createdAt: "",
+    updatedAt: "",
+  },
+];
+
 export default function PropertiesHeroSlideshow({
   countryId = "",
   stateId = "",
@@ -28,7 +97,7 @@ export default function PropertiesHeroSlideshow({
   destinationQuery = "",
   totalProperties = 0,
 }: PropertiesHeroSlideshowProps) {
-  const [slides, setSlides] = useState<DestinationHeroImage[]>([]);
+  const [slides, setSlides] = useState<DestinationHeroImage[]>(DEFAULT_HERO_SLIDES);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [destinationName, setDestinationName] = useState<string | null>(null);
@@ -43,7 +112,7 @@ export default function PropertiesHeroSlideshow({
         countryId || stateId || cityId || areaId || locationId || destinationQuery;
 
       if (!hasAnyLocation) {
-        setSlides([]);
+        setSlides(DEFAULT_HERO_SLIDES);
         setDestinationName(null);
         return;
       }
@@ -72,7 +141,7 @@ export default function PropertiesHeroSlideshow({
             setCurrentSlideIndex(0);
             setDestinationName(data.destinationName || null);
           } else {
-            setSlides([]);
+            setSlides(DEFAULT_HERO_SLIDES);
             setDestinationName(null);
           }
         }
@@ -80,7 +149,7 @@ export default function PropertiesHeroSlideshow({
         if (err instanceof Error && err.name !== "AbortError") {
           console.warn("Destination hero slides error:", err);
         }
-        if (isMounted) setSlides([]);
+        if (isMounted) setSlides(DEFAULT_HERO_SLIDES);
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -151,7 +220,7 @@ export default function PropertiesHeroSlideshow({
   return (
     <section
       aria-label="Properties Destination Hero"
-      className="relative pt-32 sm:pt-36 pb-20 sm:pb-28 text-white border-b border-teal-900/40 shadow-lg overflow-hidden min-h-[580px] sm:min-h-[680px] flex flex-col justify-end transition-colors duration-500 bg-slate-950"
+      className="relative pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12 text-white border-b border-teal-900/40 shadow-lg overflow-hidden min-h-[460px] sm:min-h-[500px] lg:min-h-[530px] flex flex-col justify-end transition-colors duration-500 bg-slate-950"
     >
       {/* ── SLIDESHOW BACKGROUND (crossfade, no controls) ─────────────────────── */}
       {hasSlides ? (

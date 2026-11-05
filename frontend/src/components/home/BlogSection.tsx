@@ -13,13 +13,9 @@ import { BlogPost } from "@/types/hotel";
 export default function BlogSection() {
   const router = useRouter();
   const [blogs, setBlogs] = useState<BlogPost[]>(() => {
-    // Sort mockBlogs so informative blogs appear up front
-    return [...mockBlogs].sort((a, b) => {
-      const aInf = Boolean(a.isInformative);
-      const bInf = Boolean(b.isInformative);
-      if (aInf !== bInf) return aInf ? -1 : 1;
-      return 0;
-    });
+    // Only display informative blogs on the homepage by default
+    const informative = mockBlogs.filter((b) => Boolean(b.isInformative));
+    return informative.length > 0 ? informative : mockBlogs;
   });
 
   useEffect(() => {
@@ -58,15 +54,9 @@ export default function BlogSection() {
             isInformative: Boolean(b.isInformative),
           }));
 
-          // Ensure informative blogs are visible up front
-          mapped.sort((a, b) => {
-            const aInf = Boolean(a.isInformative);
-            const bInf = Boolean(b.isInformative);
-            if (aInf !== bInf) return aInf ? -1 : 1;
-            return 0;
-          });
-
-          setBlogs(mapped);
+          // ONLY blogs clicked as Informative in the admin panel are shown in the homepage carousel
+          const informativeOnly = mapped.filter((b) => Boolean(b.isInformative));
+          setBlogs(informativeOnly.length > 0 ? informativeOnly : mapped);
         }
       } catch (err) {
         // Fallback remains mockBlogs
