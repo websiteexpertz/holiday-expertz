@@ -468,6 +468,8 @@ export interface CustomerUserRecord {
   city?: string;
   country?: string;
   totalBookings: number;
+  passwordHash?: string;
+  passwordSalt?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,30 +1,53 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { X, Lock, Compass } from "lucide-react";
-import { loginOwnerApi } from "@/lib/authClient";
+import Link from "next/link";
+import { X, Lock, Compass, User, Mail, Phone, Building2, ArrowRight } from "lucide-react";
+import { loginOwnerApi, loginTravellerApi, registerTravellerApi } from "@/lib/authClient";
 import { useAuth } from "@/context/AuthContext";
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialTab?: "signin" | "register";
 }
 
-export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, initialTab = "signin" }: AuthModalProps) {
   const router = useRouter();
-  const { login } = useAuth();
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+  const { login, loginTraveller } = useAuth();
+
+  const [activeTab, setActiveTab] = useState<"signin" | "register">(initialTab);
+
+  // Sign In state
+  const [signInEmail, setSignInEmail] = useState("");
+  const [signInPassword, setSignInPassword] = useState("");
+
+  // Register Traveller state
+  const [regFullName, setRegFullName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPhone, setRegPhone] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleClose = React.useCallback(() => {
     setErrorMessage(null);
     setSuccessMessage(null);
-    setEmail("");
-    setPassword("");
+    setSignInEmail("");
+    setSignInPassword("");
+    setRegFullName("");
+    setRegEmail("");
+    setRegPhone("");
+    setRegPassword("");
     onClose();
   }, [onClose]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -42,13 +65,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   if (!isOpen) return null;
 
+  // ── Handle Sign In (checks Traveller first, then Property Owner) ────────────
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    if (!email.trim() || !password) {
+    const email = signInEmail.trim();
+    if (!email || !signInPassword) {
       setErrorMessage("Please enter both email address and password.");
       return;
     }
@@ -56,137 +81,347 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setIsLoading(true);
 
     try {
-      const data = await loginOwnerApi({ email: email.trim(), password });
+      // 1. Try Traveller Login first
+      const travRes = await loginTravellerApi({ email, password: signInPassword });
+      if (travRes.success && travRes.traveller) {
+        loginTraveller(travRes.traveller);
+        setSuccessMessage(`Welcome back, ${travRes.traveller.fullName}! Opening your traveller dashboard...`);
+        setIsLoading(false);
+        setTimeout(() => {
+          handleClose();
+          router.push("/traveller/dashboard");
+        }, 700);
+        return;
+      }
 
-      if (!data.success) {
-        setErrorMessage(data.message || "Invalid email or password.");
+      // 2. If not found or failed, try Owner Login
+      const ownerRes = await loginOwnerApi({ email, password: signInPassword });
+      if (ownerRes.success && ownerRes.owner) {
+        login(ownerRes.owner);
+        setSuccessMessage(`Welcome back, ${ownerRes.owner.fullName}! Opening your host dashboard...`);
+        setIsLoading(false);
+        setTimeout(() => {
+          handleClose();
+          router.push("/dashboard");
+        }, 700);
+        return;
+      }
+
+      // 3. Neither matched
+      setErrorMessage(travRes.message || ownerRes.message || "Invalid email address or password.");
+      setIsLoading(false);
+    } catch {
+      setErrorMessage("A network error occurred. Please try again.");
+      setIsLoading(false);
+    }
+  };
+
+  // ── Handle Traveller Registration ──────────────────────────────────────────
+  const handleRegisterTravellerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isLoading) return;
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (!regFullName.trim()) {
+      setErrorMessage("Please enter your full name.");
+      return;
+    }
+    if (!regEmail.trim() || !regEmail.includes("@")) {
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
+    if (!regPassword || regPassword.length < 6) {
+      setErrorMessage("Password must be at least 6 characters long.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const res = await registerTravellerApi({
+        fullName: regFullName.trim(),
+        email: regEmail.trim(),
+        phone: regPhone.trim(),
+        password: regPassword,
+      });
+
+      if (!res.success || !res.traveller) {
+        setErrorMessage(res.message || "Failed to create traveller account.");
         setIsLoading(false);
         return;
       }
 
-      if (data.owner) {
-        login(data.owner);
-      }
-
-      setSuccessMessage(`Welcome back, ${data.owner?.fullName || "Partner"}!`);
+      loginTraveller(res.traveller);
+      setSuccessMessage(`Welcome to HolidayExpertz, ${res.traveller.fullName}! Opening your dashboard...`);
       setIsLoading(false);
       setTimeout(() => {
         handleClose();
-        router.push("/");
+        router.push("/traveller/dashboard");
       }, 800);
     } catch {
-      setErrorMessage("An unexpected network error occurred. Please try again.");
+      setErrorMessage("A network error occurred. Please try again.");
       setIsLoading(false);
     }
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 font-editorial-sans"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
         onClick={handleClose}
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 sm:p-8 z-10 border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 sm:p-8 z-10 border border-slate-100 animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto">
         <button
           type="button"
           onClick={handleClose}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-teal-600"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-[#009F8D]"
           aria-label="Close dialog"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center shadow-sm">
+        {/* Modal Branding Header */}
+        <div className="text-center space-y-2 mb-6">
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-[#006F66] to-[#009F8D] text-white flex items-center justify-center shadow-md shadow-[#009F8D]/20">
             <Compass className="w-6 h-6" />
           </div>
-          <h3 id="auth-modal-title" className="text-xl font-bold text-slate-900">
-            Sign In to HolidayExpertz
+          <h3 id="auth-modal-title" className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Holiday Expertz
           </h3>
-          <p className="text-xs text-slate-500">
-            Access your property owner partner account or guest bookings
+          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            Your passport to luxury handpicked stays, heritage sanctuaries, and unforgettable getaways.
           </p>
         </div>
 
-        {/* Success or Error Banners */}
+        {/* Tabs: Sign In vs Register as Traveller */}
+        <div className="flex items-center p-1 bg-slate-100 rounded-2xl mb-5">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("signin");
+              setErrorMessage(null);
+            }}
+            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+              activeTab === "signin"
+                ? "bg-white text-slate-900 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("register");
+              setErrorMessage(null);
+            }}
+            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+              activeTab === "register"
+                ? "bg-[#009F8D] text-white shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Register as Traveller
+          </button>
+        </div>
+
+        {/* Alerts */}
         {successMessage && (
-          <div className="my-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-medium flex items-center gap-2">
+          <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-800 font-medium flex items-center gap-2.5 animate-in fade-in">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
             <span>{successMessage}</span>
           </div>
         )}
 
         {errorMessage && (
-          <div className="my-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-medium flex items-center gap-2">
+          <div className="mb-4 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 font-medium flex items-center gap-2.5 animate-in fade-in">
+            <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        <form onSubmit={handleLoginSubmit} className="space-y-4 mt-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              required
-              disabled={isLoading}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
+        {/* Tab 1: SIGN IN FORM */}
+        {activeTab === "signin" && (
+          <form onSubmit={handleLoginSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Email Address
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={signInEmail}
+                  onChange={(e) => setSignInEmail(e.target.value)}
+                  placeholder="traveller@example.com"
+                  required
+                  disabled={isLoading}
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#009F8D] focus:border-transparent transition-all"
+                />
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+              </div>
+            </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              required
-              disabled={isLoading}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={signInPassword}
+                  onChange={(e) => setSignInPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  disabled={isLoading}
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#009F8D] focus:border-transparent transition-all"
+                />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+              </div>
+            </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 px-4 rounded-xl text-sm font-bold text-white bg-teal-600 hover:bg-teal-700 active:scale-95 transition-all shadow-md shadow-teal-600/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-[#006F66] to-[#009F8D] hover:from-[#005a53] hover:to-[#008979] active:scale-[0.99] transition-all shadow-md shadow-[#009F8D]/25 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            >
+              <Lock className="w-4 h-4" />
+              <span>{isLoading ? "Signing In..." : "Sign In to Account"}</span>
+            </button>
+          </form>
+        )}
+
+        {/* Tab 2: REGISTER AS TRAVELLER FORM */}
+        {activeTab === "register" && (
+          <form onSubmit={handleRegisterTravellerSubmit} className="space-y-3.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Full Name *
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={regFullName}
+                  onChange={(e) => setRegFullName(e.target.value)}
+                  placeholder="e.g. Sarah Jenkins"
+                  required
+                  disabled={isLoading}
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#009F8D] focus:border-transparent transition-all"
+                />
+                <User className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Email Address *
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={regEmail}
+                  onChange={(e) => setRegEmail(e.target.value)}
+                  placeholder="sarah@example.com"
+                  required
+                  disabled={isLoading}
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#009F8D] focus:border-transparent transition-all"
+                />
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Phone Number
+              </label>
+              <div className="relative">
+                <input
+                  type="tel"
+                  value={regPhone}
+                  onChange={(e) => setRegPhone(e.target.value)}
+                  placeholder="+91 98765 43210"
+                  disabled={isLoading}
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#009F8D] focus:border-transparent transition-all"
+                />
+                <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Password * (min. 6 characters)
+              </label>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                  placeholder="Create a strong password"
+                  required
+                  disabled={isLoading}
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#009F8D] focus:border-transparent transition-all"
+                />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-[#006F66] to-[#009F8D] hover:from-[#005a53] hover:to-[#008979] active:scale-[0.99] transition-all shadow-md shadow-[#009F8D]/25 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed mt-2"
+            >
+              <User className="w-4 h-4" />
+              <span>{isLoading ? "Creating Account..." : "Create Traveller Account"}</span>
+            </button>
+          </form>
+        )}
+
+        {/* Owner Registration Link Card (Crucial for user request) */}
+        <div className="mt-5 p-3.5 rounded-2xl bg-[#F2FAF7] border border-[#BDE8DE] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-white border border-[#BDE8DE] flex items-center justify-center text-[#009F8D] shrink-0">
+              <Building2 className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[#006F66] truncate">
+                Are you a Property Owner / Host?
+              </p>
+              <p className="text-[11px] text-slate-500 truncate">
+                Register your luxury property &amp; list your stay
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/subscription#owner-registration"
+            onClick={handleClose}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#009F8D] text-white text-xs font-bold hover:bg-[#007F70] transition-colors shrink-0 shadow-xs"
           >
-            <Lock className="w-4 h-4" />
-            <span>{isLoading ? "Signing In..." : "Sign In"}</span>
-          </button>
-        </form>
+            <span>Register</span>
+            <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
 
-        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+        {/* Footer info */}
+        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
           <button
             type="button"
             onClick={handleClose}
-            className="hover:text-slate-800 transition-colors"
+            className="hover:text-slate-700 transition-colors cursor-pointer"
           >
             Continue browsing
           </button>
-          <a
-            href="/subscription#owner-registration"
-            onClick={handleClose}
-            className="font-semibold text-teal-600 hover:underline"
-          >
-            New host? Register here
-          </a>
+          <span>HolidayExpertz &bull; Secure Authentication</span>
         </div>
       </div>
     </div>
   );
 }
+

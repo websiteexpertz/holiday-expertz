@@ -429,6 +429,11 @@ export default function Footer() {
                   Contact Us
                 </a>
               </li>
+              <li>
+                <Link href="/#faq" className="hover:text-teal-300 transition-colors">
+                  FAQ
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -457,9 +462,9 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#blog" className="hover:text-teal-300 transition-colors">
+                <Link href="/blog" className="hover:text-teal-300 transition-colors">
                   Travel Blog & Guides
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -499,91 +504,69 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
+          </div>
+        </div>
 
-            {/* Secure Payments (Right Side of Footer) */}
-            <div className="pt-4 space-y-2.5">
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-white block">
-                Secure Payments
-              </span>
-              <div className="grid grid-cols-2 gap-2 max-w-[210px]">
-                {/* VISA */}
-                <div
-                  className="w-full h-[40px] rounded-xl bg-[#1434CB] flex items-center justify-center p-1.5 shadow-sm hover:brightness-110 transition-all select-none"
-                  title="Visa"
-                >
-                  <svg className="h-4.5 w-auto" viewBox="0 0 78 24" fill="none">
-                    <path
-                      d="M30.4 1.5L20 23.5H13.6L7.9 5.8C7.6 4.7 7.3 4.2 6.4 3.7C4.9 2.9 2.3 2.1 0 1.6L0.2 0.7H11.2C12.7 0.7 13.9 1.7 14.3 3.3L17 17.5L23.8 0.7H30.4V1.5ZM57.5 16.3C57.6 10.3 49.3 10 49.4 7.2C49.5 6.3 50.3 5.4 52.1 5.2C53 5.1 55.6 5 58.4 6.3L59.5 1.2C58 0.7 56.1 0.2 53.7 0.2C47.4 0.2 43 3.6 43 8.3C42.8 12.1 46.2 14.2 48.8 15.5C51.5 16.8 52.4 17.6 52.4 18.8C52.3 20.6 50.2 21.4 48.3 21.4C44.9 21.4 42.9 20.4 41.3 19.6L40.2 24.9C41.8 25.6 44.8 26.2 47.9 26.2C54.6 26.2 57.5 22.9 57.5 16.3ZM74.5 23.5H80L75.2 0.7H70.1C69 0.7 68.1 1.3 67.7 2.3L57.8 23.5H64.3L65.6 19.9H73.6L74.5 23.5ZM67.4 15.1L70.7 6.1L72.6 15.1H67.4ZM40.9 0.7L35.7 23.5H29.5L34.7 0.7H40.9Z"
-                      fill="white"
-                    />
-                  </svg>
-                </div>
+        {/* Secure Payments Strip - Horizontal Line (One by One in the Footer Line) */}
+        <div className="py-6 border-b border-[#133d38] flex flex-col lg:flex-row items-center justify-between gap-4 font-editorial-sans">
+          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-5">
+            <span className="text-xs font-bold uppercase tracking-[0.16em] text-white whitespace-nowrap">
+              Secure Payments
+            </span>
+            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+              {/* VISA */}
+              <div
+                className="w-[88px] sm:w-[96px] h-[40px] sm:h-[44px] rounded-2xl bg-[#1434CB] flex items-center justify-center p-1.5 shadow-sm hover:brightness-110 transition-all select-none"
+                title="Visa"
+              >
+                <svg className="h-5 w-auto" viewBox="0 0 78 24" fill="none">
+                  <path
+                    d="M30.4 1.5L20 23.5H13.6L7.9 5.8C7.6 4.7 7.3 4.2 6.4 3.7C4.9 2.9 2.3 2.1 0 1.6L0.2 0.7H11.2C12.7 0.7 13.9 1.7 14.3 3.3L17 17.5L23.8 0.7H30.4V1.5ZM57.5 16.3C57.6 10.3 49.3 10 49.4 7.2C49.5 6.3 50.3 5.4 52.1 5.2C53 5.1 55.6 5 58.4 6.3L59.5 1.2C58 0.7 56.1 0.2 53.7 0.2C47.4 0.2 43 3.6 43 8.3C42.8 12.1 46.2 14.2 48.8 15.5C51.5 16.8 52.4 17.6 52.4 18.8C52.3 20.6 50.2 21.4 48.3 21.4C44.9 21.4 42.9 20.4 41.3 19.6L40.2 24.9C41.8 25.6 44.8 26.2 47.9 26.2C54.6 26.2 57.5 22.9 57.5 16.3ZM74.5 23.5H80L75.2 0.7H70.1C69 0.7 68.1 1.3 67.7 2.3L57.8 23.5H64.3L65.6 19.9H73.6L74.5 23.5ZM67.4 15.1L70.7 6.1L72.6 15.1H67.4ZM40.9 0.7L35.7 23.5H29.5L34.7 0.7H40.9Z"
+                    fill="white"
+                  />
+                </svg>
+              </div>
 
-                {/* Mastercard */}
-                <div
-                  className="w-full h-[40px] rounded-xl bg-[#FF5F00] flex flex-col items-center justify-center p-1 shadow-sm hover:brightness-110 transition-all select-none"
-                  title="Mastercard"
-                >
-                  <svg className="h-4.5 w-auto" viewBox="0 0 38 24" fill="none">
-                    <circle cx="14" cy="12" r="9" stroke="white" strokeWidth="2.2" fill="none" />
-                    <circle cx="24" cy="12" r="9" stroke="white" strokeWidth="2.2" fill="none" />
-                  </svg>
-                  <span className="text-[7.5px] font-bold text-white tracking-tighter leading-none mt-0.5">
-                    mastercard.
-                  </span>
-                </div>
+              {/* Mastercard */}
+              <div
+                className="w-[88px] sm:w-[96px] h-[40px] sm:h-[44px] rounded-2xl bg-[#FF5F00] flex flex-col items-center justify-center p-1 shadow-sm hover:brightness-110 transition-all select-none"
+                title="Mastercard"
+              >
+                <svg className="h-5 w-auto" viewBox="0 0 38 24" fill="none">
+                  <circle cx="14" cy="12" r="9" stroke="white" strokeWidth="2.4" fill="none" />
+                  <circle cx="24" cy="12" r="9" stroke="white" strokeWidth="2.4" fill="none" />
+                </svg>
+                <span className="text-[8px] font-bold text-white tracking-tighter leading-none mt-0.5 font-sans">
+                  mastercard.
+                </span>
+              </div>
 
-                {/* American Express */}
-                <div
-                  className="w-full h-[40px] rounded-xl bg-[#002663] flex flex-col items-center justify-center p-1 shadow-sm hover:brightness-110 transition-all select-none"
-                  title="American Express"
-                >
-                  <span className="text-[8px] font-black tracking-widest text-white leading-tight text-center font-sans">
-                    AMERICAN<br />EXPRESS
-                  </span>
-                </div>
+              {/* American Express */}
+              <div
+                className="w-[88px] sm:w-[96px] h-[40px] sm:h-[44px] rounded-2xl bg-[#002663] flex flex-col items-center justify-center p-1 shadow-sm hover:brightness-110 transition-all select-none"
+                title="American Express"
+              >
+                <span className="text-[8.5px] font-black tracking-widest text-white leading-tight text-center font-sans">
+                  AMERICAN<br />EXPRESS
+                </span>
+              </div>
 
-                {/* PayPal */}
-                <div
-                  className="w-full h-[40px] rounded-xl bg-[#0079C1] flex items-center justify-center p-1.5 shadow-sm hover:brightness-110 transition-all select-none"
-                  title="PayPal"
-                >
-                  <span className="text-sm font-black italic text-white tracking-tight font-sans">
-                    PayPal
-                  </span>
-                </div>
+              {/* PayPal */}
+              <div
+                className="w-[88px] sm:w-[96px] h-[40px] sm:h-[44px] rounded-2xl bg-[#0079C1] flex items-center justify-center p-1.5 shadow-sm hover:brightness-110 transition-all select-none"
+                title="PayPal"
+              >
+                <span className="text-base font-black italic text-white tracking-tight font-sans">
+                  PayPal
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Legal, Copyright & Demo Disclaimers */}
-        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#6d8a87] font-editorial-sans">
+        {/* Bottom Copyright */}
+        <div className="pt-6 pb-2 text-xs text-[#6d8a87] font-editorial-sans text-center sm:text-left">
           <p>© 2026 HolidayExpertz Inc. All rights reserved.</p>
-
-          <div className="flex flex-wrap items-center gap-6">
-            <Link href="/privacy" className="hover:text-white transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="hover:text-white transition-colors">
-              Terms & Conditions
-            </Link>
-            <a href="#cookies" className="hover:text-white transition-colors">
-              Cookie Preferences
-            </a>
-            <a href="#security" className="hover:text-white transition-colors">
-              Security
-            </a>
-            <Link href="/admin" className="text-[#9fb8b5] hover:text-[#009F8D] transition-colors font-medium">
-              Admin Portal
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-1 text-[11px] text-[#6d8a87]">
-            <span>Crafted with</span>
-            <Heart className="w-3 h-3 text-rose-400 fill-rose-400" />
-            <span>for discerning travelers</span>
-          </div>
         </div>
       </div>
     </footer>

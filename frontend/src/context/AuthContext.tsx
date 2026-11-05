@@ -2,16 +2,22 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { PropertyOwner } from "@backend/types/auth";
+import { CustomerUserRecord } from "@backend/types/admin";
 import { getOwnerSessionApi, updateOwnerProfileApi } from "@/lib/propertyClient";
+import { updateTravellerProfileApi } from "@/lib/authClient";
 
 interface AuthContextType {
   owner: PropertyOwner | null;
+  traveller: CustomerUserRecord | null;
+  userRole: "owner" | "traveller" | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (owner: PropertyOwner) => void;
+  loginTraveller: (traveller: CustomerUserRecord) => void;
   logout: () => void;
   refreshProfile: () => Promise<void>;
   updateProfile: (updates: Partial<PropertyOwner>) => Promise<{ success: boolean; message: string }>;
+  updateTraveller: (updates: Partial<CustomerUserRecord>) => Promise<{ success: boolean; message: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,9 +36,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     return null;
   });
+
+  const [traveller, setTraveller] = useState<CustomerUserRecord | null>(() => {
+    if (typeof window !== "undefined") {
+      const cached = localStorage.getItem("holiday_traveller");
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch {
+          localStorage.removeItem("holiday_traveller");
+        }
+      }
+    }
+    return null;
+  });
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const syncSession = useCallback((ownerData: PropertyOwner | null) => {
+  const syncOwnerSession = useCallback((ownerData: PropertyOwner | null) => {
     setOwner(ownerData);
     if (typeof window !== "undefined") {
       if (ownerData) {
@@ -47,60 +68,86 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const syncTravellerSession = useCallback((travellerData: CustomerUserRecord | null) => {
+    setTraveller(travellerData);
+    if (typeof window !== "undefined") {
+      if (travellerData) {
+        localStorage.setItem("holiday_traveller", JSON.stringify(travellerData));
+        localStorage.setItem("holiday_traveller_id", travellerData.id);
+      } else {
+        localStorage.removeItem("holiday_traveller");
+        localStorage.removeItem("holiday_traveller_id");
+      }
+    }
+  }, []);
+
   const refreshProfile = useCallback(async () => {
     try {
       const storedId = typeof window !== "undefined" ? localStorage.getItem("holiday_owner_id") : null;
-      if (!storedId) {
-        setIsLoading(false);
-        return;
-      }
-      const res = await getOwnerSessionApi();
-      if (res.success && res.owner) {
-        syncSession(res.owner);
+      if (storedId) {
+        const res = await getOwnerSessionApi();
+        if (res.success && res.owner) {
+          syncOwnerSession(res.owner);
+        }
       }
     } catch (err) {
       console.warn("Failed to refresh session from server:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [syncSession]);
+  }, [syncOwnerSession]);
 
   useEffect(() => {
-    const storedId = typeof window !== "undefined" ? localStorage.getItem("holiday_owner_id") : null;
-    if (!storedId) {
+    const storedOwnerId = typeof window !== "undefined" ? localStorage.getItem("holiday_owner_id") : null;
+    const storedTraveller = typeof window !== "undefined" ? localStorage.getItem("holiday_traveller") : null;
+
+    if (!storedOwnerId && !storedTraveller) {
       const timer = setTimeout(() => setIsLoading(false), 0);
       return () => clearTimeout(timer);
     }
 
     let isMounted = true;
-    getOwnerSessionApi().then((res) => {
-      if (!isMounted) return;
-      if (res.success && res.owner) {
-        syncSession(res.owner);
-      }
+    if (storedOwnerId) {
+      getOwnerSessionApi().then((res) => {
+        if (!isMounted) return;
+        if (res.success && res.owner) {
+          syncOwnerSession(res.owner);
+        }
+        setIsLoading(false);
+      }).catch(() => {
+        if (isMounted) setIsLoading(false);
+      });
+    } else {
       setIsLoading(false);
-    }).catch(() => {
-      if (isMounted) setIsLoading(false);
-    });
+    }
 
     return () => {
       isMounted = false;
     };
-  }, [syncSession]);
+  }, [syncOwnerSession]);
 
   const login = (newOwner: PropertyOwner) => {
-    syncSession(newOwner);
+    // If logging in as owner, clear traveller
+    syncTravellerSession(null);
+    syncOwnerSession(newOwner);
+  };
+
+  const loginTraveller = (newTraveller: CustomerUserRecord) => {
+    // If logging in as traveller, clear owner
+    syncOwnerSession(null);
+    syncTravellerSession(newTraveller);
   };
 
   const logout = () => {
-    syncSession(null);
+    syncOwnerSession(null);
+    syncTravellerSession(null);
   };
 
   const updateProfile = async (updates: Partial<PropertyOwner>) => {
     try {
       const res = await updateOwnerProfileApi(updates);
       if (res.success && res.owner) {
-        syncSession(res.owner);
+        syncOwnerSession(res.owner);
         return { success: true, message: res.message || "Profile updated!" };
       }
       return { success: false, message: res.message || "Failed to update profile." };
@@ -109,16 +156,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateTraveller = async (updates: Partial<CustomerUserRecord>) => {
+    if (!traveller) return { success: false, message: "Not logged in as traveller" };
+    try {
+      const res = await updateTravellerProfileApi(traveller.id, updates);
+      if (res.success && res.traveller) {
+        syncTravellerSession(res.traveller);
+        return { success: true, message: res.message || "Profile updated successfully!" };
+      }
+      return { success: false, message: res.message || "Failed to update profile." };
+    } catch {
+      return { success: false, message: "Network error occurred." };
+    }
+  };
+
+  const userRole = owner ? "owner" : traveller ? "traveller" : null;
+
   return (
     <AuthContext.Provider
       value={{
         owner,
+        traveller,
+        userRole,
         isLoading,
-        isAuthenticated: !!owner,
+        isAuthenticated: !!owner || !!traveller,
         login,
+        loginTraveller,
         logout,
         refreshProfile,
         updateProfile,
+        updateTraveller,
       }}
     >
       {children}
