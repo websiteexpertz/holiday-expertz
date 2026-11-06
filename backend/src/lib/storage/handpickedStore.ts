@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { getAllProperties } from "./propertyStore";
 
-const rootDir = process.cwd().endsWith("frontend")
+const rootDir = process.cwd().endsWith("frontend") || process.cwd().endsWith("backend")
   ? path.resolve(process.cwd(), "..")
   : process.cwd();
 const DATA_FILE = path.join(rootDir, "backend", "src", "data", "handpicked.json");

@@ -5,7 +5,7 @@ import { connectToDatabase } from "../db/mongodb";
 import { PropertyModel } from "../models/Property";
 
 // Path resolution: locate backend/src/data/properties.json from either root or frontend cwd
-const rootDir = process.cwd().endsWith("frontend")
+const rootDir = process.cwd().endsWith("frontend") || process.cwd().endsWith("backend")
   ? path.resolve(process.cwd(), "..")
   : process.cwd();
 const DATA_FILE = path.join(rootDir, "backend", "src", "data", "properties.json");

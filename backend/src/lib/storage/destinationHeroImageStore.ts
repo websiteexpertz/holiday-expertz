@@ -5,7 +5,7 @@ import { DestinationHeroImage } from "../../types/admin";
 import { connectToDatabase } from "../db/mongodb";
 import { DestinationHeroImageModel } from "../models/DestinationHeroImage";
 
-const rootDir = process.cwd().endsWith("frontend")
+const rootDir = process.cwd().endsWith("frontend") || process.cwd().endsWith("backend")
   ? path.resolve(process.cwd(), "..")
   : process.cwd();
 const DATA_FILE = path.join(rootDir, "backend", "src", "data", "destinationHeroImages.json");
@@ -368,4 +368,3 @@ export function reorderDestinationHeroImages(orderedIds: string[]): DestinationH
   updated.forEach((img) => syncToMongoAsync(img).catch(() => {}));
   return updated;
 }
-

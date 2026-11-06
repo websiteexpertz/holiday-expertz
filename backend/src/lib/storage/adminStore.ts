@@ -11,7 +11,7 @@ import { connectToDatabase } from "../db/mongodb";
 import { AdminModel } from "../models/Admin";
 import defaultAdminsData from "../../data/admins.json";
 
-const rootDir = process.cwd().endsWith("frontend")
+const rootDir = process.cwd().endsWith("frontend") || process.cwd().endsWith("backend")
   ? path.resolve(process.cwd(), "..")
   : process.cwd();
 const DATA_FILE = path.join(rootDir, "backend", "src", "data", "admins.json");

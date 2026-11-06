@@ -4,7 +4,7 @@ import crypto from "crypto";
 import { FeaturedDestination } from "../../types/admin";
 import { getAllDestinations } from "./destinationStore";
 
-const rootDir = process.cwd().endsWith("frontend")
+const rootDir = process.cwd().endsWith("frontend") || process.cwd().endsWith("backend")
   ? path.resolve(process.cwd(), "..")
   : process.cwd();
 const DATA_FILE = path.join(rootDir, "backend", "src", "data", "featuredDestinations.json");
@@ -242,4 +242,3 @@ export function reorderFeaturedDestinations(orderedIds: string[]): FeaturedDesti
   persistToFile(items);
   return items;
 }
-

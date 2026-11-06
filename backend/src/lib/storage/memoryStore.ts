@@ -5,7 +5,7 @@ import { MemoryRecord, MemoryInput, MemoryStatus, MemorySource } from "../../typ
 import { connectToDatabase } from "../db/mongodb";
 import { MemoryModel } from "../models/Memory";
 
-const rootDir = process.cwd().endsWith("frontend")
+const rootDir = process.cwd().endsWith("frontend") || process.cwd().endsWith("backend")
   ? path.resolve(process.cwd(), "..")
   : process.cwd();
 const DATA_FILE = path.join(rootDir, "backend", "src", "data", "memories.json");
@@ -285,4 +285,3 @@ export function clearDemoMemories(): number {
 
   return deletedCount;
 }
-

@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { ContactInquiryRecord } from "../../types/admin";
 
-const rootDir = process.cwd().endsWith("frontend")
+const rootDir = process.cwd().endsWith("frontend") || process.cwd().endsWith("backend")
   ? path.resolve(process.cwd(), "..")
   : process.cwd();
 const DATA_FILE = path.join(rootDir, "backend", "src", "data", "inquiries.json");
