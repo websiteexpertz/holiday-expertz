@@ -609,10 +609,12 @@ export const adminClient = {
     upload: async (file: File) => {
       const fd = new FormData();
       fd.append("file", file);
+      const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
       const res = await fetch(apiUrl("/api/admin/media"), {
         method: "POST",
         body: fd,
-        credentials: "same-origin",
+        credentials: "include",
+        headers: token ? { Authorization: "Bearer " + token } : undefined,
       });
       return res.json();
     },
