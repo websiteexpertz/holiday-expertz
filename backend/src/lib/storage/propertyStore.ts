@@ -46,6 +46,8 @@ export function getAllProperties(forceRefresh = false): Property[] {
 }
 
 export function saveProperties(properties: Property[]): void {
+  propertiesCache = properties;
+
   try {
     ensureStorageExists();
     const tempFile = `${DATA_FILE}.tmp.${Date.now()}`;
@@ -53,23 +55,19 @@ export function saveProperties(properties: Property[]): void {
 
     fs.writeFileSync(tempFile, payload, "utf-8");
     fs.renameSync(tempFile, DATA_FILE);
-
-    propertiesCache = properties;
-
-    // Asynchronously synchronize with MongoDB
-    connectToDatabase()
-      .then(async () => {
-        for (const p of properties) {
-          await PropertyModel.findOneAndUpdate({ id: p.id }, p, { upsert: true });
-        }
-      })
-      .catch((err) => {
-        console.error("MongoDB background property sync error:", err);
-      });
   } catch (error) {
-    console.error("Backend Property Storage Error: Failed to persist properties:", error);
-    throw new Error("Failed to persist property record to storage.");
+    console.warn("Property JSON persistence unavailable; using MongoDB:", error);
   }
+
+  connectToDatabase()
+    .then(async () => {
+      for (const p of properties) {
+        await PropertyModel.findOneAndUpdate({ id: p.id }, p, { upsert: true });
+      }
+    })
+    .catch((error) => {
+      console.error("MongoDB property persistence failed:", error);
+    });
 }
 
 export function getPropertiesByOwnerId(ownerId: string): Property[] {

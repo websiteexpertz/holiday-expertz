@@ -342,36 +342,35 @@ export function getAllDestinations(): DestinationsStorageFormat {
 }
 
 export function saveDestinations(data: DestinationsStorageFormat): void {
+  destinationsCache = data;
+
   try {
     ensureStorageExists();
     const tempFile = `${DATA_FILE}.tmp.${Date.now()}`;
     fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), "utf-8");
     fs.renameSync(tempFile, DATA_FILE);
-    destinationsCache = data;
-
-    // Asynchronously synchronize with MongoDB
-    connectToDatabase()
-      .then(async () => {
-        for (const c of data.countries) {
-          await CountryModel.findOneAndUpdate({ id: c.id }, c, { upsert: true });
-        }
-        for (const s of data.states) {
-          await StateModel.findOneAndUpdate({ id: s.id }, s, { upsert: true });
-        }
-        for (const ci of data.cities) {
-          await CityModel.findOneAndUpdate({ id: ci.id }, ci, { upsert: true });
-        }
-        for (const a of data.areas) {
-          await AreaModel.findOneAndUpdate({ id: a.id }, a, { upsert: true });
-        }
-      })
-      .catch((err) => {
-        console.error("MongoDB background destination sync error:", err);
-      });
   } catch (error) {
-    console.error("Backend Destination Storage Error: Failed to persist:", error);
-    throw new Error("Failed to persist destination records.");
+    console.warn("Destination JSON persistence unavailable; using MongoDB:", error);
   }
+
+  connectToDatabase()
+    .then(async () => {
+      for (const c of data.countries) {
+        await CountryModel.findOneAndUpdate({ id: c.id }, c, { upsert: true });
+      }
+      for (const s of data.states) {
+        await StateModel.findOneAndUpdate({ id: s.id }, s, { upsert: true });
+      }
+      for (const ci of data.cities) {
+        await CityModel.findOneAndUpdate({ id: ci.id }, ci, { upsert: true });
+      }
+      for (const a of data.areas) {
+        await AreaModel.findOneAndUpdate({ id: a.id }, a, { upsert: true });
+      }
+    })
+    .catch((error) => {
+      console.error("MongoDB destination persistence failed:", error);
+    });
 }
 
 // ── Hierarchy Live Counts & Linking ──
