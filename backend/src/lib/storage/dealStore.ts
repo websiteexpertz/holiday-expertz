@@ -228,26 +228,21 @@ export async function getAllDealsAsync(): Promise<DealRecord[]> {
 export async function createDealAsync(
   input: Omit<DealRecord, "id" | "createdAt" | "updatedAt">
 ): Promise<DealRecord> {
-  try {
-    const deals = getAllDeals();
-    const id = `deal_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const now = new Date().toISOString();
-    const baseSlug = input.slug?.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
-      || input.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-    let slug = baseSlug;
-    let counter = 1;
-    while (deals.some((d) => d.slug === slug)) slug = `${baseSlug}-${counter++}`;
+  const deals = getAllDeals();
+  const id = `deal_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const now = new Date().toISOString();
+  const baseSlug = input.slug?.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+    || input.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  let slug = baseSlug;
+  let counter = 1;
+  while (deals.some((d) => d.slug === slug)) slug = `${baseSlug}-${counter++}`;
 
-    const record: DealRecord = { ...input, id, slug, createdAt: now, updatedAt: now };
-    await connectToDatabase();
-    await DealModel.create(record);
-    deals.unshift(record);
-    dealsCache = deals;
-    return record;
-  } catch (error) {
-    console.warn("MongoDB deal write failed; falling back to local storage:", error);
-    return createDeal(input);
-  }
+  const record: DealRecord = { ...input, id, slug, createdAt: now, updatedAt: now };
+  await connectToDatabase();
+  await DealModel.create(record);
+  deals.unshift(record);
+  dealsCache = deals;
+  return record;
 }
 
 export async function updateDealAsync(id: string, updates: Partial<DealRecord>): Promise<DealRecord | null> {

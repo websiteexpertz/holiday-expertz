@@ -7,7 +7,7 @@ import { getAllBookings } from "../../../../../lib/storage/bookingStore";
 import { getAllPayments } from "../../../../../lib/storage/paymentStore";
 import { getAllBlogs } from "../../../../../lib/storage/blogStore";
 import { getAllEvents } from "../../../../../lib/storage/eventStore";
-import { getAllDeals } from "../../../../../lib/storage/dealStore";
+import { getAllDealsAsync } from "../../../../../lib/storage/dealStore";
 import { getAllInquiries } from "../../../../../lib/storage/inquiryStore";
 import { getRecentAuditLogs } from "../../../../../lib/storage/auditLogStore";
 import { DashboardMetricOverview } from "../../../../../types/admin";
@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     const payments = getAllPayments();
     const blogs = getAllBlogs();
     const events = getAllEvents();
-    const deals = getAllDeals();
+    const deals = await getAllDealsAsync();
     const inquiries = getAllInquiries();
     const recentActivity = getRecentAuditLogs(15);
 
