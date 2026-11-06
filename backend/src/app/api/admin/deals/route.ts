@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedAdmin, checkAdminPermission } from "../../../../lib/security/adminAuthService";
-import { getAllDeals, createDeal, updateDeal, deleteDeal, getDealById } from "../../../../lib/storage/dealStore";
+import { getAllDealsAsync, createDealAsync, updateDealAsync, deleteDealAsync, getDealById } from "../../../../lib/storage/dealStore";
 import { recordAuditLog } from "../../../../lib/storage/auditLogStore";
 
 export async function GET(req: Request) {
@@ -10,7 +10,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    const deals = getAllDeals();
+    const deals = await getAllDealsAsync();
     return NextResponse.json({ success: true, deals });
   } catch (error) {
     console.error("Admin Deals GET Error:", error);
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: "Title and discount value are required" }, { status: 400 });
     }
 
-    const deal = createDeal({
+    const deal = await createDealAsync({
       title: body.title,
       slug: body.slug,
       description: body.description || "",
@@ -78,7 +78,7 @@ export async function PUT(req: Request) {
       return NextResponse.json({ success: false, message: "Deal ID required" }, { status: 400 });
     }
 
-    const updated = updateDeal(id, updates);
+    const updated = await updateDealAsync(id, updates);
     if (!updated) {
       return NextResponse.json({ success: false, message: "Deal not found" }, { status: 404 });
     }
@@ -116,7 +116,7 @@ export async function DELETE(req: Request) {
     }
 
     const deal = getDealById(id);
-    const success = deleteDeal(id);
+    const success = await deleteDealAsync(id);
     if (!success) {
       return NextResponse.json({ success: false, message: "Deal not found" }, { status: 404 });
     }

@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 import { DealRecord } from "../../types/admin";
+import { connectToDatabase } from "../db/mongodb";
+import { DealModel } from "../models/Deal";
 
 const rootDir = process.cwd().endsWith("frontend")
   ? path.resolve(process.cwd(), "..")
@@ -208,4 +210,53 @@ export function deleteDeal(id: string): boolean {
 
 export function getActiveDeals(): DealRecord[] {
   return getAllDeals().filter((d) => d.status === "active");
+}
+
+export async function getAllDealsAsync(): Promise<DealRecord[]> {
+  try {
+    await connectToDatabase();
+    const deals = await DealModel.find().sort({ createdAt: -1 }).lean();
+    if (deals.length > 0) {
+      return deals as unknown as DealRecord[];
+    }
+  } catch (error) {
+    console.warn("MongoDB deal read fallback:", error instanceof Error ? error.message : error);
+  }
+  return getAllDeals();
+}
+
+export async function createDealAsync(
+  input: Omit<DealRecord, "id" | "createdAt" | "updatedAt">
+): Promise<DealRecord> {
+  const deals = getAllDeals();
+  const id = `deal_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const now = new Date().toISOString();
+  const baseSlug = input.slug?.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+    || input.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  let slug = baseSlug;
+  let counter = 1;
+  while (deals.some((d) => d.slug === slug)) slug = `${baseSlug}-${counter++}`;
+
+  const record: DealRecord = { ...input, id, slug, createdAt: now, updatedAt: now };
+  await connectToDatabase();
+  await DealModel.create(record);
+  deals.unshift(record);
+  dealsCache = deals;
+  return record;
+}
+
+export async function updateDealAsync(id: string, updates: Partial<DealRecord>): Promise<DealRecord | null> {
+  await connectToDatabase();
+  const updated = await DealModel.findOneAndUpdate(
+    { id },
+    { ...updates, id, updatedAt: new Date().toISOString() },
+    { new: true, runValidators: true }
+  ).lean();
+  return (updated as unknown as DealRecord | null) || null;
+}
+
+export async function deleteDealAsync(id: string): Promise<boolean> {
+  await connectToDatabase();
+  const result = await DealModel.deleteOne({ id });
+  return result.deletedCount > 0;
 }
