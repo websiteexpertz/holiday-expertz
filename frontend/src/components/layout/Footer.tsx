@@ -430,7 +430,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <Link href="/#faq" className="hover:text-teal-300 transition-colors">
+                <Link href="/faq" className="hover:text-teal-300 transition-colors">
                   FAQ
                 </Link>
               </li>
@@ -474,9 +474,9 @@ export default function Footer() {
             <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-white">Support</h4>
             <ul className="space-y-2.5 text-xs sm:text-[13px] text-[#9fb8b5]">
               <li>
-                <a href="#faq" className="hover:text-teal-300 transition-colors">
+                <Link href="/faq" className="hover:text-teal-300 transition-colors">
                   Help Center & FAQs
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#booking-help" className="hover:text-teal-300 transition-colors">

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Header from "@frontend/components/layout/Header";
@@ -24,6 +25,7 @@ export default function SubscriptionPage() {
   const router = useRouter();
   const { isAuthenticated, owner, isLoading } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalRole, setAuthModalRole] = useState<"owner" | "traveller">("owner");
   const [selectedPlan, setSelectedPlan] = useState<string>("verified");
 
   useEffect(() => {
@@ -218,7 +220,10 @@ export default function SubscriptionPage() {
               {/* Right Column: Prominent Owner Registration Form */}
               <div id="owner-registration" className="lg:col-span-6 scroll-mt-24">
                 <OwnerRegistrationForm
-                  onOpenSignIn={() => setAuthModalOpen(true)}
+                  onOpenSignIn={() => {
+                    setAuthModalRole("owner");
+                    setAuthModalOpen(true);
+                  }}
                   onRegistrationSuccess={() => {
                     // Registration success state handled inside form
                   }}
@@ -405,6 +410,16 @@ export default function SubscriptionPage() {
                 </div>
               ))}
             </div>
+
+            <div className="pt-2 text-center">
+              <Link
+                href="/faq/property-owners"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 hover:bg-[#006F66] text-white text-xs sm:text-sm font-bold transition-all shadow-sm"
+              >
+                <span>View All Property Owner FAQs</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </section>
       </main>
@@ -416,6 +431,7 @@ export default function SubscriptionPage() {
       <AuthModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
+        initialRole={authModalRole}
       />
     </div>
   );
