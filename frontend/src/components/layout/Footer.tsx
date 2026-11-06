@@ -146,7 +146,7 @@ export default function Footer() {
                   <div className="w-7 h-7 rounded-full bg-[#071f1d] border border-[#1b4e47] flex items-center justify-center text-teal-400 shrink-0">
                     <Mail className="w-3.5 h-3.5" />
                   </div>
-                  <span>concierge@holidayexpertz.com</span>
+                  <span>contact@holidayexpertz.com</span>
                 </div>
               </div>
             </div>
@@ -342,7 +342,7 @@ export default function Footer() {
             <div className="space-y-2.5 pt-2 text-xs text-[#9fb8b5] font-editorial-sans">
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-[#009F8D] flex-shrink-0" />
-                <span>concierge@holidayexpertz.com</span>
+                <span>contact@holidayexpertz.com</span>
               </div>
             </div>
 
