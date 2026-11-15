@@ -4,6 +4,7 @@ import Link from "next/link";
 import { X, Lock, Compass, User, Mail, Phone, Building2, ArrowRight } from "lucide-react";
 import { loginOwnerApi, loginTravellerApi, registerTravellerApi } from "@/lib/authClient";
 import { useAuth } from "@/context/AuthContext";
+import BrandLogo from "@/components/common/BrandLogo";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -248,12 +249,9 @@ export default function AuthModal({
           </div>
         ) : (
           <div className="text-center space-y-2 mb-6">
-            <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-[#006F66] to-[#009F8D] text-white flex items-center justify-center shadow-md shadow-[#009F8D]/20">
-              <Compass className="w-6 h-6" />
+            <div className="flex justify-center mb-1">
+              <BrandLogo variant="header" asLink={false} />
             </div>
-            <h3 id="auth-modal-title" className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              Holiday Expertz
-            </h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
               Your passport to luxury handpicked stays, heritage sanctuaries, and unforgettable getaways.
             </p>

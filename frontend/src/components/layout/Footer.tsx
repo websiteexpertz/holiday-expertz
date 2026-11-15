@@ -1,15 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { apiUrl } from "@/lib/apiUrl";
+import BrandLogo from "@/components/common/BrandLogo";
 import {
   Compass,
   Mail,
   Send,
   CheckCircle2,
+  Check,
+  X,
   AlertCircle,
   ShieldCheck,
   Heart,
@@ -33,6 +36,43 @@ export default function Footer() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [serverMessage, setServerMessage] = useState("");
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+
+  const doneButtonRef = useRef<HTMLButtonElement>(null);
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Close modal and restore focus
+  const handleCloseSuccessModal = () => {
+    setIsSuccessModalOpen(false);
+    submitButtonRef.current?.focus();
+  };
+
+  // Prevent background scrolling and support Escape key when modal is open
+  useEffect(() => {
+    if (isSuccessModalOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+
+      // Focus the Done button
+      const timer = setTimeout(() => {
+        doneButtonRef.current?.focus();
+      }, 50);
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          setIsSuccessModalOpen(false);
+          submitButtonRef.current?.focus();
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        window.removeEventListener("keydown", handleKeyDown);
+        clearTimeout(timer);
+      };
+    }
+  }, [isSuccessModalOpen]);
 
   const handleListPropertyClick = (e: React.MouseEvent) => {
     if (isAuthenticated && owner) {
@@ -109,13 +149,16 @@ export default function Footer() {
           message: "",
         });
         setFieldErrors({});
+        setIsSuccessModalOpen(true);
       } else {
         setFormStatus("error");
         setServerMessage(data.message || "Failed to submit enquiry. Please try again.");
+        setIsSuccessModalOpen(false);
       }
     } catch (err) {
       setFormStatus("error");
       setServerMessage("Unable to send message. Please check your connection and try again.");
+      setIsSuccessModalOpen(false);
     }
   };
 
@@ -299,6 +342,7 @@ export default function Footer() {
                 {/* Submit Button */}
                 <div className="pt-2">
                   <button
+                    ref={submitButtonRef}
                     type="submit"
                     disabled={formStatus === "submitting"}
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#009F8D] hover:bg-[#00897a] disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
@@ -325,15 +369,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#133d38]">
           {/* Brand Info & Mission */}
           <div className="lg:col-span-2 space-y-4">
-            <Link href="#home" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#006F66] to-[#009F8D] flex items-center justify-center text-white shadow-sm">
-                <Compass className="w-5 h-5" />
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xl font-bold tracking-tight text-white">Holiday</span>
-                <span className="text-xl font-bold tracking-tight text-[#009F8D]">Expertz</span>
-              </div>
-            </Link>
+            <BrandLogo variant="footer" />
 
             <p className="font-editorial-sans text-xs sm:text-sm text-[#9fb8b5] leading-relaxed max-w-sm font-light">
               Your premier discovery platform for unforgettable luxury vacations, handpicked boutique stays, heritage havelis, and scenic mountain getaways.
@@ -569,6 +605,64 @@ export default function Footer() {
           <p>© 2026 HolidayExpertz Inc. All rights reserved.</p>
         </div>
       </div>
+
+      {/* ── Contact Form Submission Success Pop-up Modal ── */}
+      {isSuccessModalOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 font-editorial-sans"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="contact-success-title"
+        >
+          {/* Dark translucent background overlay */}
+          <div
+            className="fixed inset-0 bg-black/65 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={handleCloseSuccessModal}
+            aria-hidden="true"
+          />
+
+          {/* Centered White Modal Card */}
+          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8 z-10 border border-slate-100 text-center animate-in fade-in zoom-in-95 duration-200">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={handleCloseSuccessModal}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+              aria-label="Close dialog"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Green success checkmark inside a soft green circle */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-50 border border-emerald-200/90 flex items-center justify-center mx-auto mb-4 text-emerald-600 shadow-xs">
+              <Check className="w-8 h-8 sm:w-10 sm:h-10 text-[#009F8D]" strokeWidth={3} />
+            </div>
+
+            {/* Heading */}
+            <h3
+              id="contact-success-title"
+              className="font-editorial-serif text-2xl sm:text-[26px] font-semibold text-[#172B2A] tracking-tight mb-2.5"
+            >
+              Message Sent Successfully!
+            </h3>
+
+            {/* Description */}
+            <p className="font-editorial-sans text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm mx-auto mb-6">
+              Thank you for contacting Holiday Expertz. We have received your message and our team will get back to you soon.
+            </p>
+
+            {/* Done Button */}
+            <button
+              ref={doneButtonRef}
+              type="button"
+              onClick={handleCloseSuccessModal}
+              className="w-full py-3 sm:py-3.5 px-6 rounded-2xl bg-[#009F8D] hover:bg-[#008777] text-white font-bold text-sm sm:text-base tracking-wide shadow-md shadow-[#009F8D]/25 transition-all cursor-pointer active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#009F8D] focus:ring-offset-2"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
     </footer>
   );
 }

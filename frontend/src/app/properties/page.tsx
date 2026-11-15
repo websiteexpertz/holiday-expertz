@@ -13,6 +13,7 @@ import PropertyFilterSidebar, { PropertyFilterValues } from "@/components/hotels
 import SidebarMapCard from "@/components/hotels/SidebarMapCard";
 import InteractivePropertyMap from "@/components/hotels/InteractivePropertyMap";
 import PropertiesHeroSlideshow from "@/components/properties/PropertiesHeroSlideshow";
+import FeaturedPropertiesSection from "@/components/properties/FeaturedPropertiesSection";
 import { SearchState } from "@/types/hotel";
 import { Property, PropertyStatus, PropertyTypeCategory } from "@backend/types/property";
 import {
@@ -843,6 +844,13 @@ function PropertiesContent() {
                 )}
               </div>
             </div>
+
+            {/* ── Featured Properties Section (Admin-Curated) ── */}
+            <FeaturedPropertiesSection
+              destination={destination}
+              countryId={searchParams.get("countryId") || undefined}
+              locationType={searchParams.get("locationType") || undefined}
+            />
 
         {/* ── Loading State ── */}
         {loading && (

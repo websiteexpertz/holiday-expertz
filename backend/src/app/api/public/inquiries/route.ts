@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createInquiry } from "../../../../lib/storage/inquiryStore";
+import { sendInquiryNotificationEmail } from "../../../../lib/services/emailService";
 
 function sanitize(input: any): string {
   if (typeof input !== "string") return "";
@@ -81,21 +82,19 @@ export async function POST(req: Request) {
       relatedPropertyName: sanitize(body.relatedPropertyName) || undefined,
     });
 
-    // Email Notification hook
-    const notificationEmail =
-      process.env.CONTACT_NOTIFICATION_EMAIL ||
-      process.env.SUPPORT_EMAIL ||
-      "concierge@holidayexpertz.com";
-
-    // Safe dispatch log for auditing and configured integrations
-    console.log(
-      `[CONTACT INQUIRY RECEIVED] ID: ${inquiry.id} | From: ${fullName} <${email}> (${phone}) | Route: ${notificationEmail}`
-    );
+    // Trigger automated email notification to contact@holidayexpertz.com
+    const emailResult = await sendInquiryNotificationEmail(inquiry);
 
     return NextResponse.json({
       success: true,
       message: "Thank you for contacting Holiday Expertz! Your message has been received. Our team will get back to you shortly.",
       inquiry,
+      emailDispatch: {
+        recipient: emailResult.recipient,
+        delivered: emailResult.delivered,
+        attempted: emailResult.attempted,
+        note: emailResult.note || (emailResult.delivered ? "Email successfully delivered to inbox" : emailResult.error),
+      },
     });
   } catch (error: any) {
     console.error("Public Inquiries POST Error:", error);

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext";
@@ -132,8 +133,15 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         {/* Brand Header */}
         <div className="h-16 px-6 flex items-center justify-between border-b border-slate-800/80 bg-slate-950/80">
           <Link href="/admin" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-teal-500/20">
-              <Compass className="w-5 h-5 text-slate-950 stroke-[2.5]" />
+            <div className="w-9 h-9 rounded-xl bg-slate-900 border border-teal-500/30 flex items-center justify-center shadow-lg shadow-teal-500/20 p-1">
+              <Image
+                src="/holiday-expertz-icon.webp"
+                alt="HE"
+                width={32}
+                height={16}
+                className="w-full h-full object-contain"
+                priority
+              />
             </div>
             <div>
               <span className="font-extrabold text-base tracking-tight text-white block leading-none">

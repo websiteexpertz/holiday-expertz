@@ -1,8 +1,8 @@
 "use client";
 import { apiUrl } from "@/lib/apiUrl";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { adminClient } from "@/lib/adminClient";
@@ -90,8 +90,10 @@ const SAMPLE_PHOTO_PRESETS = [
   },
 ];
 
-export default function AdminNewPropertyPage() {
+function AdminNewPropertyContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryOwnerId = searchParams.get("ownerId") || "";
 
   // Navigation steps
   const [currentStep, setCurrentStep] = useState(1);
@@ -176,7 +178,31 @@ export default function AdminNewPropertyPage() {
 
         const ownersRes = await adminClient.owners.getAll();
         if (ownersRes.success && ownersRes.data?.owners) {
-          setOwners(ownersRes.data.owners);
+          const loadedOwners = ownersRes.data.owners;
+          setOwners(loadedOwners);
+
+          // Handle ownerId preselection from URL query parameter
+          if (queryOwnerId) {
+            const matchedOwner = loadedOwners.find((o: any) => o.id === queryOwnerId);
+            if (matchedOwner) {
+              if (matchedOwner.status === "suspended") {
+                setErrorBanner(
+                  `Owner ${matchedOwner.fullName} is currently suspended. Properties cannot be assigned to suspended owner accounts.`
+                );
+              } else {
+                setOwnerMode("existing_owner");
+                setSelectedOwnerId(matchedOwner.id);
+                setFormData((prev) => ({
+                  ...prev,
+                  contactPerson: prev.contactPerson || matchedOwner.fullName || "",
+                  email: prev.email || matchedOwner.email || "",
+                  mobileNumber: prev.mobileNumber || matchedOwner.mobileNumber || "",
+                }));
+              }
+            } else {
+              setErrorBanner(`Owner with ID "${queryOwnerId}" was not found.`);
+            }
+          }
         }
       } catch (err) {
         console.warn("Failed to load initial destination or owner records:", err);
@@ -462,6 +488,18 @@ export default function AdminNewPropertyPage() {
             <p className="text-xs text-slate-400 mt-1">
               Manually publish new luxury stays or associate with registered owners. Direct map coordinates integration enabled.
             </p>
+            {ownerMode === "existing_owner" && selectedOwnerId && (
+              <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 bg-teal-500/10 border border-teal-500/30 rounded-xl text-xs text-teal-300">
+                <CheckCircle2 className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                <span>
+                  Owner Account:{" "}
+                  <strong className="text-white">
+                    {owners.find((o) => o.id === selectedOwnerId)?.fullName || selectedOwnerId}
+                  </strong>{" "}
+                  ({owners.find((o) => o.id === selectedOwnerId)?.email || ""})
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -1231,6 +1269,23 @@ export default function AdminNewPropertyPage() {
         </div>
       </div>
     </AdminLayout>
+  );
+}
+
+export default function AdminNewPropertyPage() {
+  return (
+    <Suspense
+      fallback={
+        <AdminLayout>
+          <div className="p-12 text-center text-slate-400">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto text-teal-400 mb-3" />
+            <p className="text-sm font-semibold text-slate-300">Loading Add Property Form...</p>
+          </div>
+        </AdminLayout>
+      }
+    >
+      <AdminNewPropertyContent />
+    </Suspense>
   );
 }
 

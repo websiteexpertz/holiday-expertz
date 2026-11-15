@@ -64,6 +64,8 @@ const PropertySchema = new Schema<Property>(
     reviewCount: { type: Number, default: 0 },
     featured: { type: Boolean, default: false, index: true },
     handpicked: { type: Boolean, default: false, index: true },
+    isFeatured: { type: Boolean, default: false },
+    isHandpicked: { type: Boolean, default: false },
     countryId: { type: String, index: true },
     stateId: { type: String, index: true },
     cityId: { type: String, index: true },

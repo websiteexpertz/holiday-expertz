@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import BrandLogo from "@/components/common/BrandLogo";
 import {
   Compass,
   Menu,
@@ -236,24 +237,8 @@ export default function Header({
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-12">
-            {/* Logo matching exact reference layout */}
-            <Link
-              href="/"
-              className="flex items-center gap-2.5 group focus:outline-none focus:ring-2 focus:ring-[#009F8D] rounded-lg p-0.5"
-              aria-label="HolidayExpertz Home"
-            >
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#006F66] via-[#009F8D] to-teal-400 flex items-center justify-center text-white shadow-sm shadow-[#009F8D]/20">
-                <Compass className="w-5 h-5" />
-              </div>
-              <div className="flex flex-col">
-                <div className="font-bold text-lg tracking-tight text-[#172B2A] leading-tight">
-                  Holiday Expertz
-                </div>
-                <span className="text-[8.5px] uppercase tracking-[0.22em] font-semibold text-slate-400 -mt-0.5">
-                  LUXURY STAYS &amp; GETAWAYS
-                </span>
-              </div>
-            </Link>
+            {/* Official Holiday Expertz Brand Logo */}
+            <BrandLogo variant="header" />
 
             {/* Desktop Navigation matching exact reference with Property Type Dropdown */}
             <nav
@@ -820,10 +805,8 @@ export default function Header({
           }`}
         >
           <div className="space-y-6">
-            <div className="border-b border-slate-100 pb-3">
-              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400">
-                Menu
-              </p>
+            <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
+              <BrandLogo variant="compact" />
             </div>
             <nav className="flex flex-col space-y-1.5">
               {navLinks.map((link) => {

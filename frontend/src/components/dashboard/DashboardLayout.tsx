@@ -95,14 +95,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <Link
-            href="/subscription#owner-registration"
+            href="/owner/login"
             className="px-6 py-3.5 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-sm rounded-xl transition-all shadow-lg shadow-teal-500/20"
+          >
+            Sign In as Property Owner
+          </Link>
+          <Link
+            href="/subscription#owner-registration"
+            className="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-sm rounded-xl transition-all border border-white/15"
           >
             Register Your Property
           </Link>
           <Link
             href="/"
-            className="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-sm rounded-xl transition-all"
+            className="px-6 py-3.5 bg-transparent hover:bg-white/5 text-slate-400 hover:text-white font-semibold text-sm rounded-xl transition-all"
           >
             Back to Website
           </Link>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { adminClient } from "@/lib/adminClient";
 import {
@@ -13,6 +14,7 @@ import {
   Loader2,
   CheckCircle2,
   UserPlus,
+  Plus,
   X,
   Lock,
   Copy,
@@ -282,6 +284,14 @@ export default function AdminOwnersPage() {
 
                     <td className="py-4 px-5 text-right whitespace-nowrap">
                       <div className="inline-flex items-center gap-2">
+                        <Link
+                          href={`/admin/properties/new?ownerId=${encodeURIComponent(owner.id)}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 h-7 rounded-xl font-bold text-xs bg-teal-600 hover:bg-teal-500 text-white transition-all shadow-xs cursor-pointer active:scale-95"
+                          title={`Add property for ${owner.fullName}`}
+                        >
+                          <Plus className="w-3.5 h-3.5 shrink-0" />
+                          <span>Add Property</span>
+                        </Link>
                         <button
                           onClick={() => handleToggleStatus(owner.id, owner.status)}
                           className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all ${

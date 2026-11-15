@@ -58,8 +58,10 @@
     "status": "approved",
     "submittedAt": "2026-10-23T16:46:03.532Z",
     "createdAt": "2026-10-23T16:46:03.532Z",
-    "updatedAt": "2026-10-31T07:43:39.987Z",
-    "approvedAt": "2026-10-31T07:43:39.987Z"
+    "updatedAt": "2026-11-15T13:52:09.638Z",
+    "approvedAt": "2026-10-31T07:43:39.987Z",
+    "handpicked": false,
+    "isHandpicked": false
   },
   {
     "id": "prop_1792771373897_60f3e3db",
@@ -183,7 +185,9 @@
     "reviewCount": 0,
     "approvedAt": "2026-10-23T15:33:55.503Z",
     "createdAt": "2026-10-23T15:33:55.503Z",
-    "updatedAt": "2026-10-23T15:33:55.503Z"
+    "updatedAt": "2026-11-15T13:53:40.030Z",
+    "isHandpicked": false,
+    "isFeatured": false
   },
   {
     "id": "prop_1792693252112_94f24206",

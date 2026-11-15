@@ -292,16 +292,26 @@ export const adminClient = {
         body: JSON.stringify({ id, action: "toggle_pause" }),
       });
     },
-    toggleFeatured: async (id: string) => {
-      return request<{ property: Property }>("/api/admin/properties", {
+    toggleFeatured: async (id: string, isFeatured?: boolean) => {
+      return request<{ property: Property; isFeatured: boolean }>("/api/admin/properties", {
         method: "PATCH",
-        body: JSON.stringify({ id, action: "toggle_featured" }),
+        body: JSON.stringify({
+          id,
+          action: "toggle_featured",
+          isFeatured,
+          featured: isFeatured,
+        }),
       });
     },
-    toggleHandpicked: async (id: string) => {
-      return request<{ property: Property }>("/api/admin/properties", {
+    toggleHandpicked: async (id: string, isHandpicked?: boolean) => {
+      return request<{ property: Property; isHandpicked: boolean }>("/api/admin/properties", {
         method: "PATCH",
-        body: JSON.stringify({ id, action: "toggle_handpicked" }),
+        body: JSON.stringify({
+          id,
+          action: "toggle_handpicked",
+          isHandpicked,
+          handpicked: isHandpicked,
+        }),
       });
     },
     updateHierarchy: async (id: string, hierarchy: any) => {

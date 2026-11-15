@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPublicApprovedProperties } from "../../../../lib/storage/propertyStore";
+import {
+  isPropertyInCountry,
+  resolveCanonicalCountry,
+} from "../../../../lib/services/locationFormatter";
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,6 +12,7 @@ export async function GET(request: NextRequest) {
     const city = (searchParams.get("city") || "").toLowerCase().trim();
     const state = (searchParams.get("state") || "").toLowerCase().trim();
     const country = (searchParams.get("country") || "").toLowerCase().trim();
+    const countryId = (searchParams.get("countryId") || "").toLowerCase().trim();
     const propertyType = (searchParams.get("propertyType") || searchParams.get("type") || "all").toLowerCase().trim();
     const minPrice = Number(searchParams.get("minPrice") || 0);
     const maxPrice = Number(searchParams.get("maxPrice") || 0);
@@ -15,6 +20,32 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get("sort") || "newest"; // newest, price_asc, price_desc, rating
 
     let properties = getPublicApprovedProperties();
+
+    // Featured Filter (Public featured curation with country filtering)
+    const featuredParam = searchParams.get("featured");
+    if (featuredParam === "true") {
+      properties = properties.filter((p) => Boolean(p.featured ?? p.isFeatured));
+      const targetCountry = country || countryId || (query && resolveCanonicalCountry(query) ? query : "");
+      if (targetCountry) {
+        properties = properties.filter((p) => isPropertyInCountry(p, targetCountry));
+      }
+      return NextResponse.json({
+        success: true,
+        count: properties.length,
+        properties,
+      });
+    }
+
+    // Handpicked Filter (Public handpicked curation for homepage)
+    const handpickedParam = searchParams.get("handpicked");
+    if (handpickedParam === "true") {
+      properties = properties.filter((p) => Boolean(p.handpicked ?? p.isHandpicked));
+      return NextResponse.json({
+        success: true,
+        count: properties.length,
+        properties,
+      });
+    }
 
     // 1. Text & Location Filtering
     if (query) {
@@ -46,8 +77,8 @@ export async function GET(request: NextRequest) {
     if (state) {
       properties = properties.filter((p) => p.location.state?.toLowerCase().includes(state));
     }
-    if (country) {
-      properties = properties.filter((p) => p.location.country?.toLowerCase().includes(country));
+    if (country || countryId) {
+      properties = properties.filter((p) => isPropertyInCountry(p, country || countryId));
     }
 
     // 2. Property Type Filtering (Single or Multiple)

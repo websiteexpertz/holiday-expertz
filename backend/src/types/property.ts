@@ -74,6 +74,8 @@ export interface Property {
   rejectionReason?: string;
   featured?: boolean;
   handpicked?: boolean;
+  isFeatured?: boolean;
+  isHandpicked?: boolean;
   countryId?: string;
   stateId?: string;
   cityId?: string;

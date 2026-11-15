@@ -165,19 +165,25 @@ export function togglePropertyPauseRecord(id: string): Property | null {
   });
 }
 
-export function togglePropertyFeaturedRecord(id: string): Property | null {
+export function togglePropertyFeaturedRecord(id: string, explicitValue?: boolean): Property | null {
   const prop = getPropertyById(id);
   if (!prop) return null;
+  const current = Boolean(prop.featured ?? prop.isFeatured);
+  const nextValue = explicitValue !== undefined ? explicitValue : !current;
   return updatePropertyRecord(id, {
-    featured: !prop.featured,
+    featured: nextValue,
+    isFeatured: nextValue,
   });
 }
 
-export function togglePropertyHandpickedRecord(id: string): Property | null {
+export function togglePropertyHandpickedRecord(id: string, explicitValue?: boolean): Property | null {
   const prop = getPropertyById(id);
   if (!prop) return null;
+  const current = Boolean(prop.handpicked ?? prop.isHandpicked);
+  const nextValue = explicitValue !== undefined ? explicitValue : !current;
   return updatePropertyRecord(id, {
-    handpicked: !prop.handpicked,
+    handpicked: nextValue,
+    isHandpicked: nextValue,
   });
 }
 

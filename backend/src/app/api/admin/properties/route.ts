@@ -17,7 +17,7 @@ import {
 import { validateHierarchy } from "../../../../lib/storage/destinationStore";
 import { addHandpickedItem, removeHandpickedItem } from "../../../../lib/storage/handpickedStore";
 import { recordAuditLog } from "../../../../lib/storage/auditLogStore";
-import { getAllOwners } from "../../../../lib/storage/propertyOwnerStore";
+import { getAllOwners, findOwnerById } from "../../../../lib/storage/propertyOwnerStore";
 import { Property, PropertyImage, PropertyTypeCategory } from "../../../../types/property";
 
 export async function GET(req: Request) {
@@ -219,9 +219,28 @@ export async function POST(req: Request) {
         }
       : undefined;
 
+    // Validate owner assignment if specified
+    let assignedOwnerId = admin.id;
+    if (ownerId && typeof ownerId === "string" && ownerId.trim()) {
+      const targetOwner = await findOwnerById(ownerId.trim());
+      if (!targetOwner) {
+        return NextResponse.json(
+          { success: false, message: "Selected property owner does not exist." },
+          { status: 400 }
+        );
+      }
+      if (targetOwner.status === "suspended") {
+        return NextResponse.json(
+          { success: false, message: "Selected property owner account is suspended. Properties cannot be assigned to suspended owners." },
+          { status: 400 }
+        );
+      }
+      assignedOwnerId = targetOwner.id;
+    }
+
     const newProperty: Property = {
       id: propertyRecordId,
-      ownerId: ownerId || admin.id,
+      ownerId: assignedOwnerId,
       createdByRole: "admin",
       createdById: admin.id,
       name: name.trim(),
@@ -320,8 +339,15 @@ export async function PATCH(req: Request) {
 
     const body = await req.json();
     const { id, action, rejectionReason, hierarchy } = body;
+    const effectiveAction =
+      action ||
+      (body.isHandpicked !== undefined || body.handpicked !== undefined
+        ? "toggle_handpicked"
+        : body.isFeatured !== undefined || body.featured !== undefined
+        ? "toggle_featured"
+        : "");
 
-    if (!id || !action) {
+    if (!id || !effectiveAction) {
       return NextResponse.json({ success: false, message: "Property id and action are required" }, { status: 400 });
     }
 
@@ -383,11 +409,17 @@ export async function PATCH(req: Request) {
         details: `Toggled pause status for property "${prop.name}" to ${updated?.status}`,
         status: "success",
       });
-    } else if (action === "toggle_featured") {
+    } else if (effectiveAction === "toggle_featured") {
       if (!checkAdminPermission(admin, "properties.update")) {
         return NextResponse.json({ success: false, message: "Permission denied" }, { status: 403 });
       }
-      updated = togglePropertyFeaturedRecord(id);
+      const explicitFeatured =
+        body.isFeatured !== undefined
+          ? Boolean(body.isFeatured)
+          : body.featured !== undefined
+          ? Boolean(body.featured)
+          : undefined;
+      updated = togglePropertyFeaturedRecord(id, explicitFeatured);
       recordAuditLog({
         adminId: admin.id,
         adminName: admin.fullName,
@@ -396,14 +428,20 @@ export async function PATCH(req: Request) {
         action: "toggle_featured",
         resourceId: id,
         resourceType: "property",
-        details: `Toggled featured status for "${prop.name}" to ${updated?.featured}`,
+        details: `Updated featured status for "${prop.name}" to ${updated?.featured}`,
         status: "success",
       });
-    } else if (action === "toggle_handpicked") {
+    } else if (effectiveAction === "toggle_handpicked") {
       if (!checkAdminPermission(admin, "properties.update")) {
         return NextResponse.json({ success: false, message: "Permission denied" }, { status: 403 });
       }
-      updated = togglePropertyHandpickedRecord(id);
+      const explicitHandpicked =
+        body.isHandpicked !== undefined
+          ? Boolean(body.isHandpicked)
+          : body.handpicked !== undefined
+          ? Boolean(body.handpicked)
+          : undefined;
+      updated = togglePropertyHandpickedRecord(id, explicitHandpicked);
       if (updated?.handpicked) {
         addHandpickedItem({ propertyId: id });
       } else {
@@ -417,7 +455,7 @@ export async function PATCH(req: Request) {
         action: "toggle_handpicked",
         resourceId: id,
         resourceType: "property",
-        details: `Toggled handpicked status for "${prop.name}" to ${updated?.handpicked}`,
+        details: `Updated handpicked status for "${prop.name}" to ${updated?.handpicked}`,
         status: "success",
       });
     } else if (action === "update_hierarchy") {
@@ -558,8 +596,10 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Property action "${action}" completed successfully`,
+      message: `Property action completed successfully`,
       property: updated,
+      isHandpicked: Boolean(updated?.handpicked ?? updated?.isHandpicked),
+      isFeatured: Boolean(updated?.featured ?? updated?.isFeatured),
     });
   } catch (error) {
     console.error("Admin Properties PATCH Error:", error);

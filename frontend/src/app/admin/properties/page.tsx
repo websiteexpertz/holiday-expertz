@@ -8,6 +8,7 @@ import { Property, PropertyStatus } from "@backend/types/property";
 import {
   Building2,
   CheckCircle2,
+  Circle,
   XCircle,
   PauseCircle,
   PlayCircle,
@@ -46,6 +47,9 @@ function AdminPropertiesContent() {
   // Details Modal State
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [viewingProperty, setViewingProperty] = useState<(Property & { ownerName: string }) | null>(null);
+
+  // Saving state for compact Handpicked/Featured selection buttons
+  const [savingAction, setSavingAction] = useState<{ id: string; type: "handpicked" | "featured" } | null>(null);
 
   const loadProperties = useCallback(async () => {
     setIsLoading(true);
@@ -114,20 +118,36 @@ function AdminPropertiesContent() {
   };
 
   const handleToggleFeatured = async (id: string) => {
-    const res = await adminClient.properties.toggleFeatured(id);
-    if (res.success) {
-      await loadProperties();
-    } else {
-      alert(res.message || "Failed to toggle featured status");
+    if (savingAction) return;
+    setSavingAction({ id, type: "featured" });
+    try {
+      const res = await adminClient.properties.toggleFeatured(id);
+      if (res.success) {
+        await loadProperties();
+      } else {
+        alert(res.message || "Failed to toggle featured status");
+      }
+    } catch {
+      alert("Network error updating featured status");
+    } finally {
+      setSavingAction(null);
     }
   };
 
   const handleToggleHandpicked = async (id: string) => {
-    const res = await adminClient.properties.toggleHandpicked(id);
-    if (res.success) {
-      await loadProperties();
-    } else {
-      alert(res.message || "Failed to toggle handpicked status");
+    if (savingAction) return;
+    setSavingAction({ id, type: "handpicked" });
+    try {
+      const res = await adminClient.properties.toggleHandpicked(id);
+      if (res.success) {
+        await loadProperties();
+      } else {
+        alert(res.message || "Failed to toggle handpicked status");
+      }
+    } catch {
+      alert("Network error updating handpicked status");
+    } finally {
+      setSavingAction(null);
     }
   };
 
@@ -253,7 +273,8 @@ function AdminPropertiesContent() {
                     <th className="py-3.5 px-4">Owner & Location</th>
                     <th className="py-3.5 px-4">Pricing</th>
                     <th className="py-3.5 px-4">Status</th>
-                    <th className="py-3.5 px-4">Badges</th>
+                    <th className="py-3.5 px-3 text-center">Handpicked</th>
+                    <th className="py-3.5 px-3 text-center">Featured</th>
                     <th className="py-3.5 px-5 text-right">Verification & Actions</th>
                   </tr>
                 </thead>
@@ -345,33 +366,66 @@ function AdminPropertiesContent() {
                           )}
                         </td>
 
-                        {/* Badges / Curation */}
-                        <td className="py-4 px-4 whitespace-nowrap">
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => handleToggleFeatured(prop.id)}
-                              className={`p-1.5 rounded-lg border transition-all ${
-                                prop.featured
-                                  ? "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm"
-                                  : "bg-slate-950 text-slate-600 border-slate-800 hover:text-slate-400"
-                              }`}
-                              title={prop.featured ? "Featured on Homepage" : "Click to mark as Featured"}
-                            >
-                              <Star className={`w-3.5 h-3.5 ${prop.featured ? "fill-amber-400" : ""}`} />
-                            </button>
+                        {/* Handpicked Selection */}
+                        <td className="py-4 px-3 text-center whitespace-nowrap">
+                          {(() => {
+                            const isHandpicked = Boolean(prop.handpicked ?? (prop as any).isHandpicked);
+                            const isSaving = savingAction?.id === prop.id && savingAction?.type === "handpicked";
+                            return (
+                              <button
+                                type="button"
+                                disabled={isSaving || Boolean(savingAction)}
+                                onClick={() => handleToggleHandpicked(prop.id)}
+                                aria-pressed={isHandpicked}
+                                title={isHandpicked ? "Handpicked for homepage (Click to deselect)" : "Click to select for homepage"}
+                                className={`inline-flex h-7 items-center justify-center gap-1 whitespace-nowrap rounded-md border px-2 text-[11px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
+                                  isHandpicked
+                                    ? "border-emerald-500 bg-emerald-900/90 text-emerald-200 hover:bg-emerald-900"
+                                    : "border-slate-600 bg-slate-700/80 text-slate-200 hover:bg-slate-700 hover:text-white"
+                                }`}
+                              >
+                                {isSaving ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : isHandpicked ? (
+                                  <CheckCircle2 className="h-3 w-3" />
+                                ) : (
+                                  <Circle className="h-3 w-3" />
+                                )}
+                                <span>{isHandpicked ? "Selected" : "Select"}</span>
+                              </button>
+                            );
+                          })()}
+                        </td>
 
-                            <button
-                              onClick={() => handleToggleHandpicked(prop.id)}
-                              className={`p-1.5 rounded-lg border transition-all ${
-                                prop.handpicked
-                                  ? "bg-teal-500/20 text-teal-300 border-teal-500/40 shadow-sm"
-                                  : "bg-slate-950 text-slate-600 border-slate-800 hover:text-slate-400"
-                              }`}
-                              title={prop.handpicked ? "In Handpicked Stays" : "Click to add to Handpicked"}
-                            >
-                              <Sparkles className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
+                        {/* Featured Selection */}
+                        <td className="py-4 px-3 text-center whitespace-nowrap">
+                          {(() => {
+                            const isFeatured = Boolean(prop.featured ?? (prop as any).isFeatured);
+                            const isSaving = savingAction?.id === prop.id && savingAction?.type === "featured";
+                            return (
+                              <button
+                                type="button"
+                                disabled={isSaving || Boolean(savingAction)}
+                                onClick={() => handleToggleFeatured(prop.id)}
+                                aria-pressed={isFeatured}
+                                title={isFeatured ? "Featured on /properties (Click to deselect)" : "Click to select as featured"}
+                                className={`inline-flex h-7 items-center justify-center gap-1 whitespace-nowrap rounded-md border px-2 text-[11px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${
+                                  isFeatured
+                                    ? "border-emerald-500 bg-emerald-900/90 text-emerald-200 hover:bg-emerald-900"
+                                    : "border-slate-600 bg-slate-700/80 text-slate-200 hover:bg-slate-700 hover:text-white"
+                                }`}
+                              >
+                                {isSaving ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : isFeatured ? (
+                                  <CheckCircle2 className="h-3 w-3" />
+                                ) : (
+                                  <Circle className="h-3 w-3" />
+                                )}
+                                <span>{isFeatured ? "Selected" : "Select"}</span>
+                              </button>
+                            );
+                          })()}
                         </td>
 
                         {/* Action Buttons */}

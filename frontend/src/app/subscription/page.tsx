@@ -221,8 +221,7 @@ export default function SubscriptionPage() {
               <div id="owner-registration" className="lg:col-span-6 scroll-mt-24">
                 <OwnerRegistrationForm
                   onOpenSignIn={() => {
-                    setAuthModalRole("owner");
-                    setAuthModalOpen(true);
+                    router.push("/owner/login");
                   }}
                   onRegistrationSuccess={() => {
                     // Registration success state handled inside form

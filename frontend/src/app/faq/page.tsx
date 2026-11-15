@@ -285,7 +285,7 @@ export default function FAQCentralPage() {
                     List Your Property
                   </Link>
                   <a
-                    href="mailto:support@holidayexpertz.com"
+                    href="mailto:contact@holidayexpertz.com"
                     className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs sm:text-sm transition-colors text-center border border-white/20"
                   >
                     Email Support

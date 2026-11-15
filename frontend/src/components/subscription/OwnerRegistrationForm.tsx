@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -486,13 +487,18 @@ export default function OwnerRegistrationForm({
         <div className="pt-3 text-center border-t border-slate-100">
           <p className="text-xs sm:text-sm text-slate-600">
             Already have an account?{" "}
-            <button
-              type="button"
-              onClick={onOpenSignIn}
+            <Link
+              href="/owner/login"
+              onClick={(e) => {
+                if (onOpenSignIn) {
+                  e.preventDefault();
+                  onOpenSignIn();
+                }
+              }}
               className="font-bold text-teal-600 hover:text-teal-700 hover:underline transition-colors focus:outline-none"
             >
               Sign In
-            </button>
+            </Link>
           </p>
         </div>
       </form>

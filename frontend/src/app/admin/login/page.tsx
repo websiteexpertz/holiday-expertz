@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { Compass, ShieldCheck, Lock, Mail, AlertCircle, ArrowRight, Loader2, Sparkles } from "lucide-react";
@@ -56,8 +57,15 @@ export default function AdminLoginPage() {
         {/* Logo and Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center shadow-xl shadow-teal-500/20 group-hover:scale-105 transition-transform">
-              <Compass className="w-7 h-7 text-slate-950 stroke-[2.5]" />
+            <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-teal-500/30 flex items-center justify-center shadow-xl shadow-teal-500/20 group-hover:scale-105 transition-transform p-1.5">
+              <Image
+                src="/holiday-expertz-icon.webp"
+                alt="Holiday Expertz Emblem"
+                width={44}
+                height={24}
+                className="w-full h-full object-contain"
+                priority
+              />
             </div>
             <div className="text-left">
               <span className="font-extrabold text-2xl tracking-tight text-white block leading-none">

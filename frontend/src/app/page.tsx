@@ -66,7 +66,9 @@ export default function Home() {
     let isMounted = true;
     async function loadLiveProperties() {
       try {
-        const res = await fetch(apiUrl("/api/public/properties"));
+        const res = await fetch(apiUrl("/api/public/properties?handpicked=true"), {
+          cache: "no-store",
+        });
         if (!res.ok) return;
 
         const contentType = res.headers.get("content-type");
@@ -75,13 +77,12 @@ export default function Home() {
         const data = await res.json();
         if (!isMounted) return;
 
-        if (data && data.success && Array.isArray(data.properties) && data.properties.length > 0) {
+        if (data && data.success && Array.isArray(data.properties)) {
           const liveHotels = data.properties.map(convertPropertyToHotel);
-          // Combine live approved properties first, followed by mock data (avoiding ID collisions)
-          const liveIds = new Set(liveHotels.map((h: Hotel) => h.id));
-          const combined = [...liveHotels, ...mockHotels.filter((m) => !liveIds.has(m.id))];
-          setAllHotels(combined);
-          setFilteredHotels(combined);
+          if (liveHotels.length > 0) {
+            setAllHotels(liveHotels);
+            setFilteredHotels(liveHotels);
+          }
         }
       } catch (err) {
         console.warn("Using fallback curated properties for homepage:", err);

@@ -25,6 +25,13 @@ export const metadata: Metadata = {
     "Homestays",
     "HolidayExpertz",
   ],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon.png" }],
+  },
 };
 
 import { AuthProvider } from "@/context/AuthContext";
