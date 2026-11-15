@@ -140,6 +140,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 width={32}
                 height={16}
                 className="w-full h-full object-contain"
+                style={{ width: "auto", height: "auto" }}
                 priority
               />
             </div>

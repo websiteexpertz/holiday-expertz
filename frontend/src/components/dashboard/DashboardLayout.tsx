@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -86,8 +87,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   if (!isAuthenticated || !owner) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-white">
-        <div className="w-20 h-20 rounded-3xl bg-teal-500/10 border border-teal-400/20 text-teal-400 flex items-center justify-center mb-6 shadow-xl">
-          <Compass className="w-10 h-10" />
+        <div className="relative w-16 h-16 flex items-center justify-center mb-6">
+          <Image
+            src="/holiday-expertz-icon.webp"
+            alt="Holiday Expertz Logo"
+            width={120}
+            height={60}
+            style={{ width: "auto", height: "auto" }}
+            className="w-full h-full object-contain"
+          />
         </div>
         <h1 className="text-2xl sm:text-3xl font-black mb-3">Owner Access Required</h1>
         <p className="text-slate-400 max-w-md mx-auto text-sm mb-6 leading-relaxed">
@@ -212,12 +220,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </button>
 
               <Link href="/dashboard" className="flex items-center gap-2.5 group">
-                <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-md shadow-teal-600/20 group-hover:scale-105 transition-transform">
-                  <Compass className="w-5 h-5" />
+                <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Image
+                    src="/holiday-expertz-icon.webp"
+                    alt="Holiday Expertz Logo"
+                    width={80}
+                    height={40}
+                    style={{ width: "auto", height: "auto" }}
+                    className="w-full h-full object-contain drop-shadow-xs"
+                    priority
+                  />
                 </div>
                 <div>
-                  <div className="text-base sm:text-lg font-black tracking-tight text-slate-900 leading-none">
-                    Holiday<span className="text-teal-600">Expertz</span>
+                  <div className="text-base sm:text-lg font-black tracking-tight text-slate-900 leading-none flex items-center">
+                    <span>Holiday</span><span className="text-[#009F8D] ml-0.5">Expertz</span>
                   </div>
                   <div className="text-[10px] font-bold text-teal-700 tracking-wider uppercase mt-0.5">
                     Owner Panel
@@ -469,10 +485,24 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="relative w-72 max-w-[85%] bg-white h-full shadow-2xl flex flex-col p-5 z-10 animate-in slide-in-from-left duration-200">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-sm">
-                    <Compass className="w-4 h-4" />
+                  <div className="relative w-8 h-8 flex-shrink-0 flex items-center justify-center">
+                    <Image
+                      src="/holiday-expertz-icon.webp"
+                      alt="Holiday Expertz Logo"
+                      width={64}
+                      height={32}
+                      style={{ width: "auto", height: "auto" }}
+                      className="w-full h-full object-contain drop-shadow-xs"
+                    />
                   </div>
-                  <span className="font-bold text-slate-900 text-sm">Owner Menu</span>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-slate-900 text-sm leading-tight flex items-center">
+                      <span>Holiday</span><span className="text-[#009F8D] ml-0.5">Expertz</span>
+                    </span>
+                    <span className="text-[9px] font-semibold text-teal-700 uppercase tracking-wider">
+                      Owner Panel
+                    </span>
+                  </div>
                 </div>
                 <button
                   type="button"

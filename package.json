@@ -26,6 +26,7 @@
     "lucide-react": "^1.60.0",
     "mongoose": "^9.11.3",
     "next": "16.4.2",
+    "nodemailer": "^10.5.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "tailwind-merge": "^3.7.0"
@@ -34,6 +35,7 @@
     "@tailwindcss/postcss": "^4.3.3",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

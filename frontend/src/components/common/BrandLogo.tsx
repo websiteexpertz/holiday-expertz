@@ -50,6 +50,7 @@ export default function BrandLogo({
           width={280}
           height={178}
           priority={priority}
+          style={{ width: "auto" }}
           className="w-auto h-16 sm:h-20 lg:h-24 max-w-[280px] object-contain drop-shadow-sm select-none"
         />
       </div>
@@ -64,6 +65,7 @@ export default function BrandLogo({
           width={96}
           height={48}
           priority={priority}
+          style={{ width: "auto" }}
           className="w-auto h-8 sm:h-9 object-contain select-none"
         />
       </div>
@@ -79,6 +81,7 @@ export default function BrandLogo({
             width={80}
             height={40}
             priority={priority}
+            style={{ width: "auto", height: "auto" }}
             className="w-full h-full object-contain"
           />
         </div>
@@ -105,6 +108,7 @@ export default function BrandLogo({
             width={88}
             height={44}
             priority={priority}
+            style={{ width: "auto", height: "auto" }}
             className="w-full h-full object-contain drop-shadow-xs transition-transform duration-200 group-hover:scale-105"
           />
         </div>

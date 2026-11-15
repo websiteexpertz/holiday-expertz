@@ -64,6 +64,7 @@ export default function AdminLoginPage() {
                 width={44}
                 height={24}
                 className="w-full h-full object-contain"
+                style={{ width: "auto", height: "auto" }}
                 priority
               />
             </div>

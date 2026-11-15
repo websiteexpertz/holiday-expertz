@@ -6,7 +6,7 @@
     "excerpt": "From mist-cloaked tea estates in Coorg to royal haveli evenings in Jaipur, explore top handpicked destinations within a short drive or direct flight.",
     "content": "India offers an unmatched spectrum of weekend respites. Whether craving the crisp pine breezes of Himachal or the heritage charm of Rajasthani courtyards, planning a two-night rejuvenation requires choosing verified boutique stays with prompt hospitality and farm-fresh regional dining.",
     "featuredImage": "https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=1200&q=80",
-    "category": "Weekend Escapes",
+    "category": "Luxury Stays",
     "author": "Aarav Sharma",
     "authorAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
     "readTime": "5 min read",
@@ -21,7 +21,8 @@
     ],
     "publishedAt": "2026-10-14T10:00:00.000Z",
     "createdAt": "2026-10-22T14:30:52.488Z",
-    "updatedAt": "2026-10-22T14:30:52.488Z"
+    "updatedAt": "2026-10-22T14:30:52.488Z",
+    "categorySlug": "luxury-stays"
   },
   {
     "id": "blog-2",
@@ -44,7 +45,8 @@
     ],
     "publishedAt": "2026-10-08T10:00:00.000Z",
     "createdAt": "2026-10-22T14:30:52.488Z",
-    "updatedAt": "2026-10-22T14:30:52.488Z"
+    "updatedAt": "2026-10-22T14:30:52.488Z",
+    "categorySlug": "travel-tips"
   },
   {
     "id": "blog-3",
@@ -53,7 +55,7 @@
     "excerpt": "Essential tips on packing for high altitudes, discovering quiet offbeat valleys in Himachal and Uttarakhand, and booking scenic ridge-view cottages.",
     "content": "The Himalayas in North India beckon travelers with quiet pine forests, snow-clad mountain passes, and cozy cedarwood cottages. For an authentic stay, reserve verified mountain villas with fireplaces and heated rooms, and arrange local transfers well before dusk.",
     "featuredImage": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
-    "category": "Destination Guide",
+    "category": "Destination Guides",
     "author": "Rohan Varma",
     "authorAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
     "readTime": "6 min read",
@@ -67,7 +69,8 @@
     ],
     "publishedAt": "2026-09-29T10:00:00.000Z",
     "createdAt": "2026-10-22T14:30:52.488Z",
-    "updatedAt": "2026-10-22T14:30:52.488Z"
+    "updatedAt": "2026-10-22T14:30:52.488Z",
+    "categorySlug": "destination-guides"
   },
   {
     "id": "blog-4",
@@ -76,7 +79,7 @@
     "excerpt": "Wander through ornate jharokhas, courtyards of Udaipur and Jaipur, and discover palace properties where royal hospitality is preserved today.",
     "content": "Rajasthan's regal legacy is best experienced within living palaces and boutique havelis. Savor authentic Mewari dishes prepared by royal chefs, stroll through mirrored courtyards, and discover the history behind hand-painted frescoes.",
     "featuredImage": "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
-    "category": "Heritage",
+    "category": "Travel Inspiration",
     "author": "Ananya Roy",
     "authorAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
     "readTime": "8 min read",
@@ -91,6 +94,7 @@
     ],
     "publishedAt": "2026-09-21T10:00:00.000Z",
     "createdAt": "2026-10-22T14:30:52.488Z",
-    "updatedAt": "2026-10-22T14:30:52.488Z"
+    "updatedAt": "2026-10-22T14:30:52.488Z",
+    "categorySlug": "travel-inspiration"
   }
 ]

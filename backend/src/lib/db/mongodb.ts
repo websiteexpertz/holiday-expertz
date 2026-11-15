@@ -1,11 +1,16 @@
 import mongoose from "mongoose";
-import dns from "node:dns";
 
 // Fix Node.js DNS SRV resolution error (querySrv EBADRESP) common with MongoDB Atlas on some ISPs/routers
-try {
-  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
-} catch {
-  // Ignore in environments where setting servers is restricted
+if (typeof process !== "undefined" && process.env.NEXT_RUNTIME === "nodejs") {
+  import("node:dns")
+    .then((dns) => {
+      try {
+        dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+      } catch {
+        // Ignore in environments where setting servers is restricted
+      }
+    })
+    .catch(() => {});
 }
 
 function getMongoUri(): string {
