@@ -222,6 +222,8 @@ export interface BookingRecord {
   guests: number;
   totalAmount: number;
   currency: string;
+  selectedActivities?: { id: string; name: string; price: number; chargeType: string; quantity?: number }[];
+  activitiesAmount?: number;
   bookingStatus: "confirmed" | "completed" | "cancelled" | "pending";
   paymentStatus: "paid" | "refunded" | "pending" | "failed";
   cancellationReason?: string;
@@ -348,13 +350,33 @@ export interface ReviewRecord {
   author: string;
   avatar?: string;
   rating: number; // 1-5
+  title?: string;
   comment: string;
   propertyName?: string;
   propertyId?: string;
-  location: string;
+  location?: string;
+  date?: string; // YYYY-MM-DD
   status: "approved" | "pending" | "hidden";
   featured: boolean;
+  source?: "ADMIN_IMPORTED" | "PLATFORM_GUEST";
+  verificationStatus?: "VERIFIED" | "UNVERIFIED";
   createdAt: string;
+  updatedAt?: string;
+}
+
+export interface InquiryNotificationRecord {
+  id: string;
+  inquiryId: string;
+  recipientType: "PROPERTY_INQUIRY_ADMIN" | "PROPERTY_INQUIRY_OWNER";
+  recipientEmail: string;
+  recipientName?: string;
+  status: "pending" | "sending" | "sent" | "failed";
+  attemptCount: number;
+  lastAttempt?: string;
+  lastError?: string;
+  sentAt?: string;
+  messageId?: string;
+  note?: string;
 }
 
 export interface ContactInquiryRecord {
@@ -368,9 +390,20 @@ export interface ContactInquiryRecord {
   message: string;
   relatedPropertyId?: string;
   relatedPropertyName?: string;
+  propertyNumber?: string;
+  propertyLocation?: string;
+  propertyUrl?: string;
+  ownerId?: string;
+  ownerNumber?: string;
+  ownerName?: string;
+  checkInDate?: string;
+  checkOutDate?: string;
+  guestCount?: number;
+  type?: "contact" | "property_inquiry";
   status: "new" | "in_progress" | "resolved" | "archived";
   adminNotes?: string;
   assignedToAdminId?: string;
+  notifications?: InquiryNotificationRecord[];
   createdAt: string;
   updatedAt: string;
 }

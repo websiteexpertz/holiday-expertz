@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { ReviewRecord } from "../../types/admin";
+import { updatePropertyRecord } from "./propertyStore";
 
 const rootDir = process.cwd().endsWith("frontend") || process.cwd().endsWith("backend")
   ? path.resolve(process.cwd(), "..")
@@ -154,6 +155,25 @@ export function deleteReview(id: string): boolean {
   return true;
 }
 
+export function getReviewsByPropertyId(propertyId: string): ReviewRecord[] {
+  if (!propertyId) return [];
+  return getAllReviews().filter((r) => r.propertyId === propertyId);
+}
+
 export function getApprovedPublicReviews(): ReviewRecord[] {
   return getAllReviews().filter((r) => r.status === "approved");
+}
+
+export function recalculatePropertyRating(propertyId: string): { rating: number; reviewCount: number } | null {
+  if (!propertyId) return null;
+  const propReviews = getReviewsByPropertyId(propertyId).filter((r) => r.status === "approved");
+  const count = propReviews.length;
+  if (count === 0) {
+    updatePropertyRecord(propertyId, { rating: 0, reviewCount: 0 });
+    return { rating: 0, reviewCount: 0 };
+  }
+  const sum = propReviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0);
+  const avg = Math.round((sum / count) * 10) / 10;
+  updatePropertyRecord(propertyId, { rating: avg, reviewCount: count });
+  return { rating: avg, reviewCount: count };
 }

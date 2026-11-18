@@ -47,6 +47,15 @@
       "isActive": true,
       "createdAt": "2026-10-22T17:20:42.940Z",
       "updatedAt": "2026-10-22T17:20:42.940Z"
+    },
+    {
+      "id": "cnt_jp_0555",
+      "name": "Japan",
+      "code": "JP",
+      "image": "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=800&q=80",
+      "isActive": true,
+      "createdAt": "2026-11-17T13:30:50.555Z",
+      "updatedAt": "2026-11-17T13:30:50.555Z"
     }
   ],
   "states": [
@@ -262,6 +271,16 @@
       "isActive": true,
       "createdAt": "2026-10-23T18:10:20.384Z",
       "updatedAt": "2026-10-23T18:10:20.384Z"
+    },
+    {
+      "id": "ct_shimla_0841",
+      "name": "Shimla",
+      "stateId": "st_hp",
+      "countryId": "cnt_in",
+      "isPopular": true,
+      "isActive": true,
+      "createdAt": "2026-11-17T13:37:20.841Z",
+      "updatedAt": "2026-11-17T13:37:20.841Z"
     }
   ],
   "areas": [

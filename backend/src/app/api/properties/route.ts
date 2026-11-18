@@ -3,6 +3,7 @@ import {
   createOwnerProperty,
   getOwnerPropertiesAndStats,
 } from "../../../lib/services/propertyService";
+import { createReview, recalculatePropertyRating } from "../../../lib/storage/reviewStore";
 
 function getAuthenticatedOwnerId(request: NextRequest): string | null {
   const headerId = request.headers.get("x-owner-id");
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { submitImmediately = false, ...propertyInput } = body;
 
-    const result = createOwnerProperty(ownerId, propertyInput, submitImmediately);
+    const result = await createOwnerProperty(ownerId, propertyInput, submitImmediately);
 
     if (!result.success) {
       return NextResponse.json(
@@ -74,6 +75,24 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    if (result.success && result.data && Array.isArray(propertyInput.reviews) && propertyInput.reviews.length > 0) {
+      propertyInput.reviews.forEach((r: any) => {
+        createReview({
+          propertyId: result.data!.id,
+          author: r.author || "Guest",
+          date: r.date || new Date().toISOString().split("T")[0],
+          rating: Number(r.rating) || 5,
+          title: r.title?.trim() || undefined,
+          comment: r.comment?.trim() || "",
+          status: "approved",
+          featured: false,
+          source: "ADMIN_IMPORTED",
+          verificationStatus: "UNVERIFIED",
+        });
+      });
+      recalculatePropertyRating(result.data.id);
     }
 
     return NextResponse.json(

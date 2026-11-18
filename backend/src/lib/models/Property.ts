@@ -4,6 +4,13 @@ import { Property } from "../../types/property";
 const PropertySchema = new Schema<Property>(
   {
     id: { type: String, required: true, unique: true, index: true },
+    propertyNumber: {
+      type: String,
+      unique: true,
+      index: true,
+      sparse: true,
+      immutable: true,
+    },
     ownerId: { type: String, required: true, index: true },
     name: { type: String, required: true, index: true },
     propertyType: { type: String, required: true },
@@ -29,8 +36,37 @@ const PropertySchema = new Schema<Property>(
     },
     pricing: {
       pricePerNight: { type: Number, required: true },
-      currency: { type: String, default: "INR" },
+      currency: { type: String, default: "USD" },
       originalPrice: { type: Number },
+      weekdayRate: { type: Number },
+      weekendRate: { type: Number },
+      weekendDays: [{ type: Number }],
+      seasonalRates: [
+        {
+          id: { type: String },
+          name: { type: String },
+          startDate: { type: String },
+          endDate: { type: String },
+          nightlyRate: { type: Number },
+        },
+      ],
+      specialDateRates: [
+        {
+          id: { type: String },
+          name: { type: String },
+          startDate: { type: String },
+          endDate: { type: String },
+          nightlyRate: { type: Number },
+        },
+      ],
+      paidActivities: [
+        {
+          id: { type: String },
+          name: { type: String },
+          price: { type: Number },
+          chargeType: { type: String },
+        },
+      ],
     },
     capacity: {
       maxGuests: { type: Number, default: 2 },
@@ -46,6 +82,7 @@ const PropertySchema = new Schema<Property>(
         url: { type: String, required: true },
         isCover: { type: Boolean, default: false },
         caption: { type: String },
+        title: { type: String, default: "" },
       },
     ],
     contactDetails: {
@@ -53,6 +90,12 @@ const PropertySchema = new Schema<Property>(
       mobileNumber: { type: String, default: "" },
       email: { type: String, default: "" },
       altPhone: { type: String },
+    },
+    policies: {
+      generalPolicy: { type: String, default: "" },
+      refundPolicy: { type: String, default: "" },
+      contractPolicy: { type: String, default: "" },
+      additionalNotes: { type: String, default: "" },
     },
     status: {
       type: String,
@@ -66,6 +109,8 @@ const PropertySchema = new Schema<Property>(
     handpicked: { type: Boolean, default: false, index: true },
     isFeatured: { type: Boolean, default: false },
     isHandpicked: { type: Boolean, default: false },
+    propertySize: { type: Number },
+    propertySizeUnit: { type: String, default: "sq ft" },
     countryId: { type: String, index: true },
     stateId: { type: String, index: true },
     cityId: { type: String, index: true },

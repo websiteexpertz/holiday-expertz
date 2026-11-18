@@ -12,9 +12,9 @@ export const mockHotels: Hotel[] = [
     rating: 4.9,
     reviewScore: "Exceptional",
     reviewCount: 1420,
-    pricePerNight: 38500,
-    originalPrice: 46000,
-    currency: "INR",
+    pricePerNight: 450,
+    originalPrice: 540,
+    currency: "USD",
     featuredImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
     galleryImages: [
       "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80",
@@ -40,9 +40,9 @@ export const mockHotels: Hotel[] = [
     rating: 4.8,
     reviewScore: "Superb",
     reviewCount: 980,
-    pricePerNight: 22000,
-    originalPrice: 27500,
-    currency: "INR",
+    pricePerNight: 260,
+    originalPrice: 325,
+    currency: "USD",
     featuredImage: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1200&q=80",
     galleryImages: [
       "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
@@ -67,9 +67,9 @@ export const mockHotels: Hotel[] = [
     rating: 4.9,
     reviewScore: "Exceptional",
     reviewCount: 640,
-    pricePerNight: 29000,
-    originalPrice: 34000,
-    currency: "INR",
+    pricePerNight: 345,
+    originalPrice: 400,
+    currency: "USD",
     featuredImage: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=80",
     galleryImages: [
       "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80",
@@ -93,9 +93,9 @@ export const mockHotels: Hotel[] = [
     rating: 4.7,
     reviewScore: "Wonderful",
     reviewCount: 520,
-    pricePerNight: 16500,
-    originalPrice: 19500,
-    currency: "INR",
+    pricePerNight: 195,
+    originalPrice: 230,
+    currency: "USD",
     featuredImage: "https://images.unsplash.com/photo-1587061949409-02df41d5e562?auto=format&fit=crop&w=1200&q=80",
     galleryImages: [
       "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80"
@@ -118,9 +118,9 @@ export const mockHotels: Hotel[] = [
     rating: 4.9,
     reviewScore: "Exceptional",
     reviewCount: 780,
-    pricePerNight: 31000,
-    originalPrice: 38000,
-    currency: "INR",
+    pricePerNight: 365,
+    originalPrice: 450,
+    currency: "USD",
     featuredImage: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1200&q=80",
     galleryImages: [
       "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80"
@@ -144,9 +144,9 @@ export const mockHotels: Hotel[] = [
     rating: 4.9,
     reviewScore: "Exceptional",
     reviewCount: 430,
-    pricePerNight: 42000,
-    originalPrice: 49000,
-    currency: "INR",
+    pricePerNight: 495,
+    originalPrice: 580,
+    currency: "USD",
     featuredImage: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
     galleryImages: [
       "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80"
@@ -169,9 +169,9 @@ export const mockHotels: Hotel[] = [
     rating: 4.6,
     reviewScore: "Wonderful",
     reviewCount: 890,
-    pricePerNight: 6500,
-    originalPrice: 8500,
-    currency: "INR",
+    pricePerNight: 75,
+    originalPrice: 100,
+    currency: "USD",
     featuredImage: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
     galleryImages: [
       "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80"
@@ -195,9 +195,9 @@ export const mockHotels: Hotel[] = [
     rating: 4.8,
     reviewScore: "Superb",
     reviewCount: 310,
-    pricePerNight: 12500,
-    originalPrice: 15000,
-    currency: "INR",
+    pricePerNight: 150,
+    originalPrice: 180,
+    currency: "USD",
     featuredImage: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80",
     galleryImages: [
       "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80"
@@ -225,9 +225,9 @@ export const mockHotels: Hotel[] = [
     rating: 4.9,
     reviewScore: "Exceptional",
     reviewCount: 68,
-    pricePerNight: 18500,
-    originalPrice: 22000,
-    currency: "INR",
+    pricePerNight: 220,
+    originalPrice: 260,
+    currency: "USD",
     featuredImage: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
     galleryImages: [
       "https://images.unsplash.com/photo-1595846519845-68e298c2edd8?auto=format&fit=crop&w=800&q=80",
@@ -257,9 +257,9 @@ export const mockHotels: Hotel[] = [
     rating: 4.9,
     reviewScore: "Exceptional",
     reviewCount: 84,
-    pricePerNight: 28500,
-    originalPrice: 35000,
-    currency: "INR",
+    pricePerNight: 340,
+    originalPrice: 415,
+    currency: "USD",
     featuredImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
     galleryImages: [
       "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80"

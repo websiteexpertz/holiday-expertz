@@ -136,6 +136,31 @@ export default function AdminInquiriesPage() {
                     <span className="text-[11px] text-slate-500">• {new Date(inq.createdAt).toLocaleString()}</span>
                   </div>
 
+                  {(inq.relatedPropertyName || inq.checkInDate) && (
+                    <div className="flex items-center gap-2 flex-wrap py-1 text-xs">
+                      {inq.relatedPropertyName && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-teal-500/15 text-teal-300 border border-teal-500/30 font-bold text-[11px]">
+                          🏡 {inq.relatedPropertyName} {inq.propertyNumber ? `(${inq.propertyNumber})` : ""}
+                        </span>
+                      )}
+                      {inq.checkInDate && inq.checkOutDate && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono text-[11px] border border-slate-700">
+                          📅 {inq.checkInDate} → {inq.checkOutDate} ({inq.guestCount || 1} guest{(inq.guestCount || 1) > 1 ? "s" : ""})
+                        </span>
+                      )}
+                      {inq.relatedPropertyId && (
+                        <a
+                          href={`/properties/${inq.relatedPropertyId}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-teal-400 hover:text-teal-300 underline text-[11px] font-semibold"
+                        >
+                          View Property Listing &rarr;
+                        </a>
+                      )}
+                    </div>
+                  )}
+
                   <p className="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800/80">
                     {inq.message}
                   </p>

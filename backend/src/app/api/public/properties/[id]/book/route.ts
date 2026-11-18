@@ -80,13 +80,73 @@ export async function POST(
       );
     }
 
-    // Calculate nights & pricing on server
+    // Calculate nights & pricing on server using advanced pricing rules if configured
     const nights = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
-    const nightlyRate = property.pricing?.pricePerNight || 0;
-    const baseAmount = nights * nightlyRate;
+    const basePrice = property.pricing?.pricePerNight || 0;
+    const weekdayRate = property.pricing?.weekdayRate !== undefined ? property.pricing.weekdayRate : basePrice;
+    const weekendRate = property.pricing?.weekendRate !== undefined ? property.pricing.weekendRate : (weekdayRate || basePrice);
+    const weekendDays = Array.isArray(property.pricing?.weekendDays) ? property.pricing.weekendDays : [5, 6];
+    const seasonalRates = property.pricing?.seasonalRates || [];
+    const specialDateRates = property.pricing?.specialDateRates || [];
+
+    let baseAmount = 0;
+    const curr = new Date(start);
+    for (let i = 0; i < nights; i++) {
+      const yyyy = curr.getFullYear();
+      const mm = String(curr.getMonth() + 1).padStart(2, "0");
+      const dd = String(curr.getDate()).padStart(2, "0");
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      const dayOfWeek = curr.getDay();
+
+      const special = specialDateRates.find((s) => dateStr >= s.startDate && dateStr <= (s.endDate || s.startDate));
+      if (special) {
+        baseAmount += Number(special.nightlyRate) || 0;
+      } else {
+        const seasonal = seasonalRates.find((s) => dateStr >= s.startDate && dateStr <= s.endDate);
+        if (seasonal) {
+          baseAmount += Number(seasonal.nightlyRate) || 0;
+        } else if (weekendDays.includes(dayOfWeek)) {
+          baseAmount += weekendRate;
+        } else {
+          baseAmount += weekdayRate;
+        }
+      }
+      curr.setDate(curr.getDate() + 1);
+    }
+
+    const nightlyRate = nights > 0 ? Math.round(baseAmount / nights) : basePrice;
     const cleaningFee = Math.round(nightlyRate * 0.05);
     const taxes = Math.round(baseAmount * 0.12);
-    const totalAmount = baseAmount + cleaningFee + taxes;
+
+    // Process optional activities
+    const rawSelectedActivities: any[] = Array.isArray(body.selectedActivities) ? body.selectedActivities : [];
+    const validActivities: { id: string; name: string; price: number; chargeType: string; quantity: number }[] = [];
+    let activitiesAmount = 0;
+
+    const propertyActivities = property.pricing?.paidActivities || [];
+    for (const item of rawSelectedActivities) {
+      const actId = typeof item === "string" ? item : item.activityId || item.id;
+      const act = propertyActivities.find((a) => a.id === actId);
+      if (act) {
+        const qty = Math.max(1, Number(item.quantity) || 1);
+        let cost = 0;
+        if (act.chargeType === "PER_PERSON") {
+          cost = act.price * (Number(guests) || 1);
+        } else {
+          cost = act.price * qty;
+        }
+        activitiesAmount += cost;
+        validActivities.push({
+          id: act.id,
+          name: act.name,
+          price: act.price,
+          chargeType: act.chargeType,
+          quantity: qty,
+        });
+      }
+    }
+
+    const totalAmount = baseAmount + activitiesAmount + cleaningFee + taxes;
 
     const guestCount = Math.min(
       Math.max(1, Number(guests) || 1),
@@ -110,7 +170,9 @@ export async function POST(
       checkOutDate,
       guests: guestCount,
       totalAmount,
-      currency: property.pricing?.currency || "INR",
+      currency: property.pricing?.currency || "USD",
+      selectedActivities: validActivities.length > 0 ? validActivities : undefined,
+      activitiesAmount: activitiesAmount > 0 ? activitiesAmount : undefined,
       bookingStatus: "confirmed",
       paymentStatus: "paid",
       specialRequests: specialRequests ? specialRequests.trim() : undefined,
@@ -124,6 +186,7 @@ export async function POST(
         nights,
         nightlyRate,
         baseAmount,
+        activitiesAmount,
         cleaningFee,
         taxes,
         totalAmount,

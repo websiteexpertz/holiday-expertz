@@ -1,50 +1,36 @@
 [
   {
-    "id": "owner_1792593465325_2dc1c289",
-    "fullName": "Vikram Singhania",
-    "mobileNumber": "9876543210",
-    "email": "vikram.estates@holidayexpertz.sample",
-    "passwordHash": "5cb5e2b4d445efe11b1e06c183581e47db787d0092c8f1145e50ae5b54c394a8d3048911f907ca0d96b002ddc3300fe2c017eacc8f6f162c3a76bf226a14a4b5",
-    "passwordSalt": "1d82fb86a8a76180711160c4ac89fd65",
+    "_id": "6aede90edd7a1525826cfce6",
+    "id": "owner_1793976590722_76564225",
+    "fullName": "Deepansh Tyagi",
+    "mobileNumber": "7378076303",
+    "email": "tyagideepansh871@gmail.com",
+    "emailNormalized": "tyagideepansh871@gmail.com",
+    "mobileNormalized": "7378076303",
+    "passwordHash": "dec625c435262cb467da6a60c7ac5c9ad7dbd42b0585ea675ece2ff3c566a07467b1db484105f84e18c6350882987f82c6070710c5b110468d1eec494030d0c7",
+    "passwordSalt": "1f25b1d17ea1dabfc55fb3a9a4e61ef9",
     "role": "property_owner",
     "status": "active",
-    "createdAt": "2026-10-21T14:37:45.325Z",
-    "updatedAt": "2026-10-21T14:37:45.325Z"
+    "createdAt": "2026-11-06T14:49:50.722Z",
+    "updatedAt": "2026-11-06T14:49:50.722Z",
+    "__v": 0,
+    "ownerNumber": "HE-OWN-000001"
   },
   {
-    "id": "owner_1792594263225_8ba5c35a",
-    "fullName": "Ananya Deshmukh",
-    "mobileNumber": "9811223344",
-    "email": "ananya.haveli@holidayexpertz.sample",
-    "passwordHash": "08e36299dff5e0b39098de1ca438cffc8650cf4589acaa362c010073442fc8f05f51c8adbbcdcea29a4f6774914a15f92c1b392c6e7b3a551c30b592dd5bba1b",
-    "passwordSalt": "d654e24c3a87628b94c864625d44119e",
-    "role": "property_owner",
-    "status": "active",
-    "createdAt": "2026-10-21T14:51:03.225Z",
-    "updatedAt": "2026-10-21T14:51:03.225Z"
-  },
-  {
-    "id": "owner_1792595660578_84f72118",
-    "fullName": "Maharaja Manvendra",
-    "mobileNumber": "9833445566",
-    "email": "manvendra.palace@holidayexpertz.sample",
-    "passwordHash": "88e800b5b21980b3e3aa2ad2bfbbb442574b8e69eba4d36f8a498484f0eeed554d77cdb583bb495799ee1fe5bd251637542d28933f2906096a3c6e0453d188f3",
-    "passwordSalt": "191b3481f0f4ed69fc39d0e912e3050d",
-    "role": "property_owner",
-    "status": "active",
-    "createdAt": "2026-10-21T15:14:20.578Z",
-    "updatedAt": "2026-10-21T15:14:20.578Z"
-  },
-  {
-    "id": "owner_1792596393545_b0121b16",
+    "_id": "6afb1a92264b882deddefea5",
+    "id": "owner_1794841234286_bd1d39d2",
     "fullName": "Deepansh Tyagi",
     "mobileNumber": "+917728076303",
     "email": "tyagideepansh26@gmail.com",
-    "passwordHash": "4e7d1b8c13a93600953361603cd7bceadae1e2ff0d5249255e2fe955b4362f03153ae63e33de31cdd5602972000b5b485e8e63b073a1677f3e98f8d58b5eb783",
-    "passwordSalt": "f7d6e9e81e1c1c64130a85cd38aed87a",
+    "emailNormalized": "tyagideepansh26@gmail.com",
+    "mobileNormalized": "917728076303",
+    "passwordHash": "446595d6f130fba4101d78bea2425b2d7784a7e296d317d7774c85990a48561cd0fc052b2afb1822efde0b3d8d0d27c4913e8a6a90f78bee4daee8c7ac1e7ae9",
+    "passwordSalt": "780a9c507cf7b4fa3ba9fc79332aa632",
     "role": "property_owner",
     "status": "active",
-    "createdAt": "2026-10-21T15:26:33.545Z",
-    "updatedAt": "2026-10-21T15:26:33.545Z"
+    "createdAt": "2026-11-16T15:00:34.286Z",
+    "updatedAt": "2026-11-16T15:00:34.286Z",
+    "__v": 0,
+    "ownerNumber": "HE-OWN-000002"
   }
 ]

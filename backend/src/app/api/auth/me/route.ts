@@ -54,7 +54,18 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { fullName, mobileNumber, avatar, businessName, address, bio, altPhone } = body;
+    const {
+      fullName,
+      mobileNumber,
+      avatar,
+      profileImage,
+      languagesSpoken,
+      aboutOwner,
+      businessName,
+      address,
+      bio,
+      altPhone,
+    } = body;
 
     if (fullName && fullName.trim().length < 2) {
       return NextResponse.json(
@@ -68,10 +79,13 @@ export async function PUT(request: NextRequest) {
       updated = await updateOwnerProfile(ownerId, {
         fullName: fullName?.trim(),
         mobileNumber: mobileNumber?.trim(),
-        avatar: avatar?.trim(),
+        avatar: (profileImage ?? avatar)?.trim(),
+        profileImage: profileImage ?? avatar ?? null,
+        languagesSpoken: Array.isArray(languagesSpoken) ? languagesSpoken : undefined,
+        aboutOwner: (aboutOwner ?? bio)?.trim(),
         businessName: businessName?.trim(),
         address: address?.trim(),
-        bio: bio?.trim(),
+        bio: (aboutOwner ?? bio)?.trim(),
         altPhone: altPhone?.trim(),
       });
     } catch (error) {

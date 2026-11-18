@@ -67,7 +67,7 @@ export default function DealsPage() {
             discountText:
               d.discountType === "percentage"
                 ? `${d.discountValue}% OFF`
-                : `Save ₹${Number(d.discountValue).toLocaleString("en-IN")} Flat`,
+                : `Save $${Number(d.discountValue).toLocaleString("en-US")} Flat`,
             badge: d.featured ? "Featured Deal" : "Limited Period",
             validTill: d.endDate ? `Valid till ${new Date(d.endDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}` : "Limited seasonal availability",
             image: d.promoImage || "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",

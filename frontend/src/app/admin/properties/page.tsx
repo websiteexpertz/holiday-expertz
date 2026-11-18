@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { adminClient } from "@/lib/adminClient";
+import { formatPrice } from "@/lib/currency";
 import { Property, PropertyStatus } from "@backend/types/property";
 import {
   Building2,
@@ -16,6 +17,7 @@ import {
   Sparkles,
   Search,
   Eye,
+  Pencil,
   Trash2,
   AlertTriangle,
   Loader2,
@@ -243,7 +245,7 @@ function AdminPropertiesContent() {
             <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search by title, city, owner..."
+              placeholder="Search by Property No., title, city, owner..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-500 transition-colors"
@@ -260,8 +262,14 @@ function AdminPropertiesContent() {
         ) : properties.length === 0 ? (
           <div className="p-12 text-center bg-slate-900 border border-slate-800 rounded-3xl">
             <Building2 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-            <h3 className="text-sm font-bold text-white">No properties match this filter</h3>
-            <p className="text-xs text-slate-500 mt-1">Try switching tabs or adjusting your search query.</p>
+            <h3 className="text-sm font-bold text-white">
+              {searchQuery ? "No properties match your search." : "No properties match this filter"}
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">
+              {searchQuery
+                ? "Try searching with another Property No., title, city or owner."
+                : "Try switching tabs or adjusting your search query."}
+            </p>
           </div>
         ) : (
           <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
@@ -269,9 +277,9 @@ function AdminPropertiesContent() {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-800 bg-slate-950/60 text-slate-400 uppercase tracking-wider text-[10px] font-bold">
+                    <th className="py-3.5 px-4 whitespace-nowrap">Property No.</th>
                     <th className="py-3.5 px-5">Property</th>
-                    <th className="py-3.5 px-4">Owner & Location</th>
-                    <th className="py-3.5 px-4">Pricing</th>
+                    <th className="py-3.5 px-4">Location</th>
                     <th className="py-3.5 px-4">Status</th>
                     <th className="py-3.5 px-3 text-center">Handpicked</th>
                     <th className="py-3.5 px-3 text-center">Featured</th>
@@ -284,6 +292,13 @@ function AdminPropertiesContent() {
 
                     return (
                       <tr key={prop.id} className="hover:bg-slate-800/30 transition-colors group">
+                        {/* Property Number */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className="font-mono font-semibold text-teal-400 text-[11px] sm:text-xs tracking-wider">
+                            {prop.propertyNumber || "—"}
+                          </span>
+                        </td>
+
                         {/* Property Basic */}
                         <td className="py-4 px-5">
                           <div className="flex items-center gap-3">
@@ -301,35 +316,19 @@ function AdminPropertiesContent() {
                           </div>
                         </td>
 
-                        {/* Owner & Location */}
+                        {/* Location */}
                         <td className="py-4 px-4">
-                          <div className="flex items-center gap-1.5 text-slate-300 font-medium">
-                            <User className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                            <span className="truncate max-w-[140px]">{prop.ownerName}</span>
-                            {prop.createdByRole === "admin" ? (
-                              <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30 uppercase tracking-wider">
-                                Admin
-                              </span>
-                            ) : (
-                              <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-500/15 text-blue-300 border border-blue-500/30 uppercase tracking-wider">
-                                Owner
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1">
-                            <MapPin className="w-3 h-3 text-slate-600 shrink-0" />
-                            <span className="truncate max-w-[150px]">
-                              {prop.location.locality}, {prop.location.city}
+                          <div className="flex items-center gap-1.5 text-slate-300 font-medium text-xs">
+                            <MapPin className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                            <span className="truncate max-w-[180px]">
+                              {prop.location.locality ? `${prop.location.locality}, ` : ""}{prop.location.city}
                             </span>
                           </div>
-                        </td>
-
-                        {/* Pricing */}
-                        <td className="py-4 px-4 whitespace-nowrap">
-                          <span className="font-extrabold text-white text-xs">
-                            ₹{prop.pricing.pricePerNight?.toLocaleString()}
-                          </span>
-                          <span className="text-[10px] text-slate-500 block">per night</span>
+                          {prop.location.state && (
+                            <span className="text-[10px] text-slate-500 block ml-5 truncate max-w-[170px]">
+                              {prop.location.state}{prop.location.country ? `, ${prop.location.country}` : ""}
+                            </span>
+                          )}
                         </td>
 
                         {/* Status */}
@@ -431,17 +430,25 @@ function AdminPropertiesContent() {
                         {/* Action Buttons */}
                         <td className="py-4 px-5 text-right whitespace-nowrap">
                           <div className="inline-flex items-center gap-1.5">
-                            {/* View Details */}
-                            <button
-                              onClick={() => {
-                                setViewingProperty(prop);
-                                setDetailsModalOpen(true);
-                              }}
-                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
-                              title="Inspect Full Listing"
+                            {/* View Property on Website */}
+                            <Link
+                              href={`/properties/${prop.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                              title="View Property on Website"
                             >
                               <Eye className="w-3.5 h-3.5" />
-                            </button>
+                            </Link>
+
+                            {/* Edit Property */}
+                            <Link
+                              href={`/admin/properties/new?edit=${prop.id}`}
+                              className="p-1.5 rounded-lg bg-teal-500/15 hover:bg-teal-500 text-teal-300 hover:text-slate-950 border border-teal-500/30 transition-all"
+                              title="Edit Property"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Link>
 
                             {/* Approve Button */}
                             {prop.status !== "approved" && (
@@ -580,17 +587,35 @@ function AdminPropertiesContent() {
             <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl relative custom-scrollbar">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400">
-                    {viewingProperty.propertyType}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400">
+                      {viewingProperty.propertyType}
+                    </span>
+                    {viewingProperty.propertyNumber && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-teal-500/15 text-teal-300 border border-teal-500/30">
+                        {viewingProperty.propertyNumber}
+                      </span>
+                    )}
+                  </div>
                   <h3 className="text-lg font-bold text-white">{viewingProperty.name}</h3>
                 </div>
-                <button
-                  onClick={() => setDetailsModalOpen(false)}
-                  className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
-                >
-                  ✕
-                </button>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/properties/${viewingProperty.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-500/15 text-teal-300 hover:bg-teal-500 hover:text-slate-950 text-xs font-semibold border border-teal-500/30 transition-all"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>View on Website</span>
+                  </Link>
+                  <button
+                    onClick={() => setDetailsModalOpen(false)}
+                    className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               {/* Photos Gallery */}
@@ -615,8 +640,12 @@ function AdminPropertiesContent() {
                 {/* Specs Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                   <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                    <span className="text-[10px] text-slate-500 block">Rate / Night</span>
-                    <span className="font-bold text-teal-400">₹{viewingProperty.pricing.pricePerNight}</span>
+                    <span className="text-[10px] text-slate-500 block">Base Price</span>
+                    <span className="font-bold text-teal-400">
+                      {formatPrice(viewingProperty.pricing.pricePerNight, {
+                        currency: viewingProperty.pricing.currency || "USD",
+                      })}
+                    </span>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
                     <span className="text-[10px] text-slate-500 block">Guests Max</span>

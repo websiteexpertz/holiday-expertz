@@ -9,6 +9,7 @@ import {
   moderatePropertyApi,
 } from "@/lib/propertyClient";
 import { Property, PropertyStatus, PropertyTypeCategory } from "@backend/types/property";
+import { formatPrice } from "@/lib/currency";
 import {
   Building2,
   Search,
@@ -574,14 +575,17 @@ export default function PropertyList() {
                     <div className="flex items-baseline justify-between pt-1">
                       <div>
                         <span className="text-lg font-black text-slate-900">
-                          ₹{prop.pricing.pricePerNight?.toLocaleString("en-IN") || 0}
+                          {formatPrice(prop.pricing.pricePerNight, {
+                            currency: prop.pricing.currency || "USD",
+                          })}
                         </span>
-                        <span className="text-xs text-slate-500"> / night</span>
                       </div>
 
                       {prop.pricing.originalPrice && prop.pricing.originalPrice > prop.pricing.pricePerNight && (
                         <span className="text-xs text-slate-400 line-through">
-                          ₹{prop.pricing.originalPrice.toLocaleString("en-IN")}
+                          {formatPrice(prop.pricing.originalPrice, {
+                            currency: prop.pricing.currency || "USD",
+                          })}
                         </span>
                       )}
                     </div>
@@ -744,12 +748,15 @@ export default function PropertyList() {
                     <span className="text-slate-300">•</span>
                     <div className="flex items-baseline gap-1.5">
                       <span className="text-sm sm:text-base font-black text-slate-900">
-                        ₹{prop.pricing.pricePerNight?.toLocaleString("en-IN") || 0}
+                        {formatPrice(prop.pricing.pricePerNight, {
+                          currency: prop.pricing.currency || "USD",
+                        })}
                       </span>
-                      <span className="text-[11px] text-slate-500 font-medium">/ night</span>
                       {prop.pricing.originalPrice && prop.pricing.originalPrice > prop.pricing.pricePerNight && (
                         <span className="text-[11px] text-slate-400 line-through ml-1">
-                          ₹{prop.pricing.originalPrice.toLocaleString("en-IN")}
+                          {formatPrice(prop.pricing.originalPrice, {
+                            currency: prop.pricing.currency || "USD",
+                          })}
                         </span>
                       )}
                     </div>
@@ -934,9 +941,11 @@ export default function PropertyList() {
               {/* Pricing & Key Metrics */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
                 <div>
-                  <div className="text-[11px] text-slate-500 font-medium">Nightly Rate</div>
+                  <div className="text-[11px] text-slate-500 font-medium">Base Price</div>
                   <div className="text-base font-black text-slate-900">
-                    ₹{previewProperty.pricing.pricePerNight?.toLocaleString("en-IN")}
+                    {formatPrice(previewProperty.pricing.pricePerNight, {
+                      currency: previewProperty.pricing.currency || "USD",
+                    })}
                   </div>
                 </div>
                 <div>

@@ -97,6 +97,11 @@ export function getInquiryById(id: string): ContactInquiryRecord | undefined {
   return getAllInquiries().find((i) => i.id === id);
 }
 
+export function getInquiriesByOwnerId(ownerId: string): ContactInquiryRecord[] {
+  if (!ownerId) return [];
+  return getAllInquiries().filter((i) => i.ownerId === ownerId);
+}
+
 export function createInquiry(input: Omit<ContactInquiryRecord, "id" | "status" | "createdAt" | "updatedAt">): ContactInquiryRecord {
   const inquiries = getAllInquiries();
   const id = `inq_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -112,6 +117,14 @@ export function createInquiry(input: Omit<ContactInquiryRecord, "id" | "status" 
 
   inquiries.unshift(record);
   saveInquiries(inquiries);
+
+  // Asynchronously save to MongoDB InquiryModel if available without blocking
+  try {
+    import("../models/Inquiry").then(({ InquiryModel }) => {
+      InquiryModel.create(record).catch(() => {});
+    }).catch(() => {});
+  } catch {}
+
   return record;
 }
 

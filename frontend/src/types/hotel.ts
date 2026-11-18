@@ -22,9 +22,9 @@ export interface Hotel {
   rating: number; // e.g. 4.8
   reviewScore: string; // e.g. "Excellent" | "Superb" | "Wonderful"
   reviewCount: number;
-  pricePerNight: number; // INR
-  originalPrice?: number; // INR
-  currency: string; // "INR"
+  pricePerNight: number; // USD
+  originalPrice?: number; // USD
+  currency: string; // "USD"
   featuredImage: string;
   galleryImages: string[];
   description: string;

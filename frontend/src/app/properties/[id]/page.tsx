@@ -11,6 +11,7 @@ import AuthModal from "@/components/layout/AuthModal";
 import PropertyDetailMap from "@/components/hotels/PropertyDetailMap";
 import { Property } from "@backend/types/property";
 import { ReviewRecord } from "@backend/types/admin";
+import { formatPrice } from "@/lib/currency";
 import {
   MapPin,
   Users,
@@ -20,6 +21,7 @@ import {
   Sparkles,
   ShieldCheck,
   CheckCircle2,
+  AlertCircle,
   Calendar as CalendarIcon,
   Share2,
   ChevronLeft,
@@ -64,9 +66,11 @@ interface BookedRange {
 }
 
 interface PriceSummary {
+  hasDates: boolean;
   nights: number;
   nightlyRate: number;
   baseAmount: number;
+  activitiesAmount: number;
   cleaningFee: number;
   taxes: number;
   totalAmount: number;
@@ -107,26 +111,36 @@ function PropertyDetailContent() {
   const [checkInDate, setCheckInDate] = useState("");
   const [checkOutDate, setCheckOutDate] = useState("");
   const [selectedGuests, setSelectedGuests] = useState(2);
+  const [selectedActivityIds, setSelectedActivityIds] = useState<string[]>([]);
 
-  // Booking Card Mode ('book' | 'inquire')
-  const [bookingMode, setBookingMode] = useState<"book" | "inquire">("book");
+  const toggleActivity = (actId: string) => {
+    setSelectedActivityIds((prev) =>
+      prev.includes(actId) ? prev.filter((id) => id !== actId) : [...prev, actId]
+    );
+  };
 
-  // Reservation form state
-  const [guestName, setGuestName] = useState("");
-  const [guestEmail, setGuestEmail] = useState("");
-  const [guestPhone, setGuestPhone] = useState("");
-  const [specialRequests, setSpecialRequests] = useState("");
-  const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
-  const [bookingError, setBookingError] = useState("");
-  const [confirmedBooking, setConfirmedBooking] = useState<any | null>(null);
-
-  // Inquiry form state
+  // Unified Property Inquiry Form State
   const [inquiryName, setInquiryName] = useState("");
   const [inquiryEmail, setInquiryEmail] = useState("");
   const [inquiryPhone, setInquiryPhone] = useState("");
   const [inquiryMessage, setInquiryMessage] = useState("");
   const [isSubmittingInquiry, setIsSubmittingInquiry] = useState(false);
   const [inquirySuccess, setInquirySuccess] = useState(false);
+  const [inquiryError, setInquiryError] = useState("");
+
+  const todayString = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  // Detect whether selected dates overlap with host's already reserved windows
+  const isDateRangeConflicted = useMemo(() => {
+    if (!checkInDate || !checkOutDate) return false;
+    const start = new Date(checkInDate).getTime();
+    const end = new Date(checkOutDate).getTime();
+    return bookedRanges.some((range) => {
+      const rStart = new Date(range.checkInDate).getTime();
+      const rEnd = new Date(range.checkOutDate).getTime();
+      return start < rEnd && end > rStart;
+    });
+  }, [checkInDate, checkOutDate, bookedRanges]);
 
   // Reviews state
   const [reviews, setReviews] = useState<ReviewRecord[]>([]);
@@ -153,7 +167,15 @@ function PropertyDetailContent() {
     async function loadProperty() {
       try {
         setLoading(true);
-        const res = await fetch(apiUrl(`/api/public/properties/${propertyId}`));
+        const adminToken = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+        const headers: Record<string, string> = {};
+        if (adminToken) {
+          headers["Authorization"] = `Bearer ${adminToken}`;
+        }
+        const res = await fetch(apiUrl(`/api/public/properties/${propertyId}`), {
+          headers,
+          credentials: "include",
+        });
         const data = await res.json();
         if (data.success && data.property) {
           setProperty(data.property);
@@ -326,32 +348,92 @@ function PropertyDetailContent() {
     });
   };
 
+  const getNightlyRateForDate = (dateStr: string): number => {
+    if (!property?.pricing) return 0;
+    const {
+      pricePerNight = 0,
+      weekdayRate,
+      weekendRate,
+      weekendDays = [5, 6],
+      seasonalRates = [],
+      specialDateRates = [],
+    } = property.pricing;
+
+    // 1. Special date rule
+    const special = specialDateRates.find((s) => dateStr >= s.startDate && dateStr <= (s.endDate || s.startDate));
+    if (special && Number(special.nightlyRate) > 0) return Number(special.nightlyRate);
+
+    // 2. Seasonal pricing rule
+    const seasonal = seasonalRates.find((s) => dateStr >= s.startDate && dateStr <= s.endDate);
+    if (seasonal && Number(seasonal.nightlyRate) > 0) return Number(seasonal.nightlyRate);
+
+    // 3. Day of week rule
+    const d = new Date(dateStr + "T00:00:00");
+    const dayOfWeek = d.getDay();
+    const effectiveWeekday = weekdayRate !== undefined && Number(weekdayRate) > 0 ? Number(weekdayRate) : Number(pricePerNight);
+    const effectiveWeekend = weekendRate !== undefined && Number(weekendRate) > 0 ? Number(weekendRate) : effectiveWeekday;
+
+    if (weekendDays.includes(dayOfWeek)) {
+      return effectiveWeekend;
+    }
+    return effectiveWeekday;
+  };
+
   const calculatePriceSummary = (): PriceSummary => {
-    const nightlyRate = property?.pricing?.pricePerNight || 0;
+    const basePrice = Number(property?.pricing?.pricePerNight) || 0;
     if (!checkInDate || !checkOutDate) {
       return {
+        hasDates: false,
         nights: 1,
-        nightlyRate,
-        baseAmount: nightlyRate,
-        cleaningFee: Math.round(nightlyRate * 0.05),
-        taxes: Math.round(nightlyRate * 0.12),
-        totalAmount: Math.round(nightlyRate * 1.17),
+        nightlyRate: basePrice,
+        baseAmount: basePrice,
+        activitiesAmount: 0,
+        cleaningFee: Math.round(basePrice * 0.05),
+        taxes: Math.round(basePrice * 0.12),
+        totalAmount: Math.round(basePrice * 1.17),
       };
     }
 
-    const start = new Date(checkInDate).getTime();
-    const end = new Date(checkOutDate).getTime();
-    const diffDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+    const start = new Date(checkInDate + "T00:00:00");
+    const end = new Date(checkOutDate + "T00:00:00");
+    const diffNights = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
 
-    const baseAmount = diffDays * nightlyRate;
-    const cleaningFee = Math.round(nightlyRate * 0.05);
-    const taxes = Math.round(baseAmount * 0.12);
-    const totalAmount = baseAmount + cleaningFee + taxes;
+    let accommodationSubtotal = 0;
+    const curr = new Date(start);
+    for (let i = 0; i < diffNights; i++) {
+      const yyyy = curr.getFullYear();
+      const mm = String(curr.getMonth() + 1).padStart(2, "0");
+      const dd = String(curr.getDate()).padStart(2, "0");
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      accommodationSubtotal += getNightlyRateForDate(dateStr);
+      curr.setDate(curr.getDate() + 1);
+    }
+
+    // Selected activities calculation
+    const paidActivities = property?.pricing?.paidActivities || [];
+    let activitiesTotal = 0;
+    selectedActivityIds.forEach((actId) => {
+      const act = paidActivities.find((a) => a.id === actId);
+      if (act) {
+        if (act.chargeType === "PER_PERSON") {
+          activitiesTotal += Number(act.price) * selectedGuests;
+        } else {
+          activitiesTotal += Number(act.price);
+        }
+      }
+    });
+
+    const avgNightly = Math.round(accommodationSubtotal / diffNights);
+    const cleaningFee = Math.round(avgNightly * 0.05);
+    const taxes = Math.round((accommodationSubtotal + activitiesTotal) * 0.12);
+    const totalAmount = accommodationSubtotal + activitiesTotal + cleaningFee + taxes;
 
     return {
-      nights: diffDays,
-      nightlyRate,
-      baseAmount,
+      hasDates: true,
+      nights: diffNights,
+      nightlyRate: avgNightly,
+      baseAmount: accommodationSubtotal,
+      activitiesAmount: activitiesTotal,
       cleaningFee,
       taxes,
       totalAmount,
@@ -360,10 +442,8 @@ function PropertyDetailContent() {
 
   const priceSummary = calculatePriceSummary();
 
-  // Handle Calendar Day Click
+  // Handle Calendar Day Click — Two-Way Synchronized with Inquiry Form
   const handleCalendarDayClick = (dateStr: string) => {
-    if (isDateBooked(dateStr)) return;
-
     if (!checkInDate || (checkInDate && checkOutDate)) {
       setCheckInDate(dateStr);
       setCheckOutDate("");
@@ -372,82 +452,47 @@ function PropertyDetailContent() {
         setCheckInDate(dateStr);
         setCheckOutDate("");
       } else {
-        // Verify no booked dates in-between
-        const start = new Date(checkInDate);
-        const end = new Date(dateStr);
-        let hasConflict = false;
-        let curr = new Date(start);
-        curr.setDate(curr.getDate() + 1);
-        while (curr < end) {
-          const s = curr.toISOString().split("T")[0];
-          if (isDateBooked(s)) {
-            hasConflict = true;
-            break;
-          }
-          curr.setDate(curr.getDate() + 1);
-        }
-
-        if (hasConflict) {
-          alert("Selected range includes already booked dates. Please pick an available window.");
-          return;
-        }
-
         setCheckOutDate(dateStr);
       }
     }
   };
 
-  // 9. Booking Form Submission
-  const handleBookingSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBookingError("");
-
-    if (!checkInDate || !checkOutDate) {
-      setBookingError("Please select both Check-In and Check-Out dates.");
-      return;
-    }
-
-    if (!guestName.trim() || !guestEmail.trim()) {
-      setBookingError("Please enter your name and email.");
-      return;
-    }
-
-    try {
-      setIsSubmittingBooking(true);
-      const res = await fetch(apiUrl(`/api/public/properties/${propertyId}/book`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          checkInDate,
-          checkOutDate,
-          guests: selectedGuests,
-          customerName: guestName,
-          customerEmail: guestEmail,
-          customerPhone: guestPhone,
-          specialRequests,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success && data.booking) {
-        setConfirmedBooking(data.booking);
-        // Refresh availability
-        await loadAvailability();
-      } else {
-        setBookingError(data.message || "Failed to complete reservation. Please try again.");
-      }
-    } catch (err) {
-      console.error("Booking error:", err);
-      setBookingError("Connection error while processing booking. Please try again.");
-    } finally {
-      setIsSubmittingBooking(false);
-    }
-  };
-
-  // 10. Inquiry Form Submission
+  // Property Inquiry Form Submission
   const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inquiryName.trim() || !inquiryEmail.trim()) return;
+    setInquiryError("");
+
+    if (!checkInDate || !checkOutDate) {
+      setInquiryError("Please select both Check-In and Check-Out dates.");
+      return;
+    }
+
+    if (checkInDate < todayString) {
+      setInquiryError("Check-In date cannot be in the past.");
+      return;
+    }
+
+    if (checkOutDate <= checkInDate) {
+      setInquiryError("Check-Out date must be later than Check-In date.");
+      return;
+    }
+
+    if (!inquiryName.trim()) {
+      setInquiryError("Your full name is required.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!inquiryEmail.trim() || !emailRegex.test(inquiryEmail.trim())) {
+      setInquiryError("Please provide a valid email address.");
+      return;
+    }
+
+    const maxAllowedGuests = property?.capacity?.maxGuests || 20;
+    if (selectedGuests < 1 || selectedGuests > maxAllowedGuests) {
+      setInquiryError(`Guest count must be between 1 and ${maxAllowedGuests}.`);
+      return;
+    }
 
     try {
       setIsSubmittingInquiry(true);
@@ -455,27 +500,30 @@ function PropertyDetailContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: inquiryName,
-          email: inquiryEmail,
-          phone: inquiryPhone,
-          subject: `Booking Inquiry for ${property?.name}`,
-          message: `${inquiryMessage || "I am interested in staying at this property."} | Dates: ${
-            checkInDate || "Flexible"
-          } to ${checkOutDate || "Flexible"} | Guests: ${selectedGuests}`,
+          propertyId: property?.id,
           relatedPropertyId: property?.id,
-          relatedPropertyName: property?.name,
+          propertyName: property?.name,
+          name: inquiryName.trim(),
+          email: inquiryEmail.trim().toLowerCase(),
+          phone: inquiryPhone.trim(),
+          checkInDate,
+          checkOutDate,
+          guestCount: selectedGuests,
+          message: inquiryMessage.trim(),
+          type: "property_inquiry",
         }),
       });
 
       const data = await res.json();
-      if (data.success) {
+      if (res.ok && data.success) {
         setInquirySuccess(true);
+        setInquiryError("");
       } else {
-        alert(data.message || "Failed to send inquiry.");
+        setInquiryError(data.message || "Failed to submit inquiry. Please try again.");
       }
     } catch (err) {
       console.error("Error submitting inquiry:", err);
-      alert("Something went wrong submitting inquiry.");
+      setInquiryError("Unable to submit inquiry. Please check your internet connection and try again.");
     } finally {
       setIsSubmittingInquiry(false);
     }
@@ -574,14 +622,14 @@ function PropertyDetailContent() {
 
   const coverImage = allImages.find((img) => img.isCover)?.url || allImages[0]?.url;
 
-  const formattedPrice = new Intl.NumberFormat("en-IN", {
-    maximumFractionDigits: 0,
-  }).format(property.pricing?.pricePerNight || 0);
+  const formattedPrice = formatPrice(property.pricing?.pricePerNight, {
+    currency: property.pricing?.currency || "USD",
+  });
 
   const formattedOriginalPrice = property.pricing?.originalPrice
-    ? new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(
-        property.pricing.originalPrice
-      )
+    ? formatPrice(property.pricing.originalPrice, {
+        currency: property.pricing?.currency || "USD",
+      })
     : null;
 
   // Categorized Amenities Map
@@ -639,6 +687,36 @@ function PropertyDetailContent() {
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-20 flex-1 w-full space-y-6">
+        {/* Super Admin Preview Banner */}
+        {property.status !== "approved" && (
+          <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-amber-950 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-800 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5 text-amber-700" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-amber-900">
+                    Super Admin Preview Mode
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase bg-amber-200 text-amber-900 border border-amber-300">
+                    {property.status.replace("_", " ")}
+                  </span>
+                </div>
+                <p className="text-xs text-amber-900/80 mt-0.5">
+                  This listing is unpublished and hidden from ordinary visitors. Public booking actions are disabled in preview.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/admin/properties"
+              className="text-xs font-bold px-3.5 py-2 rounded-xl bg-amber-600 text-white hover:bg-amber-700 transition-colors shadow-xs whitespace-nowrap"
+            >
+              Return to Admin
+            </Link>
+          </div>
+        )}
+
         {/* ── Breadcrumb Navigation (Reference: A1VacationHomes Breadcrumbs) ── */}
         <div className="flex items-center gap-2 text-xs text-slate-500 overflow-x-auto scrollbar-none py-1">
           <Link href="/" className="hover:text-teal-700 font-medium">
@@ -927,6 +1005,20 @@ function PropertyDetailContent() {
                   <span>About this Vacation Rental</span>
                 </h2>
 
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="px-3 py-1 rounded-xl bg-teal-50 text-teal-800 border border-teal-200/80 font-bold text-xs">
+                    {property.propertyType}
+                  </span>
+                  {property.propertySize && Number(property.propertySize) > 0 && (
+                    <span className="px-3 py-1 rounded-xl bg-slate-100 text-slate-800 border border-slate-200 font-semibold text-xs flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-teal-600" />
+                      <span>
+                        {Number(property.propertySize).toLocaleString()} {property.propertySizeUnit || "sq. ft."}
+                      </span>
+                    </span>
+                  )}
+                </div>
+
                 {property.shortDescription && (
                   <div className="text-sm font-semibold text-teal-950 bg-teal-50/70 p-4 rounded-2xl border border-teal-200/70 leading-relaxed">
                     {property.shortDescription}
@@ -1005,10 +1097,62 @@ function PropertyDetailContent() {
               ) : (
                 <p className="text-xs text-slate-400">No specific amenities configured.</p>
               )}
+
+              {/* Optional Experiences & Activities */}
+              {property.pricing?.paidActivities && property.pricing.paidActivities.length > 0 && (
+                <div className="pt-6 border-t border-slate-100 space-y-4">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-teal-600" />
+                      <span>Optional Experiences & Activities</span>
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Enhance your stay with additional experiences and services available at this property.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {property.pricing.paidActivities.map((act) => {
+                      const chargeLabel =
+                        act.chargeType === "PER_PERSON"
+                          ? "/ person"
+                          : act.chargeType === "PER_TRIP"
+                          ? "/ trip"
+                          : act.chargeType === "PER_SESSION"
+                          ? "/ session"
+                          : "/ booking";
+
+                      return (
+                        <div
+                          key={act.id}
+                          className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-teal-50/20 border border-slate-200/90 flex items-center justify-between gap-3 shadow-xs hover:border-teal-300 transition-colors"
+                        >
+                          <div className="space-y-0.5 min-w-0">
+                            <span className="font-bold text-slate-900 text-xs sm:text-sm block truncate">
+                              {act.name}
+                            </span>
+                            <span className="text-[11px] text-teal-700 font-semibold inline-block">
+                              Optional Add-on
+                            </span>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="font-black text-slate-900 text-sm">
+                              {formatPrice(act.price, { currency: property.pricing?.currency || "USD" })}
+                            </div>
+                            <span className="text-[10px] text-slate-500 font-medium">
+                              {chargeLabel}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 3. RATES & POLICIES SECTION (Reference: Rates & Additional Rate Information) */}
-            <div ref={ratesRef} id="rates" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+            <div ref={ratesRef} id="rates" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-8">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
@@ -1016,7 +1160,7 @@ function PropertyDetailContent() {
                     <span>Rates & Pricing Information</span>
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Clear, transparent rate breakdown and booking terms
+                    Clear, transparent rate breakdown, seasonal rules, and booking terms
                   </p>
                 </div>
                 <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
@@ -1029,56 +1173,175 @@ function PropertyDetailContent() {
                 <table className="w-full text-left text-xs border border-slate-200 rounded-2xl overflow-hidden">
                   <thead className="bg-slate-100 text-slate-700 font-bold uppercase text-[10px] tracking-wider">
                     <tr>
-                      <th className="p-3.5">Season / Rate Tier</th>
-                      <th className="p-3.5">Period</th>
-                      <th className="p-3.5">Nightly Rate</th>
-                      <th className="p-3.5">Min Stay</th>
+                      <th className="p-3.5">Rate Tier / Rule</th>
+                      <th className="p-3.5">Schedule / Period</th>
+                      <th className="p-3.5">Rate (USD)</th>
+                      <th className="p-3.5">Basis</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
+                    {/* Minimum Starting Price */}
                     <tr className="hover:bg-slate-50/80">
-                      <td className="p-3.5 font-bold text-slate-900">Standard Nightly Rate</td>
-                      <td className="p-3.5 text-slate-600">Year-Round Availability</td>
-                      <td className="p-3.5 font-extrabold text-teal-700">₹{formattedPrice} / night</td>
-                      <td className="p-3.5 text-slate-600">1 Night</td>
+                      <td className="p-3.5 font-bold text-slate-900">Minimum Starting Price</td>
+                      <td className="p-3.5 text-slate-600">Base Entry Price</td>
+                      <td className="p-3.5 font-extrabold text-teal-700">{formattedPrice}</td>
+                      <td className="p-3.5 text-slate-600">Starting Price</td>
                     </tr>
-                    {formattedOriginalPrice && (
-                      <tr className="hover:bg-slate-50/80">
-                        <td className="p-3.5 font-bold text-slate-700">Standard Published Rate</td>
-                        <td className="p-3.5 text-slate-500">Regular Portal Price</td>
-                        <td className="p-3.5 text-slate-400 line-through">₹{formattedOriginalPrice} / night</td>
-                        <td className="p-3.5 text-slate-500">1 Night</td>
-                      </tr>
-                    )}
+
+                    {/* Weekday Rate */}
                     <tr className="hover:bg-slate-50/80">
-                      <td className="p-3.5 font-bold text-slate-900">Weekend & Festival Stays</td>
-                      <td className="p-3.5 text-slate-600">Fri - Sun / Holiday Weekends</td>
-                      <td className="p-3.5 font-bold text-slate-900">₹{formattedPrice}</td>
-                      <td className="p-3.5 text-slate-600">2 Nights</td>
+                      <td className="p-3.5 font-bold text-slate-900">Weekday Nightly Rate</td>
+                      <td className="p-3.5 text-slate-600">Standard Weekdays</td>
+                      <td className="p-3.5 font-extrabold text-slate-900">
+                        {formatPrice(
+                          property.pricing?.weekdayRate !== undefined && Number(property.pricing.weekdayRate) > 0
+                            ? property.pricing.weekdayRate
+                            : property.pricing?.pricePerNight,
+                          { currency: property.pricing?.currency || "USD" }
+                        )} / night
+                      </td>
+                      <td className="p-3.5 text-slate-600">Per Night</td>
                     </tr>
+
+                    {/* Weekend Rate */}
+                    <tr className="hover:bg-slate-50/80">
+                      <td className="p-3.5 font-bold text-slate-900">Weekend Nightly Rate</td>
+                      <td className="p-3.5 text-slate-600">
+                        {(property.pricing?.weekendDays || [5, 6])
+                          .map((d) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d])
+                          .join(" & ")}
+                      </td>
+                      <td className="p-3.5 font-extrabold text-slate-900">
+                        {formatPrice(
+                          property.pricing?.weekendRate !== undefined && Number(property.pricing.weekendRate) > 0
+                            ? property.pricing.weekendRate
+                            : (property.pricing?.weekdayRate || property.pricing?.pricePerNight),
+                          { currency: property.pricing?.currency || "USD" }
+                        )} / night
+                      </td>
+                      <td className="p-3.5 text-slate-600">Per Night</td>
+                    </tr>
+
+                    {/* Seasonal Rules */}
+                    {property.pricing?.seasonalRates &&
+                      property.pricing.seasonalRates.map((season) => (
+                        <tr key={season.id} className="hover:bg-slate-50/80 bg-teal-50/20">
+                          <td className="p-3.5 font-bold text-teal-950 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                            <span>{season.name}</span>
+                          </td>
+                          <td className="p-3.5 text-slate-700 font-mono text-[11px]">
+                            {season.startDate} to {season.endDate}
+                          </td>
+                          <td className="p-3.5 font-extrabold text-teal-700">
+                            {formatPrice(season.nightlyRate, { currency: property.pricing?.currency || "USD" })} / night
+                          </td>
+                          <td className="p-3.5 text-teal-800 font-semibold text-[11px]">Seasonal Override</td>
+                        </tr>
+                      ))}
+
+                    {/* Special Date Rules */}
+                    {property.pricing?.specialDateRates &&
+                      property.pricing.specialDateRates.map((sp) => (
+                        <tr key={sp.id} className="hover:bg-slate-50/80 bg-amber-50/20">
+                          <td className="p-3.5 font-bold text-amber-950 flex items-center gap-1.5">
+                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                            <span>{sp.name}</span>
+                          </td>
+                          <td className="p-3.5 text-slate-700 font-mono text-[11px]">
+                            {sp.startDate} {sp.endDate && sp.endDate !== sp.startDate ? `to ${sp.endDate}` : ""}
+                          </td>
+                          <td className="p-3.5 font-extrabold text-amber-700">
+                            {formatPrice(sp.nightlyRate, { currency: property.pricing?.currency || "USD" })} / night
+                          </td>
+                          <td className="p-3.5 text-amber-800 font-semibold text-[11px]">Holiday / Special Rate</td>
+                        </tr>
+                      ))}
+
+                    {/* Original Published Comparison Price */}
+                    {property.pricing?.originalPrice &&
+                      Number(property.pricing.originalPrice) > Number(property.pricing.pricePerNight) && (
+                        <tr className="hover:bg-slate-50/80">
+                          <td className="p-3.5 font-bold text-slate-500">Standard Published Rate</td>
+                          <td className="p-3.5 text-slate-500">Regular Portal Price</td>
+                          <td className="p-3.5 text-slate-400 line-through">
+                            {formattedOriginalPrice}
+                          </td>
+                          <td className="p-3.5 text-slate-500">Reference</td>
+                        </tr>
+                      )}
                   </tbody>
                 </table>
               </div>
 
-              {/* Additional Rate & Fee Policies */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                  <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-teal-600" />
-                    <span>Included in Nightly Rate</span>
-                  </div>
-                  <p className="text-slate-600">
-                    Complimentary high-speed Wi-Fi, purified drinking water, daily housekeeping, and free private parking.
+              {/* ── PROPERTY POLICIES (Approved 4-Card 2x2 Layout) ── */}
+              <div className="pt-6 border-t border-slate-100 space-y-4">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-teal-600" />
+                    <span>Property Policies</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Essential house rules, cancellation guidelines, and contractual terms for your stay
                   </p>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                  <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-teal-600" />
-                    <span>Cancellation Policy</span>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Card 1 — General Policy */}
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs space-y-2">
+                    <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                      <div className="w-7 h-7 rounded-lg bg-teal-600/10 text-teal-600 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="w-4 h-4" />
+                      </div>
+                      <h4>General Policy & House Rules</h4>
+                    </div>
+                    <div className="text-xs text-slate-600 leading-relaxed whitespace-pre-line pt-1">
+                      {property.policies?.generalPolicy?.trim() ||
+                        "Standard quiet hours apply between 22:00 and 07:00. Parties and unauthorized events are strictly prohibited on premises."}
+                    </div>
                   </div>
-                  <p className="text-slate-600">
-                    Full refund up to 14 days before check-in. 50% refund between 7 to 14 days. Non-refundable within 7 days.
-                  </p>
+
+                  {/* Card 2 — Refund & Cancellation Policy */}
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs space-y-2">
+                    <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                      <div className="w-7 h-7 rounded-lg bg-teal-600/10 text-teal-600 flex items-center justify-center shrink-0">
+                        <Clock className="w-4 h-4" />
+                      </div>
+                      <h4>Refund & Cancellation Policy</h4>
+                    </div>
+                    <div className="text-xs text-slate-600 leading-relaxed whitespace-pre-line pt-1">
+                      {property.policies?.refundPolicy?.trim() ||
+                        "Full refund up to 14 days before check-in. 50% refund between 7 to 14 days. Non-refundable within 7 days of scheduled arrival."}
+                    </div>
+                  </div>
+
+                  {/* Card 3 — Contract Policy */}
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs space-y-2">
+                    <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                      <div className="w-7 h-7 rounded-lg bg-teal-600/10 text-teal-600 flex items-center justify-center shrink-0">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <h4>Contract Policy & Obligations</h4>
+                    </div>
+                    <div className="text-xs text-slate-600 leading-relaxed whitespace-pre-line pt-1">
+                      {property.policies?.contractPolicy?.trim() ||
+                        "Guests agree to treat the home with care and comply with local municipal ordinances. Primary guest must be at least 18 years of age with valid government photo ID."}
+                    </div>
+                  </div>
+
+                  {/* Card 4 — Additional Notes */}
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs space-y-2">
+                    <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                      <div className="w-7 h-7 rounded-lg bg-teal-600/10 text-teal-600 flex items-center justify-center shrink-0">
+                        <Info className="w-4 h-4" />
+                      </div>
+                      <h4>Additional Notes & Special Rules</h4>
+                    </div>
+                    <div className="text-xs text-slate-600 leading-relaxed whitespace-pre-line pt-1">
+                      {property.policies?.additionalNotes?.trim() ||
+                        "Pre-arrival verification and estimated arrival time required. Check-in is handled in-person by the property concierge or host."}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1176,7 +1439,7 @@ function PropertyDetailContent() {
                         <span>{dayNum}</span>
                         {!isPast && !isBooked && (
                           <span className="text-[9px] text-teal-700/70 font-normal hidden sm:inline">
-                            ₹{Math.round((property.pricing?.pricePerNight || 0) / 1000)}k
+                            ${Math.round(getNightlyRateForDate(dateStr))}
                           </span>
                         )}
                         {isBooked && (
@@ -1372,6 +1635,11 @@ function PropertyDetailContent() {
                         </div>
                       </div>
 
+                      {rev.title && (
+                        <h5 className="font-bold text-slate-900 text-xs pt-0.5">
+                          {rev.title}
+                        </h5>
+                      )}
                       <p className="text-xs text-slate-700 leading-relaxed italic">
                         &ldquo;{rev.comment}&rdquo;
                       </p>
@@ -1404,7 +1672,7 @@ function PropertyDetailContent() {
             </div>
 
             {/* 7. HOST PROFILE SECTION (Reference: Property Owner / Manager Details) */}
-            <div ref={hostRef} id="host" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+            <div ref={hostRef} id="host" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-5">
               <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
                 <Users className="w-5 h-5 text-teal-600" />
                 <span>Meet Your Property Host</span>
@@ -1412,17 +1680,30 @@ function PropertyDetailContent() {
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-gradient-to-r from-slate-50 to-teal-50/40 rounded-2xl border border-slate-200">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-teal-700 text-white font-black text-xl flex items-center justify-center shadow-md">
-                    {(property.contactDetails?.contactPerson || "H").charAt(0).toUpperCase()}
-                  </div>
+                  {property.owner?.profileImage || property.owner?.avatar ? (
+                    <img
+                      src={property.owner.profileImage || property.owner.avatar}
+                      alt={property.owner.fullName || "Property Host"}
+                      className="w-14 h-14 rounded-2xl object-cover border border-slate-200 shadow-md shrink-0"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-2xl bg-teal-700 text-white font-black text-xl flex items-center justify-center shadow-md shrink-0">
+                      {(property.owner?.fullName || property.contactDetails?.contactPerson || "H").charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <div className="space-y-0.5">
                     <div className="text-base font-bold text-slate-900 flex items-center gap-1.5">
-                      <span>{property.contactDetails?.contactPerson || "Verified Host"}</span>
+                      <span>{property.owner?.fullName || property.contactDetails?.contactPerson || "Verified Host"}</span>
                       <ShieldCheck className="w-4 h-4 text-teal-600" />
                     </div>
-                    <p className="text-xs text-slate-500">
-                      Verified HolidayExpertz Host
-                    </p>
+                    <div className="flex items-center gap-2 flex-wrap text-xs text-slate-500">
+                      <span>Verified HolidayExpertz Host</span>
+                      {(property.owner?.ownerNumber || property.ownerNumber) && (
+                        <span className="font-mono text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200 text-[10px]">
+                          {property.owner?.ownerNumber || property.ownerNumber}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 text-[11px] text-teal-800 font-semibold pt-1">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                       <span>Response time: Usually within an hour</span>
@@ -1453,82 +1734,127 @@ function PropertyDetailContent() {
                   )}
                 </div>
               </div>
+
+              {/* About the Host Biography */}
+              {property.owner?.aboutOwner && (
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    About the Host
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                    {property.owner.aboutOwner}
+                  </p>
+                </div>
+              )}
+
+              {/* Languages Spoken */}
+              {property.owner?.languagesSpoken && property.owner.languagesSpoken.length > 0 && (
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Languages Spoken
+                  </h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {property.owner.languagesSpoken.map((lang, idx) => (
+                      <span
+                        key={idx}
+                        className="px-3 py-1 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs font-semibold shadow-2xs"
+                      >
+                        {lang}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* ════════ RIGHT COLUMN: Sticky Booking & Direct Inquiry Card ════════ */}
-          <div className="lg:col-span-4 lg:sticky lg:top-28 space-y-4">
+          {/* ════════ RIGHT COLUMN: Sticky Direct Property Inquiry Card ════════ */}
+          <div id="inquiry-card" className="lg:col-span-4 lg:sticky lg:top-28 space-y-4">
             <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xl space-y-5">
               {/* Pricing Header */}
               <div className="pb-4 border-b border-slate-100 flex items-baseline justify-between">
                 <div>
-                  <div className="flex items-baseline gap-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                    Starting From
+                  </span>
+                  <div className="flex items-baseline gap-2">
                     <span className="text-2xl sm:text-3xl font-black text-slate-900">
-                      ₹{formattedPrice}
+                      {formattedPrice}
                     </span>
-                    <span className="text-xs text-slate-500 font-medium">/ night</span>
+                    {formattedOriginalPrice && (
+                      <span className="text-xs text-slate-400 line-through">
+                        {formattedOriginalPrice} original
+                      </span>
+                    )}
                   </div>
-                  {formattedOriginalPrice && (
-                    <span className="text-xs text-slate-400 line-through">
-                      ₹{formattedOriginalPrice} original
-                    </span>
-                  )}
                 </div>
                 <span className="text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
                   Best Rate
                 </span>
               </div>
 
-              {/* Mode Tabs: Book Stay vs Inquire */}
-              <div className="flex rounded-xl bg-slate-100 p-1 text-xs font-bold">
-                <button
-                  type="button"
-                  onClick={() => setBookingMode("book")}
-                  className={`flex-1 py-2 rounded-lg transition-all ${
-                    bookingMode === "book"
-                      ? "bg-white text-slate-900 shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Reserve Stay
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBookingMode("inquire")}
-                  className={`flex-1 py-2 rounded-lg transition-all ${
-                    bookingMode === "inquire"
-                      ? "bg-white text-slate-900 shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Ask Question
-                </button>
+              {/* Form Heading & Subtitle */}
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold text-slate-900 tracking-tight">
+                  Ask About This Property
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Interested in this property? Share your travel details and send your inquiry directly to the host.
+                </p>
               </div>
 
-              {/* ── TAB 1: INSTANT RESERVATION WORKFLOW ── */}
-              {bookingMode === "book" ? (
-                <form onSubmit={handleBookingSubmit} className="space-y-4">
-                  {/* Date Pickers */}
-                  <div className="grid grid-cols-2 gap-2">
+              {/* Success Feedback Card */}
+              {inquirySuccess ? (
+                <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-3 animate-in fade-in">
+                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <h4 className="text-sm font-bold text-emerald-950">Inquiry Sent Successfully</h4>
+                  <p className="text-xs text-emerald-800 leading-relaxed">
+                    Your inquiry has been submitted successfully. Our team will review your request and get back to you.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInquirySuccess(false);
+                      setInquiryMessage("");
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
+                  >
+                    <span>Send Another Inquiry</span>
+                  </button>
+                </div>
+              ) : (
+                /* ── ONE UNIFIED PROPERTY INQUIRY FORM ── */
+                <form onSubmit={handleInquirySubmit} className="space-y-3.5">
+                  {/* Field 1 & 2: Check-in and Check-out Dates */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
                       <label className="text-[10px] font-bold text-slate-500 block mb-1 uppercase tracking-wider">
-                        Check-In
+                        Check-In *
                       </label>
                       <input
                         type="date"
                         required
+                        min={todayString}
                         value={checkInDate}
-                        onChange={(e) => setCheckInDate(e.target.value)}
+                        onChange={(e) => {
+                          setCheckInDate(e.target.value);
+                          if (checkOutDate && e.target.value >= checkOutDate) {
+                            setCheckOutDate("");
+                          }
+                        }}
                         className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-teal-600"
                       />
                     </div>
                     <div>
                       <label className="text-[10px] font-bold text-slate-500 block mb-1 uppercase tracking-wider">
-                        Check-Out
+                        Check-Out *
                       </label>
                       <input
                         type="date"
                         required
+                        min={checkInDate || todayString}
                         value={checkOutDate}
                         onChange={(e) => setCheckOutDate(e.target.value)}
                         className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-teal-600"
@@ -1536,15 +1862,26 @@ function PropertyDetailContent() {
                     </div>
                   </div>
 
-                  {/* Guests Picker */}
+                  {/* Reserved Date Conflict Advisory */}
+                  {isDateRangeConflicted && (
+                    <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <span>
+                        Selected travel window includes reserved dates. Your inquiry will be forwarded to the host for custom arrangements.
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Field 3: Number of Guests */}
                   <div>
                     <label className="text-[10px] font-bold text-slate-500 block mb-1 uppercase tracking-wider">
-                      Guests
+                      Number of Guests *
                     </label>
                     <select
                       value={selectedGuests}
                       onChange={(e) => setSelectedGuests(Number(e.target.value))}
-                      aria-label="Number of guests"
+                      aria-label="Number of Guests"
+                      required
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-teal-600"
                     >
                       {Array.from({ length: property.capacity?.maxGuests || 4 }).map((_, i) => (
@@ -1555,198 +1892,94 @@ function PropertyDetailContent() {
                     </select>
                   </div>
 
-                  {/* Guest Contact Information */}
-                  <div className="space-y-2 pt-1 border-t border-slate-100">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                      Lead Guest Information
-                    </span>
+                  {/* Field 4: Your Full Name */}
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-1 uppercase tracking-wider">
+                      Your Full Name *
+                    </label>
                     <input
                       type="text"
                       required
-                      placeholder="Your Full Name *"
-                      value={guestName}
-                      onChange={(e) => setGuestName(e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-teal-600"
+                      placeholder="e.g. John Doe"
+                      value={inquiryName}
+                      onChange={(e) => setInquiryName(e.target.value)}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-teal-600 font-medium"
                     />
+                  </div>
+
+                  {/* Field 5: Email Address */}
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-1 uppercase tracking-wider">
+                      Email Address *
+                    </label>
                     <input
                       type="email"
                       required
-                      placeholder="Email Address *"
-                      value={guestEmail}
-                      onChange={(e) => setGuestEmail(e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-teal-600"
+                      placeholder="you@example.com"
+                      value={inquiryEmail}
+                      onChange={(e) => setInquiryEmail(e.target.value)}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-teal-600 font-medium"
                     />
+                  </div>
+
+                  {/* Field 6: Mobile / WhatsApp (Optional) */}
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-1 uppercase tracking-wider">
+                      Mobile / WhatsApp
+                    </label>
                     <input
                       type="tel"
-                      placeholder="Phone / WhatsApp Number"
-                      value={guestPhone}
-                      onChange={(e) => setGuestPhone(e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-teal-600"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Special Requests (Optional)"
-                      value={specialRequests}
-                      onChange={(e) => setSpecialRequests(e.target.value)}
+                      placeholder="+91 98765 43210"
+                      value={inquiryPhone}
+                      onChange={(e) => setInquiryPhone(e.target.value)}
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-teal-600"
                     />
                   </div>
 
-                  {/* Live Transparent Price Breakdown */}
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2 text-xs">
-                    <div className="flex justify-between text-slate-600">
-                      <span>
-                        ₹{formattedPrice} x {priceSummary.nights} night{priceSummary.nights === 1 ? "" : "s"}
-                      </span>
-                      <span className="font-semibold text-slate-900">
-                        ₹{new Intl.NumberFormat("en-IN").format(priceSummary.baseAmount)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-slate-600">
-                      <span>Cleaning & Sanitization</span>
-                      <span className="font-semibold text-slate-900">
-                        ₹{new Intl.NumberFormat("en-IN").format(priceSummary.cleaningFee)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-slate-600">
-                      <span>Estimated Taxes & GST (12%)</span>
-                      <span className="font-semibold text-slate-900">
-                        ₹{new Intl.NumberFormat("en-IN").format(priceSummary.taxes)}
-                      </span>
-                    </div>
-                    <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-sm text-slate-900">
-                      <span>Estimated Total</span>
-                      <span className="text-teal-700">
-                        ₹{new Intl.NumberFormat("en-IN").format(priceSummary.totalAmount)}
-                      </span>
-                    </div>
+                  {/* Field 7: Your Message to Host (Optional) */}
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-1 uppercase tracking-wider">
+                      Your Message to Host
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="Questions about availability, amenities, or special arrangements..."
+                      value={inquiryMessage}
+                      onChange={(e) => setInquiryMessage(e.target.value)}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-teal-600 resize-none leading-relaxed"
+                    />
                   </div>
 
-                  {/* Error Message */}
-                  {bookingError && (
+                  {/* Error Feedback */}
+                  {inquiryError && (
                     <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
-                      {bookingError}
+                      {inquiryError}
                     </div>
                   )}
 
-                  {/* Submit Button */}
+                  {/* Field 8: Send Inquiry Button */}
                   <button
                     type="submit"
-                    disabled={isSubmittingBooking || !guestName || !guestEmail}
+                    disabled={isSubmittingInquiry}
                     className="w-full py-3.5 px-4 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-teal-600/20 transition-all active:scale-98"
                   >
-                    {isSubmittingBooking ? (
+                    {isSubmittingInquiry ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Verifying & Reserving...</span>
+                        <span>Sending Inquiry...</span>
                       </>
                     ) : (
                       <>
-                        <CreditCard className="w-4 h-4" />
-                        <span>Confirm Reservation</span>
+                        <Send className="w-4 h-4" />
+                        <span>Send Inquiry</span>
                       </>
                     )}
                   </button>
 
-                  <p className="text-[10px] text-center text-slate-400">
-                    Best Rate Guarantee • Instant Confirmation
+                  {/* Footnote */}
+                  <p className="text-[11px] text-center text-slate-400 font-medium pt-1">
+                    Inquiry only — sending this form does not confirm a reservation.
                   </p>
-                </form>
-              ) : (
-                /* ── TAB 2: INQUIRY / CONTACT HOST WORKFLOW ── */
-                <form onSubmit={handleInquirySubmit} className="space-y-3.5">
-                  {inquirySuccess ? (
-                    <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-2">
-                      <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-                        <CheckCircle2 className="w-5 h-5" />
-                      </div>
-                      <h4 className="text-sm font-bold text-emerald-950">Inquiry Sent to Host!</h4>
-                      <p className="text-xs text-emerald-800 leading-relaxed">
-                        The host ({property.contactDetails?.contactPerson || "Host"}) will contact you via email or phone.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => setInquirySuccess(false)}
-                        className="text-xs text-emerald-700 font-bold underline"
-                      >
-                        Send another inquiry
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-500 block mb-1 uppercase tracking-wider">
-                          Your Full Name *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. John Doe"
-                          value={inquiryName}
-                          onChange={(e) => setInquiryName(e.target.value)}
-                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-teal-600"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-500 block mb-1 uppercase tracking-wider">
-                          Email Address *
-                        </label>
-                        <input
-                          type="email"
-                          required
-                          placeholder="you@example.com"
-                          value={inquiryEmail}
-                          onChange={(e) => setInquiryEmail(e.target.value)}
-                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-teal-600"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-500 block mb-1 uppercase tracking-wider">
-                          Mobile / WhatsApp
-                        </label>
-                        <input
-                          type="tel"
-                          placeholder="+91 98765 43210"
-                          value={inquiryPhone}
-                          onChange={(e) => setInquiryPhone(e.target.value)}
-                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-teal-600"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-500 block mb-1 uppercase tracking-wider">
-                          Your Message to Host
-                        </label>
-                        <textarea
-                          rows={3}
-                          placeholder="Questions about arrival times, amenities, or special arrangements..."
-                          value={inquiryMessage}
-                          onChange={(e) => setInquiryMessage(e.target.value)}
-                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-teal-600 resize-none"
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={isSubmittingInquiry || !inquiryName || !inquiryEmail}
-                        className="w-full py-3.5 px-4 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-98"
-                      >
-                        {isSubmittingInquiry ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Sending Question...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Send className="w-4 h-4" />
-                            <span>Send Inquiry</span>
-                          </>
-                        )}
-                      </button>
-                    </>
-                  )}
                 </form>
               )}
             </div>
@@ -1757,99 +1990,30 @@ function PropertyDetailContent() {
       {/* ── Mobile Sticky Bottom Action Bar ── */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 p-3.5 flex items-center justify-between shadow-2xl">
         <div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+            Starting From
+          </span>
           <div className="flex items-baseline gap-1">
-            <span className="text-base font-black text-slate-900">₹{formattedPrice}</span>
-            <span className="text-[11px] text-slate-500">/ night</span>
+            <span className="text-base font-black text-slate-900">{formattedPrice}</span>
           </div>
-          <span className="text-[10px] text-emerald-700 font-bold">0% Booking Fees</span>
         </div>
         <button
           type="button"
           onClick={() => {
-            if (ratesRef.current) {
-              const top = ratesRef.current.getBoundingClientRect().top + window.scrollY - 130;
+            const el = document.getElementById("inquiry-card");
+            if (el) {
+              const top = el.getBoundingClientRect().top + window.scrollY - 100;
               window.scrollTo({ top, behavior: "smooth" });
             }
           }}
-          className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-md"
+          className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5"
         >
-          Check Rates & Reserve
+          <Send className="w-3.5 h-3.5" />
+          <span>Ask About Property</span>
         </button>
       </div>
 
-      {/* ── Confirmed Booking Receipt Modal ── */}
-      {confirmedBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5">
-            <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
 
-            <div className="text-center space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                Reservation Confirmed
-              </span>
-              <h3 className="text-xl font-black text-slate-900 pt-1">
-                You&apos;re All Set for Your Stay!
-              </h3>
-              <p className="text-xs text-slate-500">
-                A booking confirmation email has been dispatched to {confirmedBooking.customerEmail}.
-              </p>
-            </div>
-
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
-              <div className="flex justify-between py-1 border-b border-slate-200/80">
-                <span className="text-slate-500">Booking Reference</span>
-                <span className="font-mono font-bold text-slate-900">
-                  {confirmedBooking.bookingReference}
-                </span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-200/80">
-                <span className="text-slate-500">Property</span>
-                <span className="font-bold text-slate-900 truncate max-w-[200px]">
-                  {confirmedBooking.propertyName}
-                </span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-200/80">
-                <span className="text-slate-500">Dates</span>
-                <span className="font-semibold text-slate-800">
-                  {confirmedBooking.checkInDate} → {confirmedBooking.checkOutDate}
-                </span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-200/80">
-                <span className="text-slate-500">Guests</span>
-                <span className="font-semibold text-slate-800">
-                  {confirmedBooking.guests} Registered Guest(s)
-                </span>
-              </div>
-              <div className="flex justify-between pt-1 font-bold text-sm">
-                <span className="text-slate-900">Total Amount Paid</span>
-                <span className="text-teal-700">
-                  ₹{new Intl.NumberFormat("en-IN").format(confirmedBooking.totalAmount)}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs flex items-center justify-center gap-1.5"
-              >
-                <Printer className="w-4 h-4 text-slate-500" />
-                <span>Print Receipt</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmedBooking(null)}
-                className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Write Review Modal ── */}
       {reviewModalOpen && (
@@ -1976,6 +2140,13 @@ function PropertyDetailContent() {
                 className="object-contain"
               />
             </div>
+
+            {/* Image Title / Caption Overlay */}
+            {allImages[activePhotoIndex]?.caption && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900/90 border border-slate-700/80 text-white text-xs px-4 py-1.5 rounded-full backdrop-blur-md shadow-xl z-20 font-medium">
+                {allImages[activePhotoIndex].caption}
+              </div>
+            )}
 
             {/* Next / Previous Controls */}
             {allImages.length > 1 && (

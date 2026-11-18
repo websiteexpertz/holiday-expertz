@@ -1,5 +1,36 @@
 [
   {
+    "propertyId": "prop_1793995047487_22a69eac",
+    "propertyName": "ttttttt",
+    "author": "great",
+    "rating": 5,
+    "comment": "Guest Review *",
+    "date": "2026-11-17",
+    "status": "approved",
+    "featured": false,
+    "location": "Verified Guest",
+    "source": "ADMIN_IMPORTED",
+    "verificationStatus": "UNVERIFIED",
+    "id": "rev_1794933294624_oxsq6",
+    "createdAt": "2026-11-17T16:34:54.625Z"
+  },
+  {
+    "propertyId": "prop_1792769635503_3ea9ca59",
+    "propertyName": "mountains",
+    "author": "Deepansh Tyagi",
+    "rating": 5,
+    "title": "best place",
+    "comment": "Guest Review *",
+    "date": "2026-11-17",
+    "status": "approved",
+    "featured": false,
+    "location": "Verified Guest",
+    "source": "ADMIN_IMPORTED",
+    "verificationStatus": "UNVERIFIED",
+    "id": "rev_1794932861989_5wamt",
+    "createdAt": "2026-11-17T16:27:41.989Z"
+  },
+  {
     "author": "David & Clara",
     "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=David%20%26%20Clara",
     "rating": 5,

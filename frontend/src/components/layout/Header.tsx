@@ -125,7 +125,7 @@ export default function Header({
   };
 
   const mounted = React.useSyncExternalStore(
-    () => () => {},
+    () => () => { },
     () => true,
     () => false
   );
@@ -225,15 +225,14 @@ export default function Header({
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isTransparent
-            ? isScrolled
-              ? "bg-white/85 backdrop-blur-md shadow-xs border-b border-slate-200/50 py-3"
-              : "bg-transparent border-b border-transparent shadow-none py-3.5 sm:py-4"
-            : isScrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isTransparent
+          ? isScrolled
+            ? "bg-white/85 backdrop-blur-md shadow-xs border-b border-slate-200/50 py-3"
+            : "bg-transparent border-b border-transparent shadow-none py-3.5 sm:py-4"
+          : isScrolled
             ? "bg-white/98 backdrop-blur-md shadow-sm border-b border-slate-200/80 py-3"
             : "bg-white/95 backdrop-blur-sm border-b border-slate-100 py-3.5"
-        }`}
+          }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-12">
@@ -264,19 +263,17 @@ export default function Header({
                           }
                           setPropertyDropdownOpen((prev) => !prev);
                         }}
-                        className={`relative text-[13.5px] whitespace-nowrap transition-colors duration-200 py-1 inline-flex items-center gap-1 cursor-pointer focus:outline-none ${
-                          link.active || propertyDropdownOpen
-                            ? "text-[#009F8D] font-semibold"
-                            : "text-slate-800 hover:text-[#009F8D] font-semibold"
-                        }`}
+                        className={`relative text-[13.5px] whitespace-nowrap transition-colors duration-200 py-1 inline-flex items-center gap-1 cursor-pointer focus:outline-none ${link.active || propertyDropdownOpen
+                          ? "text-[#009F8D] font-semibold"
+                          : "text-slate-800 hover:text-[#009F8D] font-semibold"
+                          }`}
                         aria-expanded={propertyDropdownOpen}
                         aria-haspopup="menu"
                       >
                         <span>Property Type</span>
                         <ChevronDown
-                          className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                            propertyDropdownOpen ? "rotate-180 text-[#009F8D]" : "text-slate-600"
-                          }`}
+                          className={`w-3.5 h-3.5 transition-transform duration-200 ${propertyDropdownOpen ? "rotate-180 text-[#009F8D]" : "text-slate-600"
+                            }`}
                         />
                       </button>
 
@@ -434,11 +431,10 @@ export default function Header({
                   <a
                     key={link.label}
                     href={link.href}
-                    className={`relative text-[13.5px] whitespace-nowrap transition-colors duration-200 py-1 ${
-                      link.active
-                        ? "text-[#009F8D] font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-[#009F8D] after:rounded-full"
-                        : "text-slate-800 hover:text-[#009F8D] font-semibold"
-                    }`}
+                    className={`relative text-[13.5px] whitespace-nowrap transition-colors duration-200 py-1 ${link.active
+                      ? "text-[#009F8D] font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-[#009F8D] after:rounded-full"
+                      : "text-slate-800 hover:text-[#009F8D] font-semibold"
+                      }`}
                   >
                     <span className="flex items-center gap-1.5">
                       {link.label}
@@ -495,9 +491,8 @@ export default function Header({
                       {owner.fullName}
                     </span>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-[#006F66] transition-transform duration-200 ${
-                        profileDropdownOpen ? "rotate-180" : ""
-                      }`}
+                      className={`w-3.5 h-3.5 text-[#006F66] transition-transform duration-200 ${profileDropdownOpen ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
 
@@ -626,9 +621,8 @@ export default function Header({
                       {traveller.fullName}
                     </span>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-[#006F66] transition-transform duration-200 ${
-                        profileDropdownOpen ? "rotate-180" : ""
-                      }`}
+                      className={`w-3.5 h-3.5 text-[#006F66] transition-transform duration-200 ${profileDropdownOpen ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
 
@@ -749,11 +743,10 @@ export default function Header({
                 <button
                   type="button"
                   onClick={onToggleSearch}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-full transition-all shadow-sm active:scale-95 cursor-pointer border ${
-                    isSearchOpen
-                      ? "bg-slate-800 text-teal-200 border-slate-700"
-                      : "bg-[#009F8D] hover:bg-[#008777] text-white border-[#009F8D]"
-                  }`}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-full transition-all shadow-sm active:scale-95 cursor-pointer border ${isSearchOpen
+                    ? "bg-slate-800 text-teal-200 border-slate-700"
+                    : "bg-[#009F8D] hover:bg-[#008777] text-white border-[#009F8D]"
+                    }`}
                   aria-label={isSearchOpen ? "Close search bar" : "Open search bar"}
                   aria-expanded={isSearchOpen}
                 >
@@ -789,9 +782,8 @@ export default function Header({
 
       {/* Mobile Drawer Menu */}
       <div
-        className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${
-          mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
       >
         <div
           className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
@@ -800,9 +792,8 @@ export default function Header({
         />
 
         <div
-          className={`fixed top-[64px] right-0 bottom-0 w-5/6 max-w-sm bg-white border-l border-slate-200 shadow-2xl p-6 flex flex-col justify-between overflow-y-auto transform transition-transform duration-300 ease-editorial ${
-            mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`fixed top-[64px] right-0 bottom-0 w-5/6 max-w-sm bg-white border-l border-slate-200 shadow-2xl p-6 flex flex-col justify-between overflow-y-auto transform transition-transform duration-300 ease-editorial ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+            }`}
         >
           <div className="space-y-6">
             <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
@@ -816,17 +807,15 @@ export default function Header({
                       <button
                         type="button"
                         onClick={() => setMobilePropertyExpanded((prev) => !prev)}
-                        className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${
-                          link.active
-                            ? "text-[#009F8D] bg-[#E7F6F3]"
-                            : "text-slate-800 hover:bg-slate-50 hover:text-[#009F8D]"
-                        }`}
+                        className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${link.active
+                          ? "text-[#009F8D] bg-[#E7F6F3]"
+                          : "text-slate-800 hover:bg-slate-50 hover:text-[#009F8D]"
+                          }`}
                       >
                         <span>Property Type</span>
                         <ChevronDown
-                          className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
-                            mobilePropertyExpanded ? "rotate-180 text-[#009F8D]" : ""
-                          }`}
+                          className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${mobilePropertyExpanded ? "rotate-180 text-[#009F8D]" : ""
+                            }`}
                         />
                       </button>
 
@@ -905,11 +894,10 @@ export default function Header({
                     key={link.label}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-colors ${
-                      link.active
-                        ? "text-[#009F8D] bg-[#E7F6F3]"
-                        : "text-slate-800 hover:bg-slate-50 hover:text-[#009F8D]"
-                    }`}
+                    className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-colors ${link.active
+                      ? "text-[#009F8D] bg-[#E7F6F3]"
+                      : "text-slate-800 hover:bg-slate-50 hover:text-[#009F8D]"
+                      }`}
                   >
                     <span>{link.label}</span>
                     {link.badge && (

@@ -5,8 +5,12 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { adminClient } from "@/lib/adminClient";
 import { CountryRecord, StateRecord, CityRecord, AreaRecord, DestinationHierarchyCounts } from "@backend/types/admin";
 import { Property, PropertyImage, PropertyTypeCategory } from "@backend/types/property";
+import { formatPrice } from "@/lib/currency";
 import DestinationHeroImageManager from "@/components/admin/DestinationHeroImageManager";
 import FeaturedDestinationManager from "@/components/admin/FeaturedDestinationManager";
+import SearchableCountryDropdown from "@/components/admin/SearchableCountryDropdown";
+import SearchableStateDropdown from "@/components/admin/SearchableStateDropdown";
+import SearchableCityDropdown from "@/components/admin/SearchableCityDropdown";
 import {
   MapPin,
   ChevronRight,
@@ -1400,133 +1404,121 @@ export default function AdminDestinationsPage() {
               </div>
             </div>
 
-            {/* Country Form: EXACTLY ONE EDITABLE FIELD (Country Name) */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
-              <div className="mb-4">
-                <h2 className="text-base font-bold text-white">Add Country</h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Enter the country name to establish the top-level destination.
-                </p>
-              </div>
-
-              <form onSubmit={handleSaveCountry} className="space-y-4">
+            {/* Searchable Country Selector Card with + Add New Country Popup */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                    Country Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. India"
-                    value={newCountryName}
-                    onChange={(e) => {
-                      setNewCountryName(e.target.value);
-                      if (countryFormError) setCountryFormError("");
-                    }}
-                    className="w-full sm:max-w-md bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-teal-500 transition-colors"
-                  />
+                  <h2 className="text-base font-bold text-white">Select Country</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Search and select any country worldwide, or add a custom country to establish the top-level destination hierarchy.
+                  </p>
                 </div>
-
-                {countryFormError && (
-                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2 sm:max-w-md">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>{countryFormError}</span>
+                {selectedCountry && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-teal-300 font-semibold bg-teal-500/15 border border-teal-500/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-teal-400" />
+                      <span>Active: {selectedCountry.name}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep("states")}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                    >
+                      <span>Manage States</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 )}
+              </div>
 
-                <div className="flex items-center gap-2 pt-2">
-                  <button
-                    type="submit"
-                    disabled={isSavingCountry || !newCountryName.trim()}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>{isSavingCountry ? "Saving..." : "Save Country"}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNewCountryName("");
-                      setCountryFormError("");
-                    }}
-                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+              <div className="max-w-md">
+                <SearchableCountryDropdown
+                  countries={countries}
+                  selectedCountry={selectedCountry}
+                  onSelectCountry={(country) => {
+                    handleSelectCountry(country);
+                  }}
+                  onCountryCreated={(newCountry) => {
+                    setCountries((prev) => {
+                      if (prev.some((c) => c.id === newCountry.id)) return prev;
+                      return [...prev, newCountry];
+                    });
+                  }}
+                />
+              </div>
             </div>
 
             {/* Existing Countries List */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   Existing Countries ({countries.length})
                 </h3>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {countries
-                  .filter((c) =>
-                    searchQuery.trim()
-                      ? c.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
-                      : true
-                  )
-                  .map((country) => {
-                    const countryStates = states.filter((s) => s.countryId === country.id);
-                    return (
-                      <div
-                        key={country.id}
-                        className="p-5 rounded-3xl bg-slate-900 border border-slate-800 hover:border-teal-500/40 transition-all flex flex-col justify-between group shadow-lg"
-                      >
-                        <div>
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="px-2.5 py-1 rounded-lg bg-teal-500/10 text-teal-400 font-mono text-xs font-bold border border-teal-500/20">
-                              {country.code || country.name.slice(0, 3).toUpperCase()}
-                            </span>
-
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() =>
-                                  handleOpenEdit("country", { id: country.id, name: country.name })
-                                }
-                                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
-                                title="Edit Country Name"
-                              >
-                                <Edit2 className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteItem("country", country.id, country.name)}
-                                className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-slate-800 transition-colors"
-                                title="Delete Country"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+              {countries.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-400">
+                  No countries registered yet. Use the dropdown above to select or add a country.
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-800/80">
+                  {countries
+                    .filter((c) =>
+                      searchQuery.trim()
+                        ? c.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
+                        : true
+                    )
+                    .map((country) => {
+                      const countryStates = states.filter((s) => s.countryId === country.id);
+                      return (
+                        <div
+                          key={country.id}
+                          className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-teal-400 font-bold text-xs shrink-0">
+                              {country.code || country.name.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-bold text-white group-hover:text-teal-300 transition-colors">
+                                {country.name}
+                              </h3>
+                              <span className="text-xs text-slate-400">
+                                {countryStates.length} states registered
+                              </span>
                             </div>
                           </div>
 
-                          <h3 className="text-base font-bold text-white group-hover:text-teal-400 transition-colors">
-                            {country.name}
-                          </h3>
-                          <p className="text-xs text-slate-400 mt-1">
-                            {countryStates.length} states registered
-                          </p>
+                          <div className="flex items-center gap-2 self-end sm:self-auto">
+                            <button
+                              onClick={() => handleSelectCountry(country)}
+                              className="inline-flex items-center gap-1 px-4 py-1.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-bold transition-all shadow-sm cursor-pointer"
+                            >
+                              <span>Manage States</span>
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleOpenEdit("country", { id: country.id, name: country.name })
+                              }
+                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                              title="Edit Country Name"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteItem("country", country.id, country.name)}
+                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors cursor-pointer"
+                              title="Delete Country"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
-
-                        <div className="pt-4 mt-4 border-t border-slate-800">
-                          <button
-                            onClick={() => handleSelectCountry(country)}
-                            className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-800 hover:bg-teal-500 hover:text-slate-950 text-slate-300 font-bold text-xs uppercase tracking-wider transition-all"
-                          >
-                            <span>Manage States</span>
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
+                      );
+                    })}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1590,83 +1582,79 @@ export default function AdminDestinationsPage() {
                   <strong className="text-white text-sm">{selectedCountry.name}</strong>
                 </span>
               </div>
-              <span className="text-xs text-teal-300 bg-teal-500/20 px-2.5 py-0.5 rounded-full font-semibold">
-                Parent assigned automatically
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep("countries")}
+                  className="px-3 py-1 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  Switch Country
+                </button>
+                <span className="text-xs text-teal-300 bg-teal-500/20 px-2.5 py-0.5 rounded-full font-semibold">
+                  Parent assigned automatically
+                </span>
+              </div>
             </div>
 
-            {/* State Form: EXACTLY ONE EDITABLE FIELD (State Name) */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
-              <div className="mb-4">
-                <h2 className="text-base font-bold text-white">Add State</h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Enter the state name for {selectedCountry.name}. Parent country is assigned automatically.
-                </p>
-              </div>
-
-              <form onSubmit={handleSaveState} className="space-y-4">
+            {/* Searchable State Selector Card with + Add New State Popup */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                    State Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Uttarakhand"
-                    value={newStateName}
-                    onChange={(e) => {
-                      setNewStateName(e.target.value);
-                      if (stateFormError) setStateFormError("");
-                    }}
-                    className="w-full sm:max-w-md bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-teal-500 transition-colors"
-                  />
+                  <h2 className="text-base font-bold text-white">Select State</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Search and select a state or province in {selectedCountry.name}, or add a custom state.
+                  </p>
                 </div>
-
-                {stateFormError && (
-                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2 sm:max-w-md">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>{stateFormError}</span>
+                {selectedState && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-teal-300 font-semibold bg-teal-500/15 border border-teal-500/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-teal-400" />
+                      <span>Active: {selectedState.name}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep("cities")}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                    >
+                      <span>Manage Cities</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 )}
+              </div>
 
-                <div className="flex items-center gap-2 pt-2">
-                  <button
-                    type="submit"
-                    disabled={isSavingState || !newStateName.trim()}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>{isSavingState ? "Saving..." : "Save State"}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNewStateName("");
-                      setStateFormError("");
-                    }}
-                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+              <div className="max-w-md">
+                <SearchableStateDropdown
+                  country={selectedCountry}
+                  states={states}
+                  selectedState={selectedState}
+                  onSelectState={(state) => {
+                    handleSelectState(state);
+                  }}
+                  onStateCreated={(newState) => {
+                    setStates((prev) => {
+                      if (prev.some((s) => s.id === newState.id)) return prev;
+                      return [...prev, newState];
+                    });
+                  }}
+                />
+              </div>
             </div>
 
             {/* Existing States List for Selected Country */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   States in {selectedCountry.name} ({filteredStatesForCountry.length})
                 </h3>
               </div>
 
               {filteredStatesForCountry.length === 0 ? (
-                <div className="p-8 text-center bg-slate-900 border border-slate-800 rounded-3xl text-xs text-slate-400">
-                  No states added to {selectedCountry.name} yet. Use the form above to add the first state.
+                <div className="py-8 text-center text-xs text-slate-400">
+                  No states added to {selectedCountry.name} yet. Use the dropdown above to select or add a state.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="divide-y divide-slate-800/80">
                   {filteredStatesForCountry
                     .filter((s) =>
                       searchQuery.trim()
@@ -1678,48 +1666,45 @@ export default function AdminDestinationsPage() {
                       return (
                         <div
                           key={state.id}
-                          className="p-5 rounded-3xl bg-slate-900 border border-slate-800 hover:border-teal-500/40 transition-all flex flex-col justify-between group shadow-lg"
+                          className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
                         >
-                          <div>
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                                State / Province
-                              </span>
-                              <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() =>
-                                    handleOpenEdit("state", { id: state.id, name: state.name })
-                                  }
-                                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
-                                  title="Edit State Name"
-                                >
-                                  <Edit2 className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteItem("state", state.id, state.name)}
-                                  className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-slate-800 transition-colors"
-                                  title="Delete State"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-teal-400 font-bold text-xs shrink-0">
+                              <Layers className="w-4 h-4 text-teal-400" />
                             </div>
-
-                            <h3 className="text-base font-bold text-white group-hover:text-teal-400 transition-colors">
-                              {state.name}
-                            </h3>
-                            <p className="text-xs text-slate-400 mt-1">
-                              {stateCities.length} cities registered
-                            </p>
+                            <div>
+                              <h3 className="text-sm font-bold text-white group-hover:text-teal-300 transition-colors">
+                                {state.name}
+                              </h3>
+                              <span className="text-xs text-slate-400">
+                                {stateCities.length} cities registered
+                              </span>
+                            </div>
                           </div>
 
-                          <div className="pt-4 mt-4 border-t border-slate-800">
+                          <div className="flex items-center gap-2 self-end sm:self-auto">
                             <button
                               onClick={() => handleSelectState(state)}
-                              className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-800 hover:bg-teal-500 hover:text-slate-950 text-slate-300 font-bold text-xs uppercase tracking-wider transition-all"
+                              className="inline-flex items-center gap-1 px-4 py-1.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-bold transition-all shadow-sm cursor-pointer"
                             >
                               <span>Manage Cities</span>
-                              <ChevronRight className="w-4 h-4" />
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleOpenEdit("state", { id: state.id, name: state.name })
+                              }
+                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                              title="Edit State Name"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteItem("state", state.id, state.name)}
+                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors cursor-pointer"
+                              title="Delete State"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
@@ -1795,83 +1780,83 @@ export default function AdminDestinationsPage() {
                   <strong className="text-white">{selectedState.name}</strong>
                 </span>
               </div>
-              <span className="text-xs text-teal-300 bg-teal-500/20 px-2.5 py-0.5 rounded-full font-semibold">
-                State & Country assigned automatically
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep("states")}
+                  className="px-3 py-1 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  Switch State
+                </button>
+                <span className="text-xs text-teal-300 bg-teal-500/20 px-2.5 py-0.5 rounded-full font-semibold">
+                  State & Country assigned automatically
+                </span>
+              </div>
             </div>
 
-            {/* City Form: EXACTLY ONE EDITABLE FIELD (City Name) */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
-              <div className="mb-4">
-                <h2 className="text-base font-bold text-white">Add City</h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Enter the city name for {selectedState.name}, {selectedCountry.name}.
-                </p>
-              </div>
-
-              <form onSubmit={handleSaveCity} className="space-y-4">
+            {/* Searchable City Selector Card with + Add New City Popup */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                    City Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Dehradun"
-                    value={newCityName}
-                    onChange={(e) => {
-                      setNewCityName(e.target.value);
-                      if (cityFormError) setCityFormError("");
-                    }}
-                    className="w-full sm:max-w-md bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-teal-500 transition-colors"
-                  />
+                  <h2 className="text-base font-bold text-white">Select City</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Search and select a city in {selectedState.name}, {selectedCountry.name}, or add a custom city.
+                  </p>
                 </div>
-
-                {cityFormError && (
-                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2 sm:max-w-md">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>{cityFormError}</span>
+                {selectedCity && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-teal-300 font-semibold bg-teal-500/15 border border-teal-500/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-teal-400" />
+                      <span>Active: {selectedCity.name}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCurrentStep("properties");
+                        loadProperties();
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                    >
+                      <span>Manage Properties</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 )}
+              </div>
 
-                <div className="flex items-center gap-2 pt-2">
-                  <button
-                    type="submit"
-                    disabled={isSavingCity || !newCityName.trim()}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>{isSavingCity ? "Saving..." : "Save City"}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNewCityName("");
-                      setCityFormError("");
-                    }}
-                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+              <div className="max-w-md">
+                <SearchableCityDropdown
+                  country={selectedCountry}
+                  state={selectedState}
+                  cities={cities}
+                  selectedCity={selectedCity}
+                  onSelectCity={(city) => {
+                    handleSelectCity(city);
+                  }}
+                  onCityCreated={(newCity) => {
+                    setCities((prev) => {
+                      if (prev.some((ci) => ci.id === newCity.id)) return prev;
+                      return [...prev, newCity];
+                    });
+                  }}
+                />
+              </div>
             </div>
 
             {/* Existing Cities List for Selected State */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   Cities in {selectedState.name} ({filteredCitiesForState.length})
                 </h3>
               </div>
 
               {filteredCitiesForState.length === 0 ? (
-                <div className="p-8 text-center bg-slate-900 border border-slate-800 rounded-3xl text-xs text-slate-400">
-                  No cities added to {selectedState.name} yet. Use the form above to add the first city.
+                <div className="py-8 text-center text-xs text-slate-400">
+                  No cities added to {selectedState.name} yet. Use the dropdown above to select or add a city.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="divide-y divide-slate-800/80">
                   {filteredCitiesForState
                     .filter((c) =>
                       searchQuery.trim()
@@ -1881,48 +1866,43 @@ export default function AdminDestinationsPage() {
                     .map((city) => (
                       <div
                         key={city.id}
-                        className="p-5 rounded-3xl bg-slate-900 border border-slate-800 hover:border-teal-500/40 transition-all flex flex-col justify-between group shadow-lg"
+                        className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
                       >
-                        <div>
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400">
-                              City Destination
-                            </span>
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() =>
-                                  handleOpenEdit("city", { id: city.id, name: city.name })
-                                }
-                                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
-                                title="Edit City Name"
-                              >
-                                <Edit2 className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteItem("city", city.id, city.name)}
-                                className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-slate-800 transition-colors"
-                                title="Delete City"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-teal-400 font-bold text-xs shrink-0">
+                            <Building2 className="w-4 h-4 text-teal-400" />
                           </div>
-
-                          <h3 className="text-base font-bold text-white group-hover:text-teal-400 transition-colors">
-                            {city.name}
-                          </h3>
-                          <p className="text-xs text-slate-400 mt-1">
-                            {selectedState.name}, {selectedCountry.name}
-                          </p>
+                          <div>
+                            <h3 className="text-sm font-bold text-white group-hover:text-teal-300 transition-colors">
+                              {city.name}
+                            </h3>
+                            <span className="text-xs text-slate-400">
+                              {selectedState.name}, {selectedCountry.name}
+                            </span>
+                          </div>
                         </div>
 
-                        <div className="pt-4 mt-4 border-t border-slate-800">
+                        <div className="flex items-center gap-2 self-end sm:self-auto">
                           <button
                             onClick={() => handleSelectCity(city)}
-                            className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-800 hover:bg-teal-500 hover:text-slate-950 text-slate-300 font-bold text-xs uppercase tracking-wider transition-all"
+                            className="inline-flex items-center gap-1 px-4 py-1.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-bold transition-all shadow-sm cursor-pointer"
                           >
-                            <Building2 className="w-4 h-4" />
                             <span>View Properties</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleOpenEdit("city", { id: city.id, name: city.name })}
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                            title="Edit City Name"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteItem("city", city.id, city.name)}
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors cursor-pointer"
+                            title="Delete City"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
@@ -1981,13 +1961,13 @@ export default function AdminDestinationsPage() {
                   <span>Back to Cities</span>
                 </button>
 
-                <button
-                  onClick={handleOpenAddProperty}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-teal-500/20 transition-all"
+                <Link
+                  href={`/admin/properties/new?countryId=${encodeURIComponent(selectedCountry.id)}&stateId=${encodeURIComponent(selectedState.id)}&cityId=${encodeURIComponent(selectedCity.id)}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-teal-500/20 transition-all cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add Property</span>
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -2048,7 +2028,7 @@ export default function AdminDestinationsPage() {
               </div>
             </div>
 
-            {/* Properties Grid */}
+            {/* Properties List */}
             {isPropertiesLoading ? (
               <div className="py-20 flex flex-col items-center justify-center text-slate-400">
                 <Loader2 className="w-8 h-8 animate-spin text-teal-400 mb-2" />
@@ -2065,114 +2045,119 @@ export default function AdminDestinationsPage() {
                 <p className="text-xs text-slate-400 max-w-md mx-auto mt-1 leading-relaxed">
                   Add the first property under {selectedCity.name}, {selectedState.name}. It will automatically inherit this hierarchy and appear in both admin and public searches.
                 </p>
-                <button
-                  onClick={handleOpenAddProperty}
-                  className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-bold uppercase tracking-wider shadow-lg shadow-teal-500/20 transition-all"
+                <Link
+                  href={`/admin/properties/new?countryId=${encodeURIComponent(selectedCountry.id)}&stateId=${encodeURIComponent(selectedState.id)}&cityId=${encodeURIComponent(selectedCity.id)}`}
+                  className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-bold uppercase tracking-wider shadow-lg shadow-teal-500/20 transition-all cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add First Property in {selectedCity.name}</span>
-                </button>
+                </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredPropertiesForCity.map((prop) => (
-                  <div
-                    key={prop.id}
-                    className="rounded-3xl bg-slate-900 border border-slate-800 overflow-hidden hover:border-slate-700 transition-all shadow-lg flex flex-col justify-between"
-                  >
-                    <div>
-                      {/* Photo & Badges */}
-                      <div className="relative h-44 bg-slate-800 overflow-hidden">
-                        {prop.images?.[0]?.url ? (
-                          <img
-                            src={prop.images[0].url}
-                            alt={prop.name}
-                            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-600">
-                            <Building2 className="w-10 h-10" />
-                          </div>
-                        )}
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Properties in {selectedCity.name} ({filteredPropertiesForCity.length})
+                  </h3>
+                </div>
 
-                        <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
-                          <span className="px-2.5 py-1 rounded-lg bg-slate-950/80 backdrop-blur-md text-teal-300 font-bold text-[10px] uppercase tracking-wider border border-white/10">
-                            {prop.propertyType}
-                          </span>
-                          {prop.featured && (
-                            <span className="px-2 py-0.5 rounded-lg bg-amber-500/90 text-slate-950 text-[10px] font-extrabold flex items-center gap-1 shadow-md">
-                              <Star className="w-3 h-3 fill-slate-950" />
-                              <span>Featured</span>
-                            </span>
+                <div className="divide-y divide-slate-800/80">
+                  {filteredPropertiesForCity.map((prop) => (
+                    <div
+                      key={prop.id}
+                      className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                    >
+                      {/* Left: Thumbnail & Details */}
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        {/* Thumbnail */}
+                        <div className="w-14 h-14 rounded-2xl bg-slate-950 border border-slate-800 overflow-hidden shrink-0 relative flex items-center justify-center">
+                          {prop.images?.[0]?.url ? (
+                            <img
+                              src={prop.images[0].url}
+                              alt={prop.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <Building2 className="w-6 h-6 text-slate-600" />
                           )}
                         </div>
 
-                        <div className="absolute top-3 right-3">
-                          <span
-                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize backdrop-blur-md border ${
-                              prop.status === "approved"
-                                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                                : prop.status === "pending_approval"
-                                ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
-                                : prop.status === "paused"
-                                ? "bg-purple-500/20 text-purple-300 border-purple-500/30"
-                                : "bg-red-500/20 text-red-300 border-red-500/30"
-                            }`}
-                          >
-                            {prop.status.replace("_", " ")}
-                          </span>
+                        {/* Info */}
+                        <div className="min-w-0 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-sm font-bold text-white group-hover:text-teal-300 transition-colors truncate">
+                              {prop.name}
+                            </h3>
+                            {prop.propertyNumber && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-teal-500/15 text-teal-300 border border-teal-500/30">
+                                {prop.propertyNumber}
+                              </span>
+                            )}
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                              {prop.propertyType}
+                            </span>
+                            {prop.featured && (
+                              <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30 flex items-center gap-1">
+                                <Star className="w-2.5 h-2.5 fill-amber-300" />
+                                <span>Featured</span>
+                              </span>
+                            )}
+                            <span
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold capitalize border ${
+                                prop.status === "approved"
+                                  ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                                  : prop.status === "pending_approval"
+                                  ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                                  : prop.status === "paused"
+                                  ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                                  : "bg-red-500/15 text-red-300 border-red-500/30"
+                              }`}
+                            >
+                              {prop.status.replace("_", " ")}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-3 text-xs text-slate-400 flex-wrap">
+                            <span className="flex items-center gap-1 text-[11px]">
+                              <MapPin className="w-3 h-3 text-teal-400" />
+                              <span>
+                                {prop.location.locality ? `${prop.location.locality}, ` : ""}
+                                {selectedCity.name}, {selectedState.name}
+                              </span>
+                            </span>
+                            <span>•</span>
+                            <span className="text-[11px] font-semibold text-slate-200">
+                              {formatPrice(prop.pricing.pricePerNight, { currency: prop.pricing.currency || "USD" })}
+                            </span>
+                            <span>•</span>
+                            <span className="text-[11px]">
+                              {prop.capacity.maxGuests} guests • {prop.capacity.bedrooms} bed
+                            </span>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Content */}
-                      <div className="p-4 space-y-2">
-                        <h3 className="text-sm font-bold text-white truncate" title={prop.name}>
-                          {prop.name}
-                        </h3>
-
-                        <div className="flex items-start gap-1.5 text-slate-400 text-xs">
-                          <MapPin className="w-3.5 h-3.5 text-teal-400 shrink-0 mt-0.5" />
-                          <span className="truncate text-[11px]">
-                            {prop.location.locality ? `${prop.location.locality}, ` : ""}
-                            {selectedCity.name}, {selectedState.name}
-                          </span>
-                        </div>
-
-                        <div className="pt-2 flex items-center justify-between border-t border-slate-800 text-xs">
-                          <span className="text-white font-extrabold text-sm">
-                            ₹{prop.pricing.pricePerNight?.toLocaleString()}
-                            <span className="text-slate-500 text-[11px] font-normal"> / night</span>
-                          </span>
-                          <span className="text-slate-400 text-[11px]">
-                            {prop.capacity.maxGuests} guests • {prop.capacity.bedrooms} bed
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions Toolbar */}
-                    <div className="p-3 bg-slate-950/60 border-t border-slate-800 flex items-center justify-between gap-1 text-xs">
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => {
-                            setViewingProperty(prop);
-                            setViewPropertyModalOpen(true);
-                          }}
-                          className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-                          title="View Property Sheet"
+                      {/* Right: Actions */}
+                      <div className="flex items-center gap-1.5 self-end md:self-auto shrink-0">
+                        <Link
+                          href={`/properties/${prop.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                          title="View on Website"
                         >
                           <Eye className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleOpenEditProperty(prop)}
-                          className="p-1.5 text-slate-400 hover:text-teal-400 hover:bg-slate-800 rounded-lg transition-colors"
+                        </Link>
+                        <Link
+                          href={`/admin/properties/new?edit=${prop.id}`}
+                          className="p-1.5 text-slate-400 hover:text-teal-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                           title="Edit Property"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
-                        </button>
+                        </Link>
                         <button
                           onClick={() => handleTogglePause(prop.id)}
-                          className={`p-1.5 rounded-lg transition-colors ${
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                             prop.status === "paused"
                               ? "text-purple-400 hover:bg-purple-500/10"
                               : "text-slate-400 hover:text-white hover:bg-slate-800"
@@ -2187,27 +2172,26 @@ export default function AdminDestinationsPage() {
                         </button>
                         <button
                           onClick={() => handleToggleFeatured(prop.id)}
-                          className={`p-1.5 rounded-lg transition-colors ${
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                             prop.featured
                               ? "text-amber-400 hover:bg-amber-500/10"
                               : "text-slate-400 hover:text-white hover:bg-slate-800"
                           }`}
                           title={prop.featured ? "Unmark Featured" : "Mark Featured"}
                         >
-                          <Star className={`w-3.5 h-3.5 ${prop.featured ? "fill-amber-400" : ""}`} />
+                          <Star className={`w-3.5 h-3.5 ${prop.featured ? "fill-amber-400 text-amber-400" : ""}`} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProperty(prop)}
+                          className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                          title="Delete Property"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
-
-                      <button
-                        onClick={() => handleDeleteProperty(prop)}
-                        className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
-                        title="Delete Property"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -2499,12 +2483,13 @@ export default function AdminDestinationsPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <label className="text-xs font-semibold text-slate-300 block mb-1">
-                        Price / Night (₹) *
+                        Base Price (USD) *
                       </label>
                       <input
                         type="number"
                         required
-                        min={100}
+                        min={1}
+                        placeholder="e.g. 250"
                         value={propertyForm.pricePerNight}
                         onChange={(e) =>
                           setPropertyForm({ ...propertyForm, pricePerNight: Number(e.target.value) })
@@ -2515,11 +2500,12 @@ export default function AdminDestinationsPage() {
 
                     <div>
                       <label className="text-xs font-semibold text-slate-300 block mb-1">
-                        Original Price (₹)
+                        Original Price (USD)
                       </label>
                       <input
                         type="number"
-                        min={100}
+                        min={1}
+                        placeholder="e.g. 300"
                         value={propertyForm.originalPrice}
                         onChange={(e) =>
                           setPropertyForm({ ...propertyForm, originalPrice: Number(e.target.value) })
@@ -2817,9 +2803,11 @@ export default function AdminDestinationsPage() {
 
               <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 grid grid-cols-3 gap-3 text-center text-xs">
                 <div>
-                  <span className="text-slate-500 block text-[11px]">Price / Night</span>
+                  <span className="text-slate-500 block text-[11px]">Base Price</span>
                   <span className="text-white font-bold text-sm">
-                    ₹{viewingProperty.pricing.pricePerNight?.toLocaleString()}
+                    {formatPrice(viewingProperty.pricing.pricePerNight, {
+                      currency: viewingProperty.pricing.currency || "USD",
+                    })}
                   </span>
                 </div>
                 <div>

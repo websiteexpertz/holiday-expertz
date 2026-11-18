@@ -9,6 +9,7 @@ import {
   findOwnerByMobile,
   createOwner,
   sanitizeOwner,
+  updateOwnerProfile,
 } from "../../../../lib/storage/propertyOwnerStore";
 import { hashPassword } from "../../../../lib/security/passwordHasher";
 import { PropertyOwnerRecord } from "../../../../types/auth";
@@ -22,20 +23,52 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    const owners = await getAllOwners();
+    const { searchParams } = new URL(req.url);
+    const query = (searchParams.get("query") || searchParams.get("search") || "").trim().toLowerCase();
+
+    let owners = await getAllOwners();
+    if (query) {
+      owners = owners.filter((o) => {
+        const ownerNum = (o.ownerNumber || "").toLowerCase();
+        return (
+          ownerNum.includes(query) ||
+          (o.fullName || "").toLowerCase().includes(query) ||
+          (o.email || "").toLowerCase().includes(query) ||
+          (o.mobileNumber || "").toLowerCase().includes(query) ||
+          (o.businessName || "").toLowerCase().includes(query)
+        );
+      });
+    }
+
     const enriched = owners.map((owner) => {
       const properties = getPropertiesByOwnerId(owner.id);
       return {
         id: owner.id,
+        ownerNumber: owner.ownerNumber || null,
         fullName: owner.fullName,
         email: owner.email,
         mobileNumber: owner.mobileNumber,
         businessName: owner.businessName,
         status: owner.status,
-        avatar: owner.avatar,
+        avatar: owner.avatar || owner.profileImage || undefined,
+        profileImage: owner.profileImage || owner.avatar || null,
+        languagesSpoken: owner.languagesSpoken || [],
+        aboutOwner: owner.aboutOwner || owner.bio || "",
+        address: owner.address || "",
+        altPhone: owner.altPhone || "",
         propertiesCount: properties.length,
         publishedCount: properties.filter((p) => p.status === "approved").length,
+        properties: properties.map((p) => ({
+          id: p.id,
+          propertyNumber: p.propertyNumber,
+          name: p.name,
+          propertyType: p.propertyType,
+          status: p.status,
+          pricePerNight: p.pricing?.pricePerNight,
+          location: p.location ? `${p.location.city || ""}, ${p.location.state || ""}`.replace(/^,\s*|,\s*$/g, "") : "",
+        })),
         createdAt: owner.createdAt,
+        updatedAt: owner.updatedAt,
       };
     });
 
@@ -46,6 +79,15 @@ export async function GET(req: Request) {
   }
 }
 
+function generateSecureTempPassword(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let randomCode = "";
+  for (let i = 0; i < 6; i++) {
+    randomCode += chars.charAt(crypto.randomInt(0, chars.length));
+  }
+  return `Hex#${randomCode}!${crypto.randomInt(10, 99)}`;
+}
+
 export async function POST(req: Request) {
   try {
     const admin = getAuthenticatedAdmin(req);
@@ -54,7 +96,21 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { fullName, email, mobileNumber, password, businessName, status, address, bio, altPhone } = body;
+    const {
+      fullName,
+      email,
+      mobileNumber,
+      password,
+      businessName,
+      status,
+      address,
+      profileImage,
+      avatar,
+      languagesSpoken,
+      aboutOwner,
+      bio,
+      altPhone,
+    } = body;
 
     if (!fullName?.trim() || !email?.trim() || !mobileNumber?.trim()) {
       return NextResponse.json(
@@ -91,7 +147,22 @@ export async function POST(req: Request) {
       );
     }
 
-    const effectivePassword = password?.trim() || "Owner@HolidayExpertz2026!";
+    const cleanAbout = (aboutOwner ?? bio ?? "").trim();
+    if (cleanAbout.length > 2000) {
+      return NextResponse.json(
+        { success: false, message: "About the owner cannot exceed 2,000 characters" },
+        { status: 400 }
+      );
+    }
+
+    const cleanLangs = Array.isArray(languagesSpoken)
+      ? Array.from(new Set(languagesSpoken.map((l: unknown) => String(l).trim()).filter(Boolean)))
+      : [];
+
+    const effectiveProfileImage = profileImage ?? avatar ?? null;
+
+    const isAutoPassword = !password?.trim();
+    const effectivePassword = isAutoPassword ? generateSecureTempPassword() : password.trim();
     const { hash, salt } = hashPassword(effectivePassword);
     const now = new Date().toISOString();
 
@@ -106,14 +177,19 @@ export async function POST(req: Request) {
       status: status || "active",
       businessName: businessName?.trim() || "",
       address: address?.trim() || "",
-      bio: bio?.trim() || "",
+      profileImage: effectiveProfileImage,
+      avatar: effectiveProfileImage || undefined,
+      languagesSpoken: cleanLangs,
+      aboutOwner: cleanAbout,
+      bio: cleanAbout,
       altPhone: altPhone?.trim() || "",
       createdAt: now,
       updatedAt: now,
     };
 
+    let createdRecord = newOwner;
     try {
-      await createOwner(newOwner);
+      createdRecord = await createOwner(newOwner);
     } catch (error) {
       const mongoError = error as {
         code?: number;
@@ -152,8 +228,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      owner: sanitizeOwner(newOwner),
-      tempPassword: password?.trim() ? undefined : effectivePassword,
+      owner: sanitizeOwner(createdRecord),
+      tempPassword: isAutoPassword ? effectivePassword : undefined,
       message: "Property owner successfully created!",
     });
   } catch (error) {
@@ -170,13 +246,89 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const { id, status } = body;
+    const {
+      id,
+      status,
+      fullName,
+      email,
+      mobileNumber,
+      businessName,
+      address,
+      profileImage,
+      avatar,
+      languagesSpoken,
+      aboutOwner,
+      bio,
+      altPhone,
+      password,
+    } = body;
 
-    if (!id || !status) {
-      return NextResponse.json({ success: false, message: "Owner id and status required" }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ success: false, message: "Owner id required" }, { status: 400 });
     }
 
-    const updated = await updateOwnerStatus(id, status);
+    const keys = Object.keys(body);
+    if (keys.length === 2 && keys.includes("id") && keys.includes("status")) {
+      const updated = await updateOwnerStatus(id, status);
+      if (!updated) {
+        return NextResponse.json({ success: false, message: "Owner not found" }, { status: 404 });
+      }
+
+      recordAuditLog({
+        adminId: admin.id,
+        adminName: admin.fullName,
+        adminEmail: admin.email,
+        module: "owners_and_users",
+        action: "update_owner_status",
+        resourceId: id,
+        resourceType: "owner",
+        details: `Updated owner "${updated.fullName}" status to "${status}"`,
+        status: "success",
+      });
+
+      return NextResponse.json({ success: true, owner: updated });
+    }
+
+    const updates: Partial<PropertyOwnerRecord> = {};
+    if (fullName !== undefined) updates.fullName = fullName.trim();
+    if (email !== undefined) updates.email = email.trim().toLowerCase();
+    if (mobileNumber !== undefined) updates.mobileNumber = mobileNumber.trim();
+    if (businessName !== undefined) updates.businessName = businessName.trim();
+    if (address !== undefined) updates.address = address.trim();
+    if (altPhone !== undefined) updates.altPhone = altPhone.trim();
+    if (status !== undefined) updates.status = status;
+
+    if (profileImage !== undefined || avatar !== undefined) {
+      const img = profileImage ?? avatar ?? null;
+      updates.profileImage = img;
+      updates.avatar = img || "";
+    }
+
+    if (languagesSpoken !== undefined) {
+      updates.languagesSpoken = Array.isArray(languagesSpoken)
+        ? Array.from(new Set(languagesSpoken.map((l: unknown) => String(l).trim()).filter(Boolean)))
+        : [];
+    }
+
+    if (aboutOwner !== undefined || bio !== undefined) {
+      const text = (aboutOwner ?? bio ?? "").trim();
+      if (text.length > 2000) {
+        return NextResponse.json(
+          { success: false, message: "About the owner cannot exceed 2,000 characters." },
+          { status: 400 }
+        );
+      }
+      updates.aboutOwner = text;
+      updates.bio = text;
+    }
+
+    if (password && password.trim()) {
+      const { hash, salt } = hashPassword(password.trim());
+      updates.passwordHash = hash;
+      updates.passwordSalt = salt;
+    }
+
+    const updated = await updateOwnerProfile(id, updates);
     if (!updated) {
       return NextResponse.json({ success: false, message: "Owner not found" }, { status: 404 });
     }
@@ -186,10 +338,10 @@ export async function PATCH(req: Request) {
       adminName: admin.fullName,
       adminEmail: admin.email,
       module: "owners_and_users",
-      action: "update_owner_status",
+      action: "update_owner_profile",
       resourceId: id,
       resourceType: "owner",
-      details: `Updated owner "${updated.fullName}" status to "${status}"`,
+      details: `Updated profile details for owner "${updated.fullName}"`,
       status: "success",
     });
 

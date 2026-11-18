@@ -4,22 +4,33 @@ import { Property, PropertyDashboardStats, PropertyStatus } from "../../types/pr
 import { connectToDatabase } from "../db/mongodb";
 import { PropertyModel } from "../models/Property";
 
-// Path resolution: locate backend/src/data/properties.json from either root or frontend cwd
-const rootDir = process.cwd().endsWith("frontend") || process.cwd().endsWith("backend")
-  ? path.resolve(process.cwd(), "..")
-  : process.cwd();
-const DATA_FILE = path.join(rootDir, "backend", "src", "data", "properties.json");
+function getDataFilePath(): string {
+  const directPath = path.join(process.cwd(), "src", "data", "properties.json");
+  if (fs.existsSync(directPath)) return directPath;
+
+  const backendPath = path.join(process.cwd(), "backend", "src", "data", "properties.json");
+  if (fs.existsSync(backendPath)) return backendPath;
+
+  const parentBackendPath = path.join(path.resolve(process.cwd(), ".."), "backend", "src", "data", "properties.json");
+  if (fs.existsSync(parentBackendPath)) return parentBackendPath;
+
+  const rootDir = process.cwd().endsWith("frontend") || process.cwd().endsWith("backend")
+    ? path.resolve(process.cwd(), "..")
+    : process.cwd();
+  return path.join(rootDir, "backend", "src", "data", "properties.json");
+}
 
 let propertiesCache: Property[] | null = null;
 
 function ensureStorageExists(): void {
-  const dir = path.dirname(DATA_FILE);
+  const filePath = getDataFilePath();
+  const dir = path.dirname(filePath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2), "utf-8");
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, JSON.stringify([], null, 2), "utf-8");
   }
 }
 
@@ -34,7 +45,8 @@ export function getAllProperties(forceRefresh = false): Property[] {
 
   try {
     ensureStorageExists();
-    const raw = fs.readFileSync(DATA_FILE, "utf-8");
+    const filePath = getDataFilePath();
+    const raw = fs.readFileSync(filePath, "utf-8");
     const parsed = JSON.parse(raw);
     propertiesCache = Array.isArray(parsed) ? parsed : [];
     return propertiesCache;
@@ -50,11 +62,12 @@ export function saveProperties(properties: Property[]): void {
 
   try {
     ensureStorageExists();
-    const tempFile = `${DATA_FILE}.tmp.${Date.now()}`;
+    const filePath = getDataFilePath();
+    const tempFile = `${filePath}.tmp.${Date.now()}`;
     const payload = JSON.stringify(properties, null, 2);
 
     fs.writeFileSync(tempFile, payload, "utf-8");
-    fs.renameSync(tempFile, DATA_FILE);
+    fs.renameSync(tempFile, filePath);
   } catch (error) {
     console.warn("Property JSON persistence unavailable; using MongoDB:", error);
   }
@@ -93,9 +106,12 @@ export function updatePropertyRecord(id: string, updates: Partial<Property>): Pr
   if (index === -1) return null;
 
   const current = properties[index];
+  // Ensure propertyNumber is immutable and can never be overwritten by updates
+  const { propertyNumber: _ignoredPropNum, ...safeUpdates } = updates;
   const updated: Property = {
     ...current,
-    ...updates,
+    ...safeUpdates,
+    propertyNumber: current.propertyNumber,
     updatedAt: new Date().toISOString(),
   };
 

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { X, Search, MapPin, Star, Building2, ExternalLink } from "lucide-react";
 import { Property } from "@backend/types/property";
 import { getPropertyCoordinates } from "@/utils/propertyCoordinates";
+import { formatPrice } from "@/lib/currency";
 
 interface InteractivePropertyMapProps {
   properties: Property[];
@@ -121,9 +122,9 @@ export default function InteractivePropertyMap({
       const coords = getPropertyCoordinates(prop);
       bounds.extend([coords.lat, coords.lng]);
 
-      const formattedPrice = new Intl.NumberFormat("en-IN", {
-        maximumFractionDigits: 0,
-      }).format(prop.pricing?.pricePerNight || 0);
+      const formattedPrice = formatPrice(prop.pricing?.pricePerNight, {
+        currency: prop.pricing?.currency || "USD",
+      });
 
       const coverUrl =
         prop.images?.find((img) => img.isCover)?.url ||
@@ -191,8 +192,8 @@ export default function InteractivePropertyMap({
             </p>
             <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 6px; border-top: 1px solid #f1f5f9;">
               <div>
-                <span style="font-size: 9px; color: #94a3b8; display: block; font-weight: 600;">PER NIGHT</span>
-                <span style="font-size: 14px; font-weight: 800; color: #0f172a;">₹${formattedPrice}</span>
+                <span style="font-size: 9px; color: #94a3b8; display: block; font-weight: 600;">STARTING AT</span>
+                <span style="font-size: 14px; font-weight: 800; color: #0f172a;">${formattedPrice}</span>
               </div>
               <a href="/properties/${prop.id}" style="display: inline-block; padding: 5px 10px; background: #0d9488; color: #ffffff; font-size: 11px; font-weight: 700; text-decoration: none; border-radius: 8px;">
                 View

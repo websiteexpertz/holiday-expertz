@@ -19,6 +19,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Property, PropertyTypeCategory } from "@backend/types/property";
+import { formatPrice } from "@/lib/currency";
 
 export interface PropertyFilterValues {
   types: PropertyTypeCategory[];
@@ -287,11 +288,11 @@ export default function PropertyFilterSidebar({
           </button>
         </section>
 
-        {/* 2. Price Per Night Filter (Exact match to reference image slider) */}
+        {/* 2. Base Price Filter (USD) */}
         <section className="space-y-2 pt-4">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-editorial-sans">
-              PRICE PER NIGHT
+              STARTING PRICE (USD)
             </h4>
             {filters.maxPrice !== null && (
               <button
@@ -307,26 +308,26 @@ export default function PropertyFilterSidebar({
           </div>
 
           <p className="text-xs sm:text-sm font-medium text-slate-600">
-            Up to ₹{(filters.maxPrice ?? 30000).toLocaleString("en-IN")} per night
+            Up to {formatPrice(filters.maxPrice ?? 1500)}
           </p>
 
           {/* Blue Slider Track with Circular Thumb */}
           <div className="pt-2 pb-1">
             <input
               type="range"
-              min="1000"
-              max="30000"
-              step="500"
-              value={filters.maxPrice ?? 30000}
+              min="50"
+              max="1500"
+              step="25"
+              value={filters.maxPrice ?? 1500}
               onChange={(e) => {
                 const val = Number(e.target.value);
-                onChange({ ...filters, maxPrice: val >= 30000 ? null : val });
+                onChange({ ...filters, maxPrice: val >= 1500 ? null : val });
               }}
               style={{
                 background: `linear-gradient(to right, #2563eb 0%, #2563eb ${
-                  (((filters.maxPrice ?? 30000) - 1000) / (30000 - 1000)) * 100
+                  (((filters.maxPrice ?? 1500) - 50) / (1500 - 50)) * 100
                 }%, #e2e8f0 ${
-                  (((filters.maxPrice ?? 30000) - 1000) / (30000 - 1000)) * 100
+                  (((filters.maxPrice ?? 1500) - 50) / (1500 - 50)) * 100
                 }%, #e2e8f0 100%)`,
               }}
               className="w-full h-2 rounded-full appearance-none cursor-pointer accent-[#2563eb] focus:outline-none"

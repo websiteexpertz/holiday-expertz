@@ -30,13 +30,16 @@ import { recordAuditLog } from "../../../../lib/storage/auditLogStore";
 
 export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const hierarchy = searchParams.get("hierarchy");
     const admin = getAuthenticatedAdmin(req);
-    if (!admin) {
+    const ownerId = req.headers.get("x-owner-id") || null;
+
+    // Allow destination tree reading for admin, authenticated owners, or hierarchy queries
+    if (!admin && !ownerId && hierarchy !== "true") {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(req.url);
-    const hierarchy = searchParams.get("hierarchy");
     const countsOnly = searchParams.get("counts");
     const type = searchParams.get("type");
     const countryId = searchParams.get("countryId") || undefined;
@@ -115,7 +118,19 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: false, message: "Country name is required" }, { status: 400 });
       }
       const code = payload.code?.trim().toUpperCase() || name.slice(0, 3).toUpperCase();
-      createdRecord = createCountry(name, code, payload.description, payload.image);
+      const existing = getAllCountries().find((c) => c.name.toLowerCase() === name.toLowerCase());
+      if (existing) {
+        if (payload.resolveIfExists) {
+          createdRecord = existing;
+        } else {
+          return NextResponse.json(
+            { success: false, message: "This country already exists. Please select it from the dropdown." },
+            { status: 400 }
+          );
+        }
+      } else {
+        createdRecord = createCountry(name, code, payload.description, payload.image);
+      }
     } else if (entityType === "state") {
       const name = payload.name?.trim();
       const countryId = payload.countryId?.trim();
@@ -126,7 +141,19 @@ export async function POST(req: Request) {
       if (!parentCountry) {
         return NextResponse.json({ success: false, message: "Parent country not found" }, { status: 400 });
       }
-      createdRecord = createState(name, countryId, payload.image);
+      const existing = getStatesByCountry(countryId).find((s) => s.name.toLowerCase() === name.toLowerCase());
+      if (existing) {
+        if (payload.resolveIfExists) {
+          createdRecord = existing;
+        } else {
+          return NextResponse.json(
+            { success: false, message: `This state already exists in ${parentCountry.name}. Please select it from the dropdown.` },
+            { status: 400 }
+          );
+        }
+      } else {
+        createdRecord = createState(name, countryId, payload.image);
+      }
     } else if (entityType === "city") {
       const name = payload.name?.trim();
       const stateId = payload.stateId?.trim();
@@ -138,7 +165,19 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: false, message: "Parent state not found" }, { status: 400 });
       }
       const countryId = payload.countryId?.trim() || parentState.countryId;
-      createdRecord = createCity(name, stateId, countryId, payload.image);
+      const existing = getCitiesByState(stateId).find((ci) => ci.name.toLowerCase() === name.toLowerCase());
+      if (existing) {
+        if (payload.resolveIfExists) {
+          createdRecord = existing;
+        } else {
+          return NextResponse.json(
+            { success: false, message: `This city already exists in ${parentState.name}. Please select it from the dropdown.` },
+            { status: 400 }
+          );
+        }
+      } else {
+        createdRecord = createCity(name, stateId, countryId, payload.image);
+      }
     } else if (entityType === "area") {
       const name = payload.name?.trim();
       const cityId = payload.cityId?.trim();

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { adminClient } from "@/lib/adminClient";
 import { Property } from "@backend/types/property";
+import { formatPrice } from "@/lib/currency";
 import { Sparkles, Plus, Trash2, ArrowUpDown, Building2, MapPin, Loader2, CheckCircle2 } from "lucide-react";
 
 export default function AdminHandpickedPage() {
@@ -158,9 +159,9 @@ export default function AdminHandpickedPage() {
                 {/* Right: Pricing & Removal Action */}
                 <div className="shrink-0 flex items-center md:flex-col lg:flex-row justify-between md:justify-center items-end gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-slate-800/80">
                   <div className="text-left md:text-right">
-                    <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Price</div>
+                    <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Base Price</div>
                     <div className="font-extrabold text-white text-sm sm:text-base">
-                      ₹{item.pricePerNight?.toLocaleString()} <span className="text-xs font-normal text-slate-400">/ night</span>
+                      {formatPrice(item.pricePerNight, { currency: "USD" })}
                     </div>
                   </div>
 

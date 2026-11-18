@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { adminClient } from "@/lib/adminClient";
 import { BookingRecord } from "@backend/types/admin";
+import { formatPrice } from "@/lib/currency";
 import {
   CalendarCheck,
   Search,
@@ -155,7 +156,9 @@ export default function AdminBookingsPage() {
 
                     <td className="py-4 px-4 whitespace-nowrap">
                       <span className="font-extrabold text-white text-xs">
-                        ₹{booking.totalAmount.toLocaleString()}
+                        {formatPrice(booking.totalAmount, {
+                          currency: booking.currency || "USD",
+                        })}
                       </span>
                       <span
                         className={`text-[10px] font-bold capitalize block ${

@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { MapPin, Star, ArrowRight } from "lucide-react";
 import { Hotel } from "@/types/hotel";
+import { formatPrice } from "@/lib/currency";
 
 interface PropertyCardProps {
   hotel: Hotel;
@@ -20,15 +21,15 @@ export default function PropertyCard({
 }: PropertyCardProps) {
   const isCompact = size === "compact";
 
-  // Format price in Indian Rupee format (e.g. ₹38,500)
-  const formattedPrice = new Intl.NumberFormat("en-IN", {
-    maximumFractionDigits: 0,
-  }).format(hotel.pricePerNight);
+  // Format price in standard USD format (e.g. $250)
+  const formattedPrice = formatPrice(hotel.pricePerNight, {
+    currency: hotel.currency || "USD",
+  });
 
   const formattedOriginalPrice = hotel.originalPrice
-    ? new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(
-        hotel.originalPrice
-      )
+    ? formatPrice(hotel.originalPrice, {
+        currency: hotel.currency || "USD",
+      })
     : null;
 
   return (
@@ -131,12 +132,11 @@ export default function PropertyCard({
                   isCompact ? "text-base sm:text-lg" : "text-lg sm:text-xl"
                 }`}
               >
-                ₹{formattedPrice}
+                {formattedPrice}
               </span>
-              <span className="text-[10.5px] text-slate-300 font-light">/ night</span>
               {formattedOriginalPrice && (
                 <span className="text-[10px] text-slate-400 line-through ml-0.5">
-                  ₹{formattedOriginalPrice}
+                  {formattedOriginalPrice}
                 </span>
               )}
             </div>

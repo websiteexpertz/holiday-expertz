@@ -16,6 +16,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Hotel } from "@/types/hotel";
+import { formatPrice } from "@/lib/currency";
 
 interface PropertyModalProps {
   hotel: Hotel | null;
@@ -45,9 +46,9 @@ export default function PropertyModal({ hotel, onClose }: PropertyModalProps) {
 
   const currentImage = selectedImage || hotel.featuredImage;
 
-  const formattedPrice = new Intl.NumberFormat("en-IN", {
-    maximumFractionDigits: 0,
-  }).format(hotel.pricePerNight);
+  const formattedPrice = formatPrice(hotel.pricePerNight, {
+    currency: hotel.currency || "USD",
+  });
 
   const allImages = [hotel.featuredImage, ...(hotel.galleryImages || [])];
 
@@ -183,10 +184,10 @@ export default function PropertyModal({ hotel, onClose }: PropertyModalProps) {
                 <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                   <div>
                     <span className="text-[11px] font-bold uppercase text-slate-600 block">
-                      Price per night
+                      Starting from
                     </span>
                     <span className="text-2xl font-black text-slate-900">
-                      ₹{formattedPrice}
+                      {formattedPrice}
                     </span>
                   </div>
                   <div className="text-right">

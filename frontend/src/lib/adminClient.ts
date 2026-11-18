@@ -264,6 +264,11 @@ export const adminClient = {
   },
 
   properties: {
+    getById: async (id: string) => {
+      return request<{ property: Property }>(`/api/admin/properties?id=${encodeURIComponent(id)}`, {
+        method: "GET",
+      });
+    },
     getAll: async (params?: { status?: string; propertyType?: string; search?: string }) => {
       const q = new URLSearchParams();
       if (params?.status) q.set("status", params.status);
@@ -349,12 +354,37 @@ export const adminClient = {
       businessName?: string;
       status?: "active" | "pending_review" | "suspended";
       address?: string;
+      profileImage?: string | null;
+      languagesSpoken?: string[];
+      aboutOwner?: string;
       bio?: string;
       altPhone?: string;
     }) => {
       return request<{ owner: any; tempPassword?: string; message?: string }>("/api/admin/owners", {
         method: "POST",
         body: JSON.stringify(data),
+      });
+    },
+    update: async (
+      id: string,
+      updates: {
+        fullName?: string;
+        email?: string;
+        mobileNumber?: string;
+        password?: string;
+        businessName?: string;
+        status?: "active" | "pending_review" | "suspended";
+        address?: string;
+        profileImage?: string | null;
+        languagesSpoken?: string[];
+        aboutOwner?: string;
+        bio?: string;
+        altPhone?: string;
+      }
+    ) => {
+      return request<{ owner: any; message?: string }>("/api/admin/owners", {
+        method: "PATCH",
+        body: JSON.stringify({ id, ...updates }),
       });
     },
     updateStatus: async (id: string, status: "active" | "pending" | "suspended") => {
@@ -554,8 +584,12 @@ export const adminClient = {
   },
 
   reviews: {
-    getAll: async () => {
-      return request<{ reviews: ReviewRecord[] }>("/api/admin/reviews", { method: "GET" });
+    getAll: async (propertyId?: string) => {
+      const q = propertyId ? `?propertyId=${encodeURIComponent(propertyId)}` : "";
+      return request<{ reviews: ReviewRecord[] }>(`/api/admin/reviews${q}`, { method: "GET" });
+    },
+    create: async (data: Partial<ReviewRecord>) => {
+      return request<{ review: ReviewRecord }>("/api/admin/reviews", { method: "POST", body: JSON.stringify(data) });
     },
     update: async (id: string, updates: Partial<ReviewRecord>) => {
       return request<{ review: ReviewRecord }>("/api/admin/reviews", { method: "PATCH", body: JSON.stringify({ id, ...updates }) });

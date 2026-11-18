@@ -6,6 +6,13 @@ import {
   updateOwnerProperty,
   deleteOwnerProperty,
 } from "../../../../lib/services/propertyService";
+import {
+  getReviewsByPropertyId,
+  createReview,
+  updateReview,
+  deleteReview,
+  recalculatePropertyRating,
+} from "../../../../lib/storage/reviewStore";
 
 function getAuthenticatedOwnerId(request: NextRequest): string | null {
   const headerId = request.headers.get("x-owner-id");
@@ -80,6 +87,41 @@ export async function PUT(
         { success: false, message: result.message, errors: result.errors },
         { status: result.message.includes("Unauthorized") ? 403 : 400 }
       );
+    }
+
+    if (result.success && result.data && Array.isArray(updates.reviews)) {
+      const existingReviews = getReviewsByPropertyId(id);
+      const incomingIds = new Set(updates.reviews.map((r: any) => r.id).filter(Boolean));
+      for (const er of existingReviews) {
+        if (!incomingIds.has(er.id)) {
+          deleteReview(er.id);
+        }
+      }
+      for (const r of updates.reviews) {
+        if (r.id && existingReviews.some((er) => er.id === r.id)) {
+          updateReview(r.id, {
+            author: r.author,
+            date: r.date,
+            rating: Number(r.rating) || 5,
+            title: r.title?.trim() || undefined,
+            comment: r.comment?.trim() || "",
+          });
+        } else {
+          createReview({
+            propertyId: id,
+            author: r.author || "Guest",
+            date: r.date || new Date().toISOString().split("T")[0],
+            rating: Number(r.rating) || 5,
+            title: r.title?.trim() || undefined,
+            comment: r.comment?.trim() || "",
+            status: "approved",
+            featured: false,
+            source: "ADMIN_IMPORTED",
+            verificationStatus: "UNVERIFIED",
+          });
+        }
+      }
+      recalculatePropertyRating(id);
     }
 
     return NextResponse.json({

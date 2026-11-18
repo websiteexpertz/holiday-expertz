@@ -16,6 +16,7 @@ import PropertiesHeroSlideshow from "@/components/properties/PropertiesHeroSlide
 import FeaturedPropertiesSection from "@/components/properties/FeaturedPropertiesSection";
 import { SearchState } from "@/types/hotel";
 import { Property, PropertyStatus, PropertyTypeCategory } from "@backend/types/property";
+import { formatPrice } from "@/lib/currency";
 import {
   MapPin,
   Users,
@@ -614,9 +615,9 @@ function PropertiesContent() {
                       property.images?.find((img) => img.isCover)?.url ||
                       property.images?.[0]?.url ||
                       "";
-                    const formattedPrice = new Intl.NumberFormat("en-IN", {
-                      maximumFractionDigits: 0,
-                    }).format(property.pricing?.pricePerNight || 0);
+                    const formattedPrice = formatPrice(property.pricing?.pricePerNight, {
+                      currency: property.pricing?.currency || "USD",
+                    });
 
                     return (
                       <div
@@ -685,9 +686,9 @@ function PropertiesContent() {
 
                             <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 mt-1.5">
                               <div>
-                                <span className="text-[9px] text-slate-400 font-semibold uppercase">Night</span>
+                                <span className="text-[9px] text-slate-400 font-semibold uppercase">Starting</span>
                                 <div className="text-xs sm:text-sm font-black text-slate-900 leading-tight">
-                                  ₹{formattedPrice}
+                                  {formattedPrice}
                                 </div>
                               </div>
                               <Link
@@ -918,14 +919,14 @@ function PropertiesContent() {
                 .filter(Boolean)
                 .join(", ");
 
-              const formattedPrice = new Intl.NumberFormat("en-IN", {
-                maximumFractionDigits: 0,
-              }).format(property.pricing?.pricePerNight || 0);
+              const formattedPrice = formatPrice(property.pricing?.pricePerNight, {
+                currency: property.pricing?.currency || "USD",
+              });
 
               const originalPrice = property.pricing?.originalPrice
-                ? new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(
-                  property.pricing.originalPrice
-                )
+                ? formatPrice(property.pricing.originalPrice, {
+                    currency: property.pricing?.currency || "USD",
+                  })
                 : null;
 
               return (
@@ -1036,14 +1037,14 @@ function PropertiesContent() {
                     <div className="md:w-56 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-slate-100 md:pl-5 flex md:flex-col justify-between items-end md:items-end gap-3">
                       <div className="text-left md:text-right">
                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                          Per Night
+                          Starting From
                         </div>
                         <div className="text-lg sm:text-xl font-black text-slate-900">
-                          ₹{formattedPrice}
+                          {formattedPrice}
                         </div>
                         {originalPrice && (
                           <div className="text-[11px] text-slate-400 line-through">
-                            ₹{originalPrice}
+                            {originalPrice}
                           </div>
                         )}
                       </div>

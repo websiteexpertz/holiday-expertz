@@ -1,22 +1,25 @@
 [
   {
     "id": "prop_1792773963532_7f5b2f07",
-    "ownerId": "owner_1792596393545_b0121b16",
-    "name": "heritage",
+    "ownerId": "owner_1793976590722_76564225",
+    "name": "heritage Place",
     "propertyType": "Boutique Stays",
     "shortDescription": "18th-century",
     "detailedDescription": "villa",
     "location": {
-      "country": "germany",
-      "state": "Berlin",
-      "city": "Brandenburg",
+      "country": "India",
+      "state": "Rajasthan",
+      "city": "Udaipur",
       "locality": "",
       "address": "12.place",
       "postalCode": "316783",
       "coordinates": {
         "latitude": 52.4125,
         "longitude": 12.5316
-      }
+      },
+      "countryId": "cnt_in",
+      "stateId": "st_raj",
+      "cityId": "ct_udaipur"
     },
     "images": [
       {
@@ -28,7 +31,7 @@
     ],
     "pricing": {
       "pricePerNight": 28559,
-      "currency": "INR",
+      "currency": "USD",
       "originalPrice": 12000
     },
     "capacity": {
@@ -58,10 +61,18 @@
     "status": "approved",
     "submittedAt": "2026-10-23T16:46:03.532Z",
     "createdAt": "2026-10-23T16:46:03.532Z",
-    "updatedAt": "2026-11-15T13:52:09.638Z",
-    "approvedAt": "2026-10-31T07:43:39.987Z",
+    "updatedAt": "2026-11-17T15:19:48.616Z",
+    "approvedAt": "2026-11-17T12:45:48.263Z",
     "handpicked": false,
-    "isHandpicked": false
+    "isHandpicked": false,
+    "propertyNumber": "HE-000001",
+    "featured": false,
+    "createdByRole": "owner",
+    "countryId": "cnt_in",
+    "stateId": "st_raj",
+    "cityId": "ct_udaipur",
+    "isFeatured": false,
+    "propertySizeUnit": "Square Feet (sq ft)"
   },
   {
     "id": "prop_1792771373897_60f3e3db",
@@ -111,11 +122,12 @@
     "status": "approved",
     "createdAt": "2026-10-23T16:02:53.897Z",
     "updatedAt": "2026-10-28T13:55:48.872Z",
-    "approvedAt": "2026-10-28T13:55:48.872Z"
+    "approvedAt": "2026-10-28T13:55:48.872Z",
+    "propertyNumber": "HE-000002"
   },
   {
     "id": "prop_1792769635503_3ea9ca59",
-    "ownerId": "admin_super_01",
+    "ownerId": "owner_1794841234286_bd1d39d2",
     "name": "mountains",
     "propertyType": "Villas",
     "shortDescription": "Curated premium accommodation in Ghaziabad, uttarpradesh.",
@@ -139,25 +151,52 @@
         "id": "img_1792769445685_0",
         "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
         "isCover": true,
+        "title": "Luxury Courtyard & Pool",
         "caption": "Luxury Courtyard & Pool"
       },
       {
         "id": "img_1792769447518_1",
         "url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
         "isCover": false,
+        "title": "Heritage Master Bedroom",
         "caption": "Heritage Master Bedroom"
       },
       {
         "id": "img_1792769449151_2",
         "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
         "isCover": false,
+        "title": "Mountain Dining Pavilion",
         "caption": "Mountain Dining Pavilion"
       }
     ],
     "pricing": {
       "pricePerNight": 8500,
-      "currency": "INR",
-      "originalPrice": 10500
+      "currency": "USD",
+      "originalPrice": 10500,
+      "weekdayRate": 8500,
+      "weekendRate": 10500,
+      "weekendDays": [
+        5,
+        6
+      ],
+      "seasonalRates": [
+        {
+          "id": "season_1794932667306_btxi",
+          "name": "Chrimas",
+          "startDate": "2026-12-22",
+          "endDate": "2026-12-26",
+          "nightlyRate": 7500
+        }
+      ],
+      "specialDateRates": [],
+      "paidActivities": [
+        {
+          "id": "act_1794932695622_gxaz",
+          "name": "Private Chef",
+          "price": 35,
+          "chargeType": "PER_BOOKING"
+        }
+      ]
     },
     "capacity": {
       "maxGuests": 4,
@@ -171,7 +210,24 @@
       "High-Speed Wi-Fi",
       "Air Conditioning",
       "Free Valet Parking",
-      "Daily Housekeeping"
+      "Daily Housekeeping",
+      "Kitchen & Dining",
+      "Bathtub",
+      "Ayurvedic Spa",
+      "Butler Service",
+      "Lake View",
+      "Mountain View",
+      "Hot Water",
+      "Private Garden",
+      "Pet Friendly",
+      "In-house Chef",
+      "Fire Extinguisher",
+      "24/7 Security",
+      "First Aid Kit",
+      "Rooftop Terrace",
+      "private pool",
+      "Gym",
+      "Spa"
     ],
     "contactDetails": {
       "contactPerson": "HolidayExpertz Concierge Desk",
@@ -181,13 +237,23 @@
     "status": "approved",
     "featured": false,
     "handpicked": false,
-    "rating": 4.8,
-    "reviewCount": 0,
+    "rating": 5,
+    "reviewCount": 1,
     "approvedAt": "2026-10-23T15:33:55.503Z",
     "createdAt": "2026-10-23T15:33:55.503Z",
-    "updatedAt": "2026-11-15T13:53:40.030Z",
+    "updatedAt": "2026-11-17T16:27:41.990Z",
     "isHandpicked": false,
-    "isFeatured": false
+    "isFeatured": false,
+    "propertyNumber": "HE-000003",
+    "propertySize": 3500,
+    "propertySizeUnit": "Square Feet (sq ft)",
+    "policies": {
+      "generalPolicy": "General Policy & House Rules",
+      "refundPolicy": "General Policy & House Rules",
+      "contractPolicy": "Contract & Legal Agreement",
+      "additionalNotes": "Additional Notes & Arrival Instructions"
+    },
+    "createdByRole": "owner"
   },
   {
     "id": "prop_1792693252112_94f24206",
@@ -243,7 +309,8 @@
     "submittedAt": "2026-10-22T18:20:52.111Z",
     "createdAt": "2026-10-22T18:20:52.111Z",
     "updatedAt": "2026-10-22T18:25:45.946Z",
-    "approvedAt": "2026-10-22T18:25:45.946Z"
+    "approvedAt": "2026-10-22T18:25:45.946Z",
+    "propertyNumber": "HE-000004"
   },
   {
     "id": "prop_1792595900000_a1b2c3d4",
@@ -319,7 +386,8 @@
     "approvedAt": "2026-10-22T15:41:03.717Z",
     "createdAt": "2026-10-21T09:45:00.000Z",
     "updatedAt": "2026-10-22T15:42:08.317Z",
-    "handpicked": false
+    "handpicked": false,
+    "propertyNumber": "HE-000005"
   },
   {
     "id": "prop_dehradun_rajpur_01",
@@ -386,7 +454,8 @@
     "submittedAt": "2026-10-21T10:00:00.000Z",
     "approvedAt": "2026-10-21T11:30:00.000Z",
     "createdAt": "2026-10-21T09:45:00.000Z",
-    "updatedAt": "2026-10-21T11:30:00.000Z"
+    "updatedAt": "2026-10-21T11:30:00.000Z",
+    "propertyNumber": "HE-000006"
   },
   {
     "id": "prop_mussoorie_mallroad_01",
@@ -446,7 +515,8 @@
     "submittedAt": "2026-10-21T10:00:00.000Z",
     "approvedAt": "2026-10-21T11:30:00.000Z",
     "createdAt": "2026-10-21T09:45:00.000Z",
-    "updatedAt": "2026-10-21T11:30:00.000Z"
+    "updatedAt": "2026-10-21T11:30:00.000Z",
+    "propertyNumber": "HE-000007"
   },
   {
     "id": "prop_goa_anjuna_01",
@@ -507,6 +577,113 @@
     "submittedAt": "2026-10-21T10:00:00.000Z",
     "approvedAt": "2026-10-21T11:30:00.000Z",
     "createdAt": "2026-10-21T09:45:00.000Z",
-    "updatedAt": "2026-10-21T11:30:00.000Z"
+    "updatedAt": "2026-10-21T11:30:00.000Z",
+    "propertyNumber": "HE-000008"
+  },
+  {
+    "_id": "6aee3127ceaed2cc7a828f32",
+    "id": "prop_1793995047487_22a69eac",
+    "__v": 0,
+    "amenities": [
+      "Swimming Pool",
+      "High-Speed Wi-Fi",
+      "Air Conditioning",
+      "Free Valet Parking",
+      "Daily Housekeeping",
+      "Ayurvedic Spa",
+      "Bathtub",
+      "Private Garden",
+      "Lake View",
+      "Kitchen & Dining",
+      "Mountain View",
+      "Butler Service",
+      "Hot Water",
+      "Pet Friendly",
+      "Fire Extinguisher",
+      "In-house Chef",
+      "First Aid Kit",
+      "Rooftop Terrace",
+      "24/7 Security"
+    ],
+    "approvedAt": "2026-11-06T19:57:27.487Z",
+    "areaId": "ar_pichola",
+    "capacity": {
+      "maxGuests": 6,
+      "bedrooms": 4,
+      "bathrooms": 3,
+      "checkInTime": "14:00",
+      "checkOutTime": "11:00"
+    },
+    "cityId": "ct_udaipur",
+    "contactDetails": {
+      "contactPerson": "Hemant Pundir",
+      "mobileNumber": "+919027152962",
+      "email": "hemant@gmail.com"
+    },
+    "countryId": "cnt_in",
+    "createdAt": "2026-11-06T19:57:27.488Z",
+    "createdById": "admin_super_01",
+    "createdByRole": "admin",
+    "detailedDescription": "ttttttttttttttt",
+    "featured": true,
+    "handpicked": false,
+    "images": [
+      {
+        "id": "img_1793995017453_0",
+        "url": "/uploads/prop_1793995016840_10216b94dcd3.jpg",
+        "isCover": true,
+        "title": "goa",
+        "caption": "Room 1-4"
+      }
+    ],
+    "location": {
+      "country": "India",
+      "state": "Rajasthan",
+      "city": "Udaipur",
+      "locality": "Lake Pichola Outer Area",
+      "address": "ttttttttttttttttt",
+      "postalCode": "000000",
+      "countryId": "cnt_in",
+      "stateId": "st_raj",
+      "cityId": "ct_udaipur",
+      "areaId": "ar_pichola",
+      "coordinates": {
+        "latitude": 30.326481,
+        "longitude": 78.044354,
+        "lat": 30.326481,
+        "lng": 78.044354
+      }
+    },
+    "name": "villa",
+    "ownerId": "owner_1794841234286_bd1d39d2",
+    "pricing": {
+      "pricePerNight": 12500,
+      "currency": "USD",
+      "originalPrice": 15000,
+      "weekdayRate": 12500,
+      "weekendRate": 15000,
+      "weekendDays": [
+        5,
+        6
+      ],
+      "seasonalRates": [],
+      "specialDateRates": [],
+      "paidActivities": []
+    },
+    "propertyType": "Luxury Hotels",
+    "rating": 5,
+    "reviewCount": 1,
+    "shortDescription": "tttttttt",
+    "stateId": "st_raj",
+    "status": "approved",
+    "updatedAt": "2026-11-17T16:34:54.627Z",
+    "propertyNumber": "HE-000009",
+    "propertySizeUnit": "Square Feet (sq ft)",
+    "policies": {
+      "generalPolicy": "General Policy & House Rules",
+      "refundPolicy": "14",
+      "contractPolicy": "Contract & Legal Agreement\nDamage rules, deposits & legal liabilities\n\n",
+      "additionalNotes": "Additional Notes & Arrival Instructions\nDirections, accessibility, special requests\n\n0 / 5,000\n"
+    }
   }
 ]

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { adminClient } from "@/lib/adminClient";
+import { formatPrice } from "@/lib/currency";
 import { BarChart3, Download, TrendingUp, DollarSign, CalendarCheck, Building2, Loader2 } from "lucide-react";
 
 export default function AdminReportsPage() {
@@ -42,7 +43,7 @@ export default function AdminReportsPage() {
       return;
     }
 
-    const headers = ["Booking Ref", "Property", "Customer", "Check In", "Check Out", "Amount (INR)", "Status", "Payment"];
+    const headers = ["Booking Ref", "Property", "Customer", "Check In", "Check Out", "Amount", "Currency", "Status", "Payment"];
     const rows = bookings.map((b) => [
       b.bookingReference,
       `"${b.propertyName.replace(/"/g, '""')}"`,
@@ -50,6 +51,7 @@ export default function AdminReportsPage() {
       b.checkInDate,
       b.checkOutDate,
       b.totalAmount,
+      b.currency || "USD",
       b.bookingStatus,
       b.paymentStatus,
     ]);
@@ -100,7 +102,7 @@ export default function AdminReportsPage() {
               <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-md">
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total Platform GMV</span>
                 <span className="text-2xl font-extrabold text-white mt-1 block">
-                  ₹{(stats?.totalRevenue || 0).toLocaleString()}
+                  {formatPrice(stats?.totalRevenue || 0, { currency: "USD" })}
                 </span>
                 <span className="text-[11px] text-emerald-400 mt-1 block font-medium">Includes stays & host subscriptions</span>
               </div>

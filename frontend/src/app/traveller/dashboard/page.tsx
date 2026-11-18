@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
+import { formatPrice } from "@/lib/currency";
 import {
   User,
   Mail,
@@ -738,7 +739,9 @@ function TravellerDashboardContent() {
                           Total Paid
                         </span>
                         <span className="text-base sm:text-lg font-bold text-slate-900">
-                          ₹{booking.totalAmount?.toLocaleString("en-IN") || 0}
+                          {formatPrice(booking.totalAmount, {
+                            currency: booking.currency || "USD",
+                          })}
                         </span>
                       </div>
 

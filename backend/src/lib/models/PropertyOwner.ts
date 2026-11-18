@@ -9,6 +9,7 @@ export interface PropertyOwnerDocument extends PropertyOwnerRecord {
 const PropertyOwnerSchema = new Schema<PropertyOwnerDocument>(
   {
     id: { type: String, required: true, unique: true, index: true },
+    ownerNumber: { type: String, unique: true, sparse: true, trim: true, uppercase: true },
     fullName: { type: String, required: true, trim: true },
     mobileNumber: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true, lowercase: true },
@@ -19,6 +20,9 @@ const PropertyOwnerSchema = new Schema<PropertyOwnerDocument>(
     role: { type: String, enum: ["property_owner"], default: "property_owner" },
     status: { type: String, enum: ["active", "pending_review", "suspended"], default: "active" },
     avatar: { type: String },
+    profileImage: { type: String, default: null },
+    languagesSpoken: { type: [String], default: [] },
+    aboutOwner: { type: String, default: "" },
     businessName: { type: String },
     address: { type: String },
     bio: { type: String },

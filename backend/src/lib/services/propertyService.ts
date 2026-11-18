@@ -14,6 +14,7 @@ import {
   getOwnerDashboardStats,
 } from "../storage/propertyStore";
 import { getAllDestinations } from "../storage/destinationStore";
+import { getNextPropertyNumber } from "./counterService";
 
 export interface PropertyServiceResult<T = Property> {
   success: boolean;
@@ -88,11 +89,11 @@ export function validatePropertyInput(input: Partial<PropertyInput>): {
 /**
  * Creates a new property for an authenticated owner
  */
-export function createOwnerProperty(
+export async function createOwnerProperty(
   ownerId: string,
   input: PropertyInput,
   submitImmediately: boolean = false
-): PropertyServiceResult<Property> {
+): Promise<PropertyServiceResult<Property>> {
   // If submitting immediately, enforce full validation. If draft, allow partial input.
   if (submitImmediately) {
     const { isValid, errors } = validatePropertyInput(input);
@@ -135,8 +136,12 @@ export function createOwnerProperty(
 
   const countryName = input.location?.country?.trim() || countryRecord?.name || "India";
 
+  // Atomically generate permanent unique Property Number (e.g. HE-000001)
+  const propertyNumber = await getNextPropertyNumber();
+
   const newProperty: Property = {
     id: `prop_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`,
+    propertyNumber,
     ownerId,
     name: input.name.trim(),
     propertyType: input.propertyType || "Luxury Hotels",
@@ -169,8 +174,14 @@ export function createOwnerProperty(
     images: Array.isArray(input.images) ? input.images : [],
     pricing: {
       pricePerNight: Number(input.pricing?.pricePerNight) || 0,
-      currency: input.pricing?.currency || "INR",
+      currency: input.pricing?.currency || "USD",
       originalPrice: input.pricing?.originalPrice ? Number(input.pricing.originalPrice) : undefined,
+      weekdayRate: input.pricing?.weekdayRate !== undefined ? Number(input.pricing.weekdayRate) : undefined,
+      weekendRate: input.pricing?.weekendRate !== undefined ? Number(input.pricing.weekendRate) : undefined,
+      weekendDays: Array.isArray(input.pricing?.weekendDays) ? input.pricing.weekendDays : [5, 6],
+      seasonalRates: Array.isArray(input.pricing?.seasonalRates) ? input.pricing.seasonalRates : [],
+      specialDateRates: Array.isArray(input.pricing?.specialDateRates) ? input.pricing.specialDateRates : [],
+      paidActivities: Array.isArray(input.pricing?.paidActivities) ? input.pricing.paidActivities : [],
     },
     capacity: {
       maxGuests: Number(input.capacity?.maxGuests) || 2,
@@ -180,12 +191,22 @@ export function createOwnerProperty(
       checkOutTime: input.capacity?.checkOutTime || "11:00",
     },
     amenities: Array.isArray(input.amenities) ? input.amenities : [],
+    propertySize: input.propertySize !== undefined && input.propertySize !== null && (input.propertySize as any) !== "" ? Number(input.propertySize) : undefined,
+    propertySizeUnit: input.propertySizeUnit || "sq ft",
     contactDetails: {
       contactPerson: input.contactDetails?.contactPerson || "",
       mobileNumber: input.contactDetails?.mobileNumber || "",
       email: input.contactDetails?.email || "",
       altPhone: input.contactDetails?.altPhone || "",
     },
+    policies: input.policies
+      ? {
+          generalPolicy: input.policies.generalPolicy || "",
+          refundPolicy: input.policies.refundPolicy || "",
+          contractPolicy: input.policies.contractPolicy || "",
+          additionalNotes: input.policies.additionalNotes || "",
+        }
+      : undefined,
     status: initialStatus,
     submittedAt: submitImmediately ? now : undefined,
     createdAt: now,
@@ -224,8 +245,11 @@ export function updateOwnerProperty(
   const now = new Date().toISOString();
   const newStatus: PropertyStatus = resubmit ? "pending_approval" : (updates.status || existing.status);
 
+  // Ensure propertyNumber is immutable and cannot be changed by client update payloads
+  const { propertyNumber: _ignoredPropNum, ...safeUpdates } = updates as Partial<PropertyInput & { propertyNumber?: string }>;
+
   const updated = updatePropertyRecord(propertyId, {
-    ...updates,
+    ...safeUpdates,
     status: newStatus,
     rejectionReason: resubmit ? undefined : existing.rejectionReason,
     submittedAt: resubmit ? now : existing.submittedAt,

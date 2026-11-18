@@ -189,7 +189,7 @@ export default function AdminDealsPage() {
                   />
                   <div className="absolute top-2 left-2">
                     <span className="px-2.5 py-0.5 rounded-md bg-slate-950/90 backdrop-blur-md text-amber-300 font-extrabold text-[11px] border border-amber-500/30">
-                      {deal.discountType === "percentage" ? `${deal.discountValue}% OFF` : `₹${deal.discountValue} FLAT`}
+                      {deal.discountType === "percentage" ? `${deal.discountValue}% OFF` : `$${deal.discountValue} FLAT`}
                     </span>
                   </div>
                   <span
@@ -205,7 +205,7 @@ export default function AdminDealsPage() {
                 <div className="flex-1 min-w-0 space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 text-[10px] font-bold uppercase tracking-wider">
-                      {deal.discountType === "percentage" ? `${deal.discountValue}% Discount` : `₹${deal.discountValue} Savings`}
+                      {deal.discountType === "percentage" ? `${deal.discountValue}% Discount` : `$${deal.discountValue} Savings`}
                     </span>
                     <span className="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-medium border border-slate-700">
                       {deal.applicableCategory || "All Stays"}
@@ -309,7 +309,7 @@ export default function AdminDealsPage() {
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-teal-500"
                     >
                       <option value="percentage">Percentage (% OFF)</option>
-                      <option value="fixed">Fixed Cash Discount (₹ FLAT)</option>
+                      <option value="fixed">Fixed Cash Discount ($ FLAT)</option>
                     </select>
                   </div>
                   <div>

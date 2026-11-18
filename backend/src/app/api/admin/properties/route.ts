@@ -18,7 +18,17 @@ import { validateHierarchy } from "../../../../lib/storage/destinationStore";
 import { addHandpickedItem, removeHandpickedItem } from "../../../../lib/storage/handpickedStore";
 import { recordAuditLog } from "../../../../lib/storage/auditLogStore";
 import { getAllOwners, findOwnerById } from "../../../../lib/storage/propertyOwnerStore";
-import { Property, PropertyImage, PropertyTypeCategory } from "../../../../types/property";
+import {
+  createReview,
+  updateReview,
+  deleteReview,
+  getReviewsByPropertyId,
+  recalculatePropertyRating,
+} from "../../../../lib/storage/reviewStore";
+import { Property, PropertyImage, PropertyTypeCategory, PropertyPolicies } from "../../../../types/property";
+import { getNextPropertyNumber } from "../../../../lib/services/counterService";
+import connectToDatabase from "../../../../lib/db/mongodb";
+import { PropertyModel } from "../../../../lib/models/Property";
 
 export async function GET(req: Request) {
   try {
@@ -28,12 +38,44 @@ export async function GET(req: Request) {
     }
 
     const { searchParams } = new URL(req.url);
+    const singleId = searchParams.get("id");
+    if (singleId) {
+      let prop = getPropertyById(singleId);
+      if (!prop) {
+        try {
+          await connectToDatabase();
+          prop = (await PropertyModel.findOne({ id: singleId }).lean()) as unknown as Property;
+        } catch {}
+      }
+      if (!prop) {
+        return NextResponse.json({ success: false, message: "Property not found" }, { status: 404 });
+      }
+      return NextResponse.json({ success: true, property: prop });
+    }
+
     const status = searchParams.get("status");
     const propertyType = searchParams.get("propertyType");
     const search = searchParams.get("search")?.toLowerCase().trim();
     const ownerId = searchParams.get("ownerId");
 
-    let properties = getAllProperties();
+    let properties = getAllProperties(true);
+    try {
+      await connectToDatabase();
+      const mongoProperties = await PropertyModel.find().lean();
+      if (mongoProperties && mongoProperties.length > 0) {
+        const idMap = new Map(properties.map((p) => [p.id, p]));
+        for (const mp of mongoProperties) {
+          const existing = idMap.get(mp.id);
+          if (existing) {
+            existing.propertyNumber = mp.propertyNumber || existing.propertyNumber;
+          } else {
+            properties.push(mp as unknown as Property);
+          }
+        }
+      }
+    } catch {
+      // In offline mode, use properties from JSON store
+    }
     const owners = await getAllOwners();
     const ownerMap = new Map(owners.map((o) => [o.id, o.fullName]));
 
@@ -50,14 +92,27 @@ export async function GET(req: Request) {
     }
 
     if (search) {
-      properties = properties.filter(
-        (p) =>
-          p.name.toLowerCase().includes(search) ||
-          p.location.city.toLowerCase().includes(search) ||
-          p.location.state.toLowerCase().includes(search) ||
-          p.location.locality.toLowerCase().includes(search) ||
-          (ownerMap.get(p.ownerId) || "").toLowerCase().includes(search)
-      );
+      const cleanSearch = search.toLowerCase().trim();
+      const searchDigits = cleanSearch.replace(/^he-0*/i, "").replace(/^0+/, "");
+
+      properties = properties.filter((p) => {
+        const propNum = (p.propertyNumber || "").toLowerCase();
+        const propDigits = propNum.replace(/^he-0*/i, "").replace(/^0+/, "");
+        const matchesPropertyNumber =
+          Boolean(propNum) &&
+          (propNum.includes(cleanSearch) ||
+            cleanSearch.includes(propNum) ||
+            (searchDigits.length > 0 && propDigits === searchDigits));
+
+        return (
+          matchesPropertyNumber ||
+          p.name.toLowerCase().includes(cleanSearch) ||
+          p.location.city.toLowerCase().includes(cleanSearch) ||
+          p.location.state.toLowerCase().includes(cleanSearch) ||
+          p.location.locality.toLowerCase().includes(cleanSearch) ||
+          (ownerMap.get(p.ownerId) || "").toLowerCase().includes(cleanSearch)
+        );
+      });
     }
 
     // Attach owner names to the properties
@@ -127,6 +182,8 @@ export async function POST(req: Request) {
       coordinates,
       latitude,
       longitude,
+      propertySize,
+      propertySizeUnit,
     } = body;
 
     // 1. Basic validation
@@ -166,19 +223,22 @@ export async function POST(req: Request) {
     let formattedImages: PropertyImage[] = [];
     if (Array.isArray(images) && images.length > 0) {
       formattedImages = images
-        .map((img: any, idx: number) => {
+        .map((img: any, idx: number): PropertyImage | null => {
           if (typeof img === "string" && img.trim()) {
             return {
               id: `img_${Date.now()}_${idx}`,
               url: img.trim(),
               isCover: idx === 0,
+              title: "",
             };
           }
           if (img && typeof img.url === "string" && img.url.trim()) {
+            const rawTitle = typeof img.title === "string" ? img.title.trim() : (typeof img.caption === "string" ? img.caption.trim() : "");
             return {
               id: img.id || `img_${Date.now()}_${idx}`,
               url: img.url.trim(),
               isCover: img.isCover !== undefined ? Boolean(img.isCover) : idx === 0,
+              title: rawTitle.slice(0, 120),
               caption: img.caption?.trim(),
             };
           }
@@ -207,6 +267,9 @@ export async function POST(req: Request) {
     const now = new Date().toISOString();
     const propertyRecordId = `prop_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
     const initialStatus = status || "approved";
+
+    // Atomically allocate unique permanent Property Number (e.g. HE-000001)
+    const propertyNumber = await getNextPropertyNumber();
 
     const resolvedLat = coordinates?.latitude ?? coordinates?.lat ?? latitude;
     const resolvedLng = coordinates?.longitude ?? coordinates?.lng ?? longitude;
@@ -240,6 +303,7 @@ export async function POST(req: Request) {
 
     const newProperty: Property = {
       id: propertyRecordId,
+      propertyNumber,
       ownerId: assignedOwnerId,
       createdByRole: "admin",
       createdById: admin.id,
@@ -267,8 +331,37 @@ export async function POST(req: Request) {
       images: formattedImages,
       pricing: {
         pricePerNight: price,
-        currency: "INR",
+        currency: "USD",
         originalPrice: originalPrice ? Number(originalPrice) : undefined,
+        weekdayRate: body.pricing?.weekdayRate !== undefined ? Number(body.pricing.weekdayRate) : (body.weekdayRate !== undefined ? Number(body.weekdayRate) : undefined),
+        weekendRate: body.pricing?.weekendRate !== undefined ? Number(body.pricing.weekendRate) : (body.weekendRate !== undefined ? Number(body.weekendRate) : undefined),
+        weekendDays: Array.isArray(body.pricing?.weekendDays) ? body.pricing.weekendDays : (Array.isArray(body.weekendDays) ? body.weekendDays : [5, 6]),
+        seasonalRates: Array.isArray(body.pricing?.seasonalRates)
+          ? body.pricing.seasonalRates.map((s: any, idx: number) => ({
+              id: s.id || `season_${Date.now()}_${idx}`,
+              name: String(s.name || "Seasonal Rate").trim().slice(0, 100),
+              startDate: String(s.startDate).trim(),
+              endDate: String(s.endDate).trim(),
+              nightlyRate: Math.max(0, Number(s.nightlyRate) || 0),
+            }))
+          : [],
+        specialDateRates: Array.isArray(body.pricing?.specialDateRates)
+          ? body.pricing.specialDateRates.map((sp: any, idx: number) => ({
+              id: sp.id || `special_${Date.now()}_${idx}`,
+              name: String(sp.name || "Special Date").trim().slice(0, 100),
+              startDate: String(sp.startDate).trim(),
+              endDate: String(sp.endDate || sp.startDate).trim(),
+              nightlyRate: Math.max(0, Number(sp.nightlyRate) || 0),
+            }))
+          : [],
+        paidActivities: Array.isArray(body.pricing?.paidActivities)
+          ? body.pricing.paidActivities.map((act: any, idx: number) => ({
+              id: act.id || `act_${Date.now()}_${idx}`,
+              name: String(act.name || "Activity").trim().slice(0, 100),
+              price: Math.max(0, Number(act.price) || 0),
+              chargeType: ["PER_BOOKING", "PER_PERSON", "PER_SESSION", "PER_TRIP"].includes(act.chargeType) ? act.chargeType : "PER_BOOKING",
+            }))
+          : [],
       },
       capacity: {
         maxGuests: Number(maxGuests) || 2,
@@ -290,9 +383,17 @@ export async function POST(req: Request) {
         email: (email && typeof email === "string" ? email.trim() : "") || admin.email,
         altPhone: altPhone ? String(altPhone).trim() : undefined,
       },
+      policies: {
+        generalPolicy: typeof body.policies?.generalPolicy === "string" ? body.policies.generalPolicy.slice(0, 5000) : "",
+        refundPolicy: typeof body.policies?.refundPolicy === "string" ? body.policies.refundPolicy.slice(0, 5000) : "",
+        contractPolicy: typeof body.policies?.contractPolicy === "string" ? body.policies.contractPolicy.slice(0, 5000) : "",
+        additionalNotes: typeof body.policies?.additionalNotes === "string" ? body.policies.additionalNotes.slice(0, 5000) : "",
+      },
       status: initialStatus,
       featured: Boolean(featured),
       handpicked: Boolean(handpicked),
+      propertySize: propertySize !== undefined && propertySize !== "" && propertySize !== null ? Number(propertySize) : undefined,
+      propertySizeUnit: propertySizeUnit || "sq ft",
       rating: 4.8,
       reviewCount: 0,
       approvedAt: initialStatus === "approved" ? now : undefined,
@@ -302,6 +403,29 @@ export async function POST(req: Request) {
 
     // 5. Persist to storage
     createPropertyRecord(newProperty);
+
+    // Persist pending guest reviews entered during property creation
+    if (Array.isArray(body.reviews) && body.reviews.length > 0) {
+      for (const rev of body.reviews) {
+        if (rev && typeof rev.author === "string" && rev.author.trim() && rev.comment && typeof rev.comment === "string" && rev.comment.trim()) {
+          createReview({
+            propertyId: newProperty.id,
+            propertyName: newProperty.name,
+            author: rev.author.trim(),
+            rating: Math.max(1, Math.min(5, Number(rev.rating) || 5)),
+            title: rev.title ? String(rev.title).trim().slice(0, 150) : undefined,
+            comment: String(rev.comment).trim().slice(0, 5000),
+            date: rev.date && typeof rev.date === "string" && rev.date.trim() ? rev.date.trim() : now.split("T")[0],
+            status: ["approved", "pending", "hidden"].includes(rev.status) ? rev.status : "approved",
+            featured: Boolean(rev.featured),
+            location: rev.location ? String(rev.location).trim() : "Verified Guest",
+            source: "ADMIN_IMPORTED",
+            verificationStatus: "UNVERIFIED",
+          });
+        }
+      }
+      recalculatePropertyRating(newProperty.id);
+    }
 
     // 6. Record audit log
     recordAuditLog({
@@ -495,11 +619,42 @@ export async function PATCH(req: Request) {
       if (body.detailedDescription !== undefined) {
         updates.detailedDescription = String(body.detailedDescription).trim();
       }
-      if (body.pricePerNight && Number(body.pricePerNight) > 0) {
+      if (body.pricePerNight || body.pricing || body.weekdayRate !== undefined || body.weekendRate !== undefined || body.seasonalRates || body.specialDateRates || body.paidActivities) {
+        const incomingPricing = body.pricing || {};
         updates.pricing = {
-          pricePerNight: Number(body.pricePerNight),
-          currency: "INR",
-          originalPrice: body.originalPrice ? Number(body.originalPrice) : prop.pricing.originalPrice,
+          ...prop.pricing,
+          pricePerNight: body.pricePerNight ? Number(body.pricePerNight) : prop.pricing.pricePerNight,
+          currency: "USD",
+          originalPrice: body.originalPrice !== undefined ? (body.originalPrice ? Number(body.originalPrice) : undefined) : prop.pricing.originalPrice,
+          weekdayRate: incomingPricing.weekdayRate !== undefined ? Number(incomingPricing.weekdayRate) : (body.weekdayRate !== undefined ? Number(body.weekdayRate) : prop.pricing.weekdayRate),
+          weekendRate: incomingPricing.weekendRate !== undefined ? Number(incomingPricing.weekendRate) : (body.weekendRate !== undefined ? Number(body.weekendRate) : prop.pricing.weekendRate),
+          weekendDays: Array.isArray(incomingPricing.weekendDays) ? incomingPricing.weekendDays : (Array.isArray(body.weekendDays) ? body.weekendDays : (prop.pricing.weekendDays || [5, 6])),
+          seasonalRates: Array.isArray(incomingPricing.seasonalRates)
+            ? incomingPricing.seasonalRates.map((s: any, idx: number) => ({
+                id: s.id || `season_${Date.now()}_${idx}`,
+                name: String(s.name || "Seasonal Rate").trim().slice(0, 100),
+                startDate: String(s.startDate).trim(),
+                endDate: String(s.endDate).trim(),
+                nightlyRate: Math.max(0, Number(s.nightlyRate) || 0),
+              }))
+            : (Array.isArray(body.seasonalRates) ? body.seasonalRates : (prop.pricing.seasonalRates || [])),
+          specialDateRates: Array.isArray(incomingPricing.specialDateRates)
+            ? incomingPricing.specialDateRates.map((sp: any, idx: number) => ({
+                id: sp.id || `special_${Date.now()}_${idx}`,
+                name: String(sp.name || "Special Date").trim().slice(0, 100),
+                startDate: String(sp.startDate).trim(),
+                endDate: String(sp.endDate || sp.startDate).trim(),
+                nightlyRate: Math.max(0, Number(sp.nightlyRate) || 0),
+              }))
+            : (Array.isArray(body.specialDateRates) ? body.specialDateRates : (prop.pricing.specialDateRates || [])),
+          paidActivities: Array.isArray(incomingPricing.paidActivities)
+            ? incomingPricing.paidActivities.map((act: any, idx: number) => ({
+                id: act.id || `act_${Date.now()}_${idx}`,
+                name: String(act.name || "Activity").trim().slice(0, 100),
+                price: Math.max(0, Number(act.price) || 0),
+                chargeType: ["PER_BOOKING", "PER_PERSON", "PER_SESSION", "PER_TRIP"].includes(act.chargeType) ? act.chargeType : "PER_BOOKING",
+              }))
+            : (Array.isArray(body.paidActivities) ? body.paidActivities : (prop.pricing.paidActivities || [])),
         };
       }
       if (body.maxGuests || body.bedrooms || body.bathrooms) {
@@ -517,12 +672,14 @@ export async function PATCH(req: Request) {
       if (Array.isArray(body.images) && body.images.length > 0) {
         updates.images = body.images.map((img: any, idx: number) => {
           if (typeof img === "string") {
-            return { id: `img_${Date.now()}_${idx}`, url: img, isCover: idx === 0 };
+            return { id: `img_${Date.now()}_${idx}`, url: img, isCover: idx === 0, title: "" };
           }
+          const rawTitle = typeof img.title === "string" ? img.title.trim() : (typeof img.caption === "string" ? img.caption.trim() : "");
           return {
             id: img.id || `img_${Date.now()}_${idx}`,
             url: img.url,
             isCover: img.isCover !== undefined ? Boolean(img.isCover) : idx === 0,
+            title: rawTitle.slice(0, 120),
             caption: img.caption,
           };
         });
@@ -538,6 +695,59 @@ export async function PATCH(req: Request) {
       }
       if (body.featured !== undefined) {
         updates.featured = Boolean(body.featured);
+      }
+      if (body.handpicked !== undefined) {
+        updates.handpicked = Boolean(body.handpicked);
+      }
+      if (body.propertySize !== undefined) {
+        updates.propertySize = body.propertySize !== "" && body.propertySize !== null ? Number(body.propertySize) : undefined;
+      }
+      if (body.propertySizeUnit !== undefined) {
+        updates.propertySizeUnit = String(body.propertySizeUnit);
+      }
+      if (body.policies !== undefined) {
+        const rawPolicies = body.policies || {};
+        updates.policies = {
+          generalPolicy: typeof rawPolicies.generalPolicy === "string" ? rawPolicies.generalPolicy.slice(0, 5000) : (prop.policies?.generalPolicy || ""),
+          refundPolicy: typeof rawPolicies.refundPolicy === "string" ? rawPolicies.refundPolicy.slice(0, 5000) : (prop.policies?.refundPolicy || ""),
+          contractPolicy: typeof rawPolicies.contractPolicy === "string" ? rawPolicies.contractPolicy.slice(0, 5000) : (prop.policies?.contractPolicy || ""),
+          additionalNotes: typeof rawPolicies.additionalNotes === "string" ? rawPolicies.additionalNotes.slice(0, 5000) : (prop.policies?.additionalNotes || ""),
+        };
+      }
+
+      // Owner update validation
+      if (body.ownerId !== undefined) {
+        if (body.ownerId && typeof body.ownerId === "string" && body.ownerId.trim()) {
+          const targetOwner = await findOwnerById(body.ownerId.trim());
+          if (!targetOwner) {
+            return NextResponse.json({ success: false, message: "Selected property owner does not exist." }, { status: 400 });
+          }
+          if (targetOwner.status === "suspended") {
+            return NextResponse.json({ success: false, message: "Selected property owner account is suspended." }, { status: 400 });
+          }
+          updates.ownerId = targetOwner.id;
+          updates.createdByRole = prop.createdByRole || "owner";
+        } else if (body.ownerId === "" || body.ownerMode === "admin_managed") {
+          updates.ownerId = admin.id;
+          updates.createdByRole = "admin";
+        }
+      }
+
+      // Coordinates update
+      if (body.coordinates || (body.latitude !== undefined && body.longitude !== undefined)) {
+        const lat = Number(body.coordinates?.latitude ?? body.coordinates?.lat ?? body.latitude);
+        const lng = Number(body.coordinates?.longitude ?? body.coordinates?.lng ?? body.longitude);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          updates.location = {
+            ...(updates.location || prop.location),
+            coordinates: {
+              latitude: lat,
+              longitude: lng,
+              lat,
+              lng,
+            },
+          };
+        }
       }
 
       // Hierarchy validation if destination was changed
@@ -576,6 +786,54 @@ export async function PATCH(req: Request) {
           ...(body.locality ? { locality: String(body.locality).trim() } : {}),
           ...(body.postalCode ? { postalCode: String(body.postalCode).trim() } : {}),
         };
+      }
+
+      if (Array.isArray(body.reviews)) {
+        const existingReviews = getReviewsByPropertyId(prop.id);
+        const incomingIds = new Set(body.reviews.map((r: any) => r.id).filter(Boolean));
+
+        // Delete reviews that were deleted in the UI
+        for (const existingRev of existingReviews) {
+          if (!incomingIds.has(existingRev.id)) {
+            deleteReview(existingRev.id);
+          }
+        }
+
+        // Create or update incoming reviews
+        for (const rev of body.reviews) {
+          if (rev && typeof rev.author === "string" && rev.author.trim() && rev.comment && typeof rev.comment === "string" && rev.comment.trim()) {
+            if (rev.id && rev.id.startsWith("rev_") && existingReviews.some((r) => r.id === rev.id)) {
+              updateReview(rev.id, {
+                author: rev.author.trim(),
+                rating: Math.max(1, Math.min(5, Number(rev.rating) || 5)),
+                title: rev.title ? String(rev.title).trim().slice(0, 150) : undefined,
+                comment: String(rev.comment).trim().slice(0, 5000),
+                date: rev.date && typeof rev.date === "string" && rev.date.trim() ? rev.date.trim() : rev.date,
+                status: ["approved", "pending", "hidden"].includes(rev.status) ? rev.status : "approved",
+              });
+            } else {
+              createReview({
+                propertyId: prop.id,
+                propertyName: prop.name,
+                author: rev.author.trim(),
+                rating: Math.max(1, Math.min(5, Number(rev.rating) || 5)),
+                title: rev.title ? String(rev.title).trim().slice(0, 150) : undefined,
+                comment: String(rev.comment).trim().slice(0, 5000),
+                date: rev.date && typeof rev.date === "string" && rev.date.trim() ? rev.date.trim() : new Date().toISOString().split("T")[0],
+                status: ["approved", "pending", "hidden"].includes(rev.status) ? rev.status : "approved",
+                featured: Boolean(rev.featured),
+                location: rev.location ? String(rev.location).trim() : "Verified Guest",
+                source: "ADMIN_IMPORTED",
+                verificationStatus: "UNVERIFIED",
+              });
+            }
+          }
+        }
+        const recalc = recalculatePropertyRating(prop.id);
+        if (recalc) {
+          updates.rating = recalc.rating;
+          updates.reviewCount = recalc.reviewCount;
+        }
       }
 
       updated = updatePropertyRecord(id, updates);

@@ -7,12 +7,16 @@ export interface PropertyOwnerRegistrationInput {
 
 export interface PropertyOwner {
   id: string;
+  ownerNumber?: string;
   fullName: string;
   mobileNumber: string;
   email: string;
   role: "property_owner";
   status: "active" | "pending_review" | "suspended";
   avatar?: string;
+  profileImage?: string | null;
+  languagesSpoken?: string[];
+  aboutOwner?: string;
   businessName?: string;
   address?: string;
   bio?: string;
@@ -23,6 +27,7 @@ export interface PropertyOwner {
 
 export interface PropertyOwnerRecord {
   id: string;
+  ownerNumber?: string;
   fullName: string;
   mobileNumber: string;
   email: string;
@@ -31,6 +36,9 @@ export interface PropertyOwnerRecord {
   role: "property_owner";
   status: "active" | "pending_review" | "suspended";
   avatar?: string;
+  profileImage?: string | null;
+  languagesSpoken?: string[];
+  aboutOwner?: string;
   businessName?: string;
   address?: string;
   bio?: string;

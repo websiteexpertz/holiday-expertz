@@ -9,6 +9,7 @@ import {
   PropertiesResponse,
 } from "@/lib/propertyClient";
 import { Property, PropertyDashboardStats } from "@backend/types/property";
+import { formatPrice } from "@/lib/currency";
 import {
   Building2,
   CheckCircle2,
@@ -362,8 +363,9 @@ export default function DashboardOverview() {
                         </span>
                       </p>
                       <div className="text-xs font-semibold text-slate-700 pt-0.5">
-                        ₹{prop.pricing.pricePerNight?.toLocaleString("en-IN") || 0}
-                        <span className="text-slate-400 font-normal"> / night</span>
+                        {formatPrice(prop.pricing.pricePerNight, {
+                          currency: prop.pricing.currency || "USD",
+                        })}
                       </div>
                     </div>
                   </div>
